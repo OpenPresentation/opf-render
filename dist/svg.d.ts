@@ -109,6 +109,4 @@ export declare function renderSvg(input: unknown, options?: RenderSvgOptions): s
 
 export declare function renderSvgDeck(input: unknown, options?: RenderSvgOptions): string[];
 
-export declare function svgToPng(svg: string | Uint8Array, options?: SvgToPngOptions): Promise<Uint8Array>;
 
-export declare function svgToPdf(svgs: string | Uint8Array | Array<string | Uint8Array>, options?: SvgToPdfOptions): Promise<Uint8Array>;
