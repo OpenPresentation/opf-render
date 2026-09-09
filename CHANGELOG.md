@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Consume accepted core quote body/source geometry without re-fitting. Shared footer allocation preserves readable source text and reports distinct failure reasons. Requires the coordinated unreleased core.
+- Review 41 changed quote-footer rasters across the 805-slide corpus; outer content boxes are unchanged. Loaded-font browser tests verify cell containment and separation and report glyph overhang beyond advance-based part boxes.
+
 ## 0.5.1
 
 - Reserve attribution/source footer space before fitting quote text. Long, otherwise fittable quotes no longer overlap their footer. Quotes that cannot fit at the minimum font size retain overflow diagnostics and strict-mode rejection.
