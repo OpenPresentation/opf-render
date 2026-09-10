@@ -64,7 +64,9 @@
     "golden:update": "npm run build && node test/golden.mjs --update",
     "prepack": "npm run build",
     "build:browser-check": "node scripts/build-browser-check.mjs",
-    "test:styled-table": "node test/styled-table.mjs"
+    "test:styled-table": "node test/styled-table.mjs",
+    "test:code": "node test/shared-code.mjs",
+    "test:code-browser": "node test/shared-code-browser.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/arimo": "0.4.3",

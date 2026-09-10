@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Consume the coordinated core's accepted filename/language/body code geometry and styles without another fit. Preserve whitespace, tabs, source ranges, metadata case and empty lines in traced SVG; expose internal code parts for editing.
+- Use shared automatic layout for unspecified code layouts; explicit `code-1x` presets retain their slots. Review 43 changed code rasters with the remaining 762 hashes unchanged, and add actual-font browser segment/containment checks. Requires the unreleased coordinated core integration.
+
 ## 0.6.0
 
 - Consume accepted core quote body/source geometry without re-fitting. Shared footer allocation preserves readable source text and reports distinct failure reasons. Requires core 0.8.0.

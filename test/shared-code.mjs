@@ -1,0 +1,49 @@
+import assert from 'node:assert/strict';
+import {resolvePresentation,renderSvg} from '../dist/svg.js';
+import {loadOfficeFontRegistry} from '../dist/fonts-node.js';
+const fonts=await loadOfficeFontRegistry();
+const escape=text=>text.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+let cases=0;
+for (const dimensions of [{width:1280,height:720},{width:540,height:960}]) {
+  for (const code of ['a\tb\n\n', {source:'\tconst value = "two  spaces";\r\nreturn "<&>";  \n',filename:'src/CaseSensitive.ts',language:'TypeScript'},
+    {source:'body',language:'Long-language-label-'.repeat(20)}]) {
+    const deck={design:{dimensions:{widthInches:dimensions.width/96,heightInches:dimensions.height/96},fontScheme:'roboto'},slides:[{composition:{mode:'column',minFontSize:24},blocks:[{blocks:[{code}]}]}]};
+    const before=structuredClone(deck);let calls=0,styles=0;
+    const textMeasurement={measure:(...args)=>{calls++;return fonts.textMeasurement.measure(...args);},resolveStyle:style=>{styles++;return fonts.textMeasurement.resolveStyle(style);}};
+    const bound=resolvePresentation(deck,{textMeasurement}).slides[0],expectedCalls=calls,expectedStyles=styles;
+    calls=0;styles=0;
+    const diagnostics=[],svg=renderSvg(deck,{textMeasurement,trace:true,onDiagnostic:item=>diagnostics.push(item)});
+    assert.equal(calls,expectedCalls,'No code measurement after acceptance');assert.equal(styles,expectedStyles,'No repeated style resolution');
+    assert.deepEqual(diagnostics,[]);assert.deepEqual(deck,before);
+    const expected=bound.geometry.items[0].codeLayout.parts.flatMap(part=>part.fit.sourceLines.map((line,index)=>({part,line,index})));
+    const lines=[...svg.matchAll(/<text\b([^>]*?)(?:\/>|>([\s\S]*?)<\/text>)/g)];
+    assert.equal(lines.length,expected.length);
+    lines.forEach(([,attrs,content=''],index)=>{
+      const {part,line,index:lineIndex}=expected[index];
+      const attribute=name=>new RegExp(`(?:^|\\s)${name}="([^"]*)"`).exec(attrs)?.[1];
+      assert.equal(attribute('data-opf-path'),part.path);assert.equal(attribute('data-opf-code-role'),part.role);
+      assert.equal(attribute('xml:space'),'preserve');assert.equal(attribute('style'),'white-space:pre');assert.equal(attribute('text-rendering'),'geometricPrecision');
+      assert.equal(Number(attribute('font-size')),part.fit.fontSize);assert.equal(Number(attribute('font-weight')),part.style.fontWeight);
+      assert.equal(Number(attribute('data-opf-text-start')),line.start);assert.equal(Number(attribute('data-opf-text-end')),line.end);
+      assert.equal(Number(attribute('data-opf-text-next-start')),line.nextStart);assert.equal(attribute('data-opf-line-boundary'),line.boundary);
+      assert.ok(Math.abs(Number(attribute('x'))-part.box.x)<.002);assert.ok(Math.abs(Number(attribute('y'))-(part.box.y+part.fit.fontSize+lineIndex*part.fit.lineHeight))<.002);
+      assert.equal(content.replace(/<\/?tspan\b[^>]*>/g,''),escape(part.text.slice(line.start,line.end)));
+      const segments=[...content.matchAll(/<tspan\b([^>]*)>([\s\S]*?)<\/tspan>/g)];assert.equal(segments.length,line.segments.length);
+      segments.forEach(([,attrs,text],i)=>{
+        const expected=line.segments[i],attribute=name=>new RegExp(`(?:^|\\s)${name}="([^"]*)"`).exec(attrs)?.[1];
+        assert.equal(text,escape(part.text.slice(expected.start,expected.end)));assert.equal(attribute('data-opf-segment'),expected.kind);
+        assert.ok(Math.abs(Number(attribute('x'))-(part.box.x+expected.x))<.002);
+        if(expected.kind==='tab'){assert.ok(Math.abs(Number(attribute('textLength'))-expected.width)<.002);assert.equal(attribute('lengthAdjust'),'spacingAndGlyphs');}
+      });
+    });
+    cases++;
+  }
+}
+const overflow={design:{fontScheme:'roboto'},slides:[{code:{source:'Unabridged body\n'.repeat(100),language:'Keep case'}}]},diagnostics=[];
+renderSvg(overflow,{textMeasurement:fonts.textMeasurement,onDiagnostic:item=>diagnostics.push(item)});
+assert.ok(diagnostics.some(item=>item.path==='slides.0.code.source'&&item.reason==='text-fit'));
+overflow.slides[0].composition={overflow:'error'};
+assert.throws(()=>renderSvg(overflow,{textMeasurement:fonts.textMeasurement}),{code:'layout-overflow'});
+const tiny={design:{fontScheme:'roboto',dimensions:{widthInches:40/96,heightInches:40/96}},slides:[{composition:{padding:0},code:'Keep all text'}]};
+assert.throws(()=>renderSvg(tiny,{textMeasurement:fonts.textMeasurement}),{code:'layout-overflow'});
+console.log(`Shared code SVG: ${cases} accepted layouts, source/whitespace/trace preservation, no extra measurement, strict and tiny-cell rejection.`);
