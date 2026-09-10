@@ -1,0 +1,11 @@
+{
+  "renderer": "c92198b0d0acc94892385a8594fe2879461d64b0",
+  "coreCandidate": {
+    "name": "@openpresentation/opf",
+    "version": "0.4.0-preview.11",
+    "file": "openpresentation-opf-0.4.0-preview.11.tgz",
+    "sha256": "a092f26d022169c66a216e86401f7573c77985c67bd83b87246a953717ff54c6",
+    "bytes": 2340187
+  },
+  "candidateEvidence": "core docs/evidence/mac-rich-flow/followup/mac-node24-candidate-manifest.json at d1660790a7a60e7083b533075230f193058a4e50"
+}
