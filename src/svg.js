@@ -772,6 +772,12 @@ function renderMedia(item, box, bound, options) {
 function renderCode(item, box, bound, options) {
   const layout = item.codeLayout;
   if (!layout) throw new OPFRenderError('missing-code-layout', 'Code rendering requires a coordinated core build with shared code geometry.', {path:item.path});
+  for (const part of layout.parts) {
+    // XML 1.0 Char excludes controls and unpaired UTF-16 surrogates. The u flag
+    // keeps valid supplementary characters (surrogate pairs) accepted.
+    const invalid = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\uD800-\uDFFF\uFFFE\uFFFF]/u.exec(part.text);
+    if (invalid) throw new OPFRenderError('invalid-code-text', `Code text contains U+${invalid[0].codePointAt(0).toString(16).toUpperCase().padStart(4,'0')} at UTF-16 offset ${invalid.index}, which XML cannot represent; edit that character before rendering.`, {path:part.path});
+  }
   const children = [
     tag("rect", {
       x: box.x,

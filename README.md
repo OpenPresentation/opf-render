@@ -4,6 +4,8 @@ Version 0.6.0 requires core 0.8.0 and renders its accepted quote body/source geo
 
 Deterministic local renderer for Open Presentation Format documents. The shared SVG core implements validation, catalog resolution, placeholder binding and text layout. Node APIs additionally convert SVG to PNG and raster-backed PDF.
 
+The unreleased shared-code integration consumes accepted filename/language/body geometry and preserves literal source whitespace. Code strings that [XML 1.0 cannot represent](https://www.w3.org/TR/xml/#charsets) reject rendering with `invalid-code-text`, the OPF field path and UTF-16 offset. Input JSON stays unchanged. Tabs, line endings and valid supplementary Unicode remain accepted; schema validity and XML serialization do not certify font coverage or native fidelity.
+
 ## Scope
 
 - Package: `@openpresentation/opf-render`

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Reject XML-forbidden controls and unpaired UTF-16 surrogates in code source/metadata with `invalid-code-text`, the OPF path and character offset. Keep the input unchanged; tabs, line endings and valid supplementary Unicode remain accepted. Schema validity is separate from XML representability and font coverage.
 - Consume the coordinated core's accepted filename/language/body code geometry and styles without another fit. Preserve whitespace, tabs, source ranges, metadata case and empty lines in traced SVG; expose internal code parts for editing.
 - Use shared automatic layout for unspecified code layouts; explicit `code-1x` presets retain their slots. Review 43 changed code rasters with the remaining 762 hashes unchanged, and add actual-font browser segment/containment checks. Requires the unreleased coordinated core integration.
 

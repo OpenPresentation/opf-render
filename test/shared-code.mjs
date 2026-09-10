@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {resolvePresentation,renderSvg} from '../dist/svg.js';
 import {loadOfficeFontRegistry} from '../dist/fonts-node.js';
+import {validatePresentation} from '@openpresentation/opf';
 const fonts=await loadOfficeFontRegistry();
 const escape=text=>text.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 let cases=0;
@@ -46,4 +47,19 @@ overflow.slides[0].composition={overflow:'error'};
 assert.throws(()=>renderSvg(overflow,{textMeasurement:fonts.textMeasurement}),{code:'layout-overflow'});
 const tiny={design:{fontScheme:'roboto',dimensions:{widthInches:40/96,heightInches:40/96}},slides:[{composition:{padding:0},code:'Keep all text'}]};
 assert.throws(()=>renderSvg(tiny,{textMeasurement:fonts.textMeasurement}),{code:'layout-overflow'});
-console.log(`Shared code SVG: ${cases} accepted layouts, source/whitespace/trace preservation, no extra measurement, strict and tiny-cell rejection.`);
+const forbidden=[...Array.from({length:32},(_,i)=>i).filter(i=>![9,10,13].includes(i)),0xD800,0xDFFF,0xFFFE,0xFFFF];
+let invalidCases=0;
+for (const point of forbidden) for (const field of ['shorthand','source','filename','language']) {
+  const value='A😀B'+String.fromCodePoint(point)+'Z',code=field==='shorthand'?value:{source:'Keep source',filename:'Keep.ts',language:'TypeScript',[field]:value};
+  const deck={slides:[{blocks:[{code}]}]},before=structuredClone(deck);
+  assert.equal(validatePresentation(deck).valid,true,'Schema validity is separate from XML representability');
+  const path='slides.0.blocks.0.code'+(field==='shorthand'?'':'.'+field);
+  assert.throws(()=>renderSvg(deck),error=>error.code==='invalid-code-text'&&error.path===path&&error.message.includes('UTF-16 offset 4'));
+  assert.deepEqual(deck,before);invalidCases++;
+}
+// XML character boundaries, not a glyph-coverage or shaping claim.
+const representable='\t\n\r\n\r <&>" \uD7FF\uE000\uFFFD\u{10000}\u{10FFFF}';
+const accepted=renderSvg({slides:[{code:representable}]});
+for (const character of ['\uD7FF','\uE000','\uFFFD','\u{10000}','\u{10FFFF}']) assert.ok(accepted.includes(character));
+assert.ok(accepted.includes('&lt;&amp;&gt;'));
+console.log(`Shared code SVG: ${cases} accepted layouts, source/whitespace/trace preservation, no extra measurement, strict/tiny-cell rejection, ${invalidCases} XML-boundary rejections and valid character boundaries.`);
