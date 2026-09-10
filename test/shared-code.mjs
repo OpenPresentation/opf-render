@@ -6,7 +6,7 @@ const fonts=await loadOfficeFontRegistry();
 const escape=text=>text.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 let cases=0;
 for (const dimensions of [{width:1280,height:720},{width:540,height:960}]) {
-  for (const code of ['a\tb\n\n', {source:'\tconst value = "two  spaces";\r\nreturn "<&>";  \n',filename:'src/CaseSensitive.ts',language:'TypeScript'},
+  for (const code of ['', '\r\n\r\n\n', 'a\tb\n\n', {source:'\tconst value = "two  spaces";\r\nreturn "<&>";  \n',filename:'src/CaseSensitive.ts',language:'TypeScript'},
     {source:'body',language:'Long-language-label-'.repeat(20)}]) {
     const deck={design:{dimensions:{widthInches:dimensions.width/96,heightInches:dimensions.height/96},fontScheme:'roboto'},slides:[{composition:{mode:'column',minFontSize:24},blocks:[{blocks:[{code}]}]}]};
     const before=structuredClone(deck);let calls=0,styles=0;
@@ -16,6 +16,13 @@ for (const dimensions of [{width:1280,height:720},{width:540,height:960}]) {
     const diagnostics=[],svg=renderSvg(deck,{textMeasurement,trace:true,onDiagnostic:item=>diagnostics.push(item)});
     assert.equal(calls,expectedCalls,'No code measurement after acceptance');assert.equal(styles,expectedStyles,'No repeated style resolution');
     assert.deepEqual(diagnostics,[]);assert.deepEqual(deck,before);
+    const parts=bound.geometry.items[0].codeLayout.parts,groups=[...svg.matchAll(/<g\b([^>]*data-opf-code-role[^>]*)>/g)];
+    assert.equal(groups.length,parts.length);
+    groups.forEach(([,attrs],index)=>{
+      const part=parts[index],attribute=name=>new RegExp(`(?:^|\\s)${name}="([^"]*)"`).exec(attrs)?.[1];
+      assert.equal(attribute('data-opf-path'),part.path);
+      for(const dimension of ['x','y','width','height'])assert.equal(Number(attribute('data-opf-box-'+dimension)),part.box[dimension],`Accepted ${part.role} edit-target ${dimension}`);
+    });
     const expected=bound.geometry.items[0].codeLayout.parts.flatMap(part=>part.fit.sourceLines.map((line,index)=>({part,line,index})));
     const lines=[...svg.matchAll(/<text\b([^>]*?)(?:\/>|>([\s\S]*?)<\/text>)/g)];
     assert.equal(lines.length,expected.length);

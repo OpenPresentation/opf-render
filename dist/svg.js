@@ -806,7 +806,7 @@ function renderCode(item, box, bound, options) {
       ...(options.trace?{'data-opf-segment':segment.kind,'data-opf-text-start':segment.start,'data-opf-text-end':segment.end}:{}),
     },escapeText(part.text.slice(segment.start,segment.end)))).join('')));
     children.push(tag('g',{...traceAttrs(options,part.path),...(options.trace?{'data-opf-code-role':part.role,'data-opf-generated':part.generated?'true':undefined,
-      'data-opf-box-x':part.box.x,'data-opf-box-y':part.box.y,'data-opf-box-width':part.box.width,'data-opf-box-height':part.fit.lineHeight}:{}),
+      'data-opf-box-x':part.box.x,'data-opf-box-y':part.box.y,'data-opf-box-width':part.box.width,'data-opf-box-height':part.box.height}:{}),
       ...(part.fit.overflow?{'data-opf-overflow':'true'}:{})},lines.join('\n')));
   }
   return tag("g", {...traceAttrs(options,item.path),...(options.trace?{'data-opf-code-container':'true'}:{})}, children.join("\n"));
