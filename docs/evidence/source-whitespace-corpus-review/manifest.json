@@ -3,8 +3,8 @@
   "files": [
     {
       "file": "README.md",
-      "bytes": 2590,
-      "sha256": "c2ff5aaa45d980192d7c324f73d7629ddb4e04248d0397e1a0c4cc61cc132b9f"
+      "bytes": 2850,
+      "sha256": "12656ee2ac5b7a8a6389f2621063a010f0842fef186b1c3efd9f11f3a32b00b2"
     },
     {
       "file": "full-0-after.png",
@@ -222,9 +222,14 @@
       "sha256": "36234438f27e0c8698def3a1f30c387ae81785339813b69e69c2803f81331414"
     },
     {
+      "file": "predecessor-core-snapshot.tgz",
+      "bytes": 2340777,
+      "sha256": "66ca97b59a7accd3982cca66f41aa28b40ca7fc020ac49fb174674f0e124f8a9"
+    },
+    {
       "file": "predecessor.json",
-      "bytes": 466,
-      "sha256": "9fb00e0e34b4ca52f690c72a5b7541865d759e2a261fb4933314630da9d6651f"
+      "bytes": 86561,
+      "sha256": "ae09e78601d94113c55bc6afe39be9865bda87c70d7b40146807556e48a5aebf"
     },
     {
       "file": "report.json",
