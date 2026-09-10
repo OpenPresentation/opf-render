@@ -59,6 +59,7 @@
     "validate": "node scripts/validate-package.mjs",
     "test": "npm run build && node test/smoke.mjs && node test/webp.mjs && node test/jpeg-orientation.mjs && node test/fonts.mjs && node test/office-fonts.mjs && node test/timeline.mjs && node test/quote-footer.mjs && node test/shared-quote.mjs && node test/rich-trace.mjs && node test/rich-table.mjs && node test/golden-gate.mjs && node test/golden.mjs && node test/fonts-browser.mjs && node test/design-preview.mjs && npm run build:browser-check && npm run test:styled-table",
     "test:golden": "npm run build && node test/golden.mjs",
+    "test:packed": "node test/packed-install.mjs",
     "test:browser": "npm run build:browser-check && node test/browser-check.mjs",
     "golden:update": "npm run build && node test/golden.mjs --update",
     "prepack": "npm run build",
