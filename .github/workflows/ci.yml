@@ -30,21 +30,21 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OpenPresentation/opf
-          ref: 3c26eae4af8d6197e1be442a171b80cbde19a68b
+          ref: e9d42f54ff6d7a2c717faddb17594f72c8d1fa02
           path: opf
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OpenPresentation/opf-pptx
-          ref: cac8f6e058e0d18cbb404730d0094d21d44665eb
+          ref: ca4e13574400f059246dc67e8abf6591dcd663da
           path: opf-pptx
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OpenPresentation/opf-editor
-          ref: 6f15884a34fd1b00e2852c2027661f0df2e219f4
+          ref: 50384b8cd4d96a9db26bcab6304136440effed35
           path: opf-editor
           fetch-depth: 0
           persist-credentials: false
@@ -97,6 +97,7 @@ jobs:
           node scripts/test-plain-whitespace-workflow.mjs artifacts/plain-whitespace-workflow installed
           node scripts/test-readability-browser.mjs artifacts/readability-browser installed
           node scripts/test-timeline-workflow.mjs artifacts/timeline-workflow installed
+          node scripts/test-furniture-workflow.mjs artifacts/furniture-workflow installed
           node scripts/test-timeline-acceptance.mjs artifacts/timeline-acceptance.json
       - run: npm pack --dry-run
       - name: Preserve candidate and raster evidence
@@ -114,6 +115,7 @@ jobs:
             opf/artifacts/plain-whitespace-workflow/**
             opf/artifacts/readability-browser/**
             opf/artifacts/timeline-workflow/**
+            opf/artifacts/furniture-workflow/**
             opf/artifacts/timeline-acceptance.json
             opf-render/artifacts/plain-whitespace-browser/**
             opf-render/artifacts/rich-flow-browser/**
