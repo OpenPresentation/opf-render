@@ -1,2 +1,5 @@
 # Pinned upstream license hashes describe exact bytes, including line endings.
 test/fixtures/font-formats/*/LICENSE.md -text
+# Generated direction tables must match the generator byte for byte on Windows.
+src/font-direction-data.js text eol=lf
+dist/font-direction-data.js text eol=lf
