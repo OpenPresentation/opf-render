@@ -1,9 +1,0 @@
-/Users/michael/Source/opf-render/node_modules/wawoff2/decompress.js:12
-  if (result === false) throw new Error('ConvertWOFF2ToTTF failed')
-                              ^
-
-Error: ConvertWOFF2ToTTF failed
-    at Object.decompress (/Users/michael/Source/opf-render/node_modules/wawoff2/decompress.js:12:31)
-    at async file:///Users/michael/Source/opf-render/test/font-woff2-hmtx.mjs:17:64
-
-Node.js v24.21.0

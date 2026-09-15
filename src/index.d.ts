@@ -1,4 +1,4 @@
-import type { EmbeddedFont, TextPainting } from "./fonts.js";
+import type { EmbeddedFont } from "./fonts.js";
 import type { SlideComposition, LayoutDiagnostic, TextMeasurement } from "@openpresentation/opf/composition";
 export declare const packageName = "@openpresentation/opf-render";
 
@@ -48,8 +48,6 @@ export type RenderDiagnostic = LayoutDiagnostic | {
 
 export interface RenderSvgOptions {
   textMeasurement?: TextMeasurement;
-  /** Paint accepted glyph runs while retaining logical SVG text. Must share textMeasurement. */
-  textPainting?: TextPainting;
   embeddedFonts?: EmbeddedFont[];
   strictAssets?: boolean;
   imageResolver?: (src: string | undefined, context: { asset: unknown; path: string }) => string | null | undefined;

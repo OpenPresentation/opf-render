@@ -1,5 +1,4 @@
 import { createFontRegistry, OPFFontError } from "./fonts.js";
-import { variationCss } from './font-variations.js';
 /** Fetch only host-selected font files, then use those exact bytes for shaping and CSS. */
 export async function loadBrowserFontRegistry(entries, options = {}) {
   const documentRef = options.document ?? globalThis.document;
@@ -30,20 +29,18 @@ export async function loadBrowserFontRegistry(entries, options = {}) {
   );
   const registry = createFontRegistry(faces, options),
     loaded = [];
-  const disposeRegistry = registry.dispose.bind(registry);
   // Normalize family names using the registry's parsed font metadata.
   const embedded = registry.embeddedFonts;
   try {
     await Promise.all(
-      embedded.map(async (descriptor) => {
-        const data = Uint8Array.from(atob(descriptor.dataUrl.split(',')[1]), character => character.charCodeAt(0));
+      faces.map(async (entry, index) => {
+        const descriptor = embedded[index];
         const face = new FontFaceRef(
           descriptor.family,
-          data.buffer,
+          entry.data.slice().buffer,
           {
             weight: String(descriptor.weight),
             style: descriptor.italic ? "italic" : "normal",
-            ...(descriptor.variations?{variationSettings:variationCss(descriptor.variations)}:{}),
           },
         );
         await face.load();
@@ -54,13 +51,11 @@ export async function loadBrowserFontRegistry(entries, options = {}) {
     await documentRef.fonts.ready;
   } catch (error) {
     for (const face of loaded) documentRef.fonts.delete(face);
-    disposeRegistry();
     throw new OPFFontError("font-load-failed", error.message);
   }
   return Object.assign(registry, {
     dispose() {
       for (const face of loaded) documentRef.fonts.delete(face);
-      disposeRegistry();
     },
   });
 }

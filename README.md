@@ -1,9 +1,6 @@
 # OPF Render
 
-Unpublished font shaping adds an **opt-in** HarfBuzz service: original UTF-16
-glyph clusters, advances and outlines behind the synchronous font registry.
-See the [API, browser packaging and acceptance requirements](docs/font-shaping.md).
-Fontkit remains the default; this candidate has not been published.
+Unfinished prepared shaping work is preserved in the [September 15 roadmap](docs/roadmap-shaping-20260915.md); it is not part of the published runtime.
 
 Version 0.8.0 and this checkout require Node 24 (`24.x`). Use `.nvmrc` for local development. Earlier published versions retain their original engine declarations. Browser entrypoints remain browser-safe; native application compatibility is verified separately.
 

@@ -1,5 +1,4 @@
 import { layoutTable, fitList, fitRichText, composeSlide, resolveCanvasDimensions, resolveFontFamilies, resolveTextStyle, textWidthMeasurer, fitText, textColorForFill, chartColorForFill } from "@openpresentation/opf/composition";
-import { variationCss } from './font-variations.js';
 import {
   catalogs as bundledCatalogs,
   validatePresentation
@@ -536,10 +535,7 @@ export function renderSvgDeck(input, options = {}) {
 }
 
 function renderResolvedSlide(resolved, slideIndex, options) {
-  if (options.textPainting && (typeof options.textPainting.shape !== 'function' ||
-      !options.textMeasurement?.measure || options.textPainting.textMeasurement !== options.textMeasurement))
-    throw new OPFRenderError('invalid-text-painting', 'SVG painting and layout must share the same prepared font registry.');
-  options = { ...options, _diagnosticPaths: new Set(), _paintIds:{next:0,prefix:`opf-text-${slideIndex}`} };
+  options = { ...options, _diagnosticPaths: new Set() };
   const bound = resolved.slides[slideIndex];
   const { width, height } = bound.design.dimensions;
   const title = bound.slide.title ?? resolved.presentation.name ?? `Slide ${slideIndex + 1}`;
@@ -556,8 +552,8 @@ function renderResolvedSlide(resolved, slideIndex, options) {
     "svg",
     {
       xmlns: "http://www.w3.org/2000/svg",
-      role: options.textPainting ? "group" : "img",
-      "aria-label": options.textPainting ? flattenText(title) : title,
+      role: "img",
+      "aria-label": title,
       viewBox: `0 0 ${width} ${height}`,
       width,
       height,
@@ -686,9 +682,7 @@ function renderList(item, box, bound, options) {
   const fit=item.text?.listEntries?item.text:fitList(item.value,box,25*scale,((bound.composition??bound.geometry.composition).minFontSize??16)*scale,{style:{fontFamily:bound.design.fonts.body,fontWeight:400,path:item.path},textMeasurement:options.textMeasurement});
   const children=[];
   for(const entry of fit.listEntries){
-    children.push(renderPaintedText({x:stableNumber(entry.marker.x),y:stableNumber(entry.marker.y),'font-family':fontStack(entry.marker.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(entry.marker.fontSize),fill:bound.design.colors.text,'aria-hidden':'true'},escapeText(entry.marker.text),[
-      {text:entry.marker.text,x:entry.marker.x,y:entry.marker.y,size:entry.marker.fontSize,style:entry.marker.style,fill:bound.design.colors.text,start:0},
-    ],options));
+    children.push(tag('text',{x:stableNumber(entry.marker.x),y:stableNumber(entry.marker.y),'font-family':fontStack(entry.marker.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(entry.marker.fontSize),fill:bound.design.colors.text,'aria-hidden':'true'},escapeText(entry.marker.text)));
     const config={path:entry.textPath,align:'left',fill:bound.design.colors.text,rich:Array.isArray(entry.value),options};
     children.push(renderRichLines(typeof entry.value==='string'?[entry.value]:entry.value,entry.text,entry.textBox,bound,config));
     if(entry.description)children.push(renderRichLines(typeof entry.descriptionValue==='string'?[entry.descriptionValue]:entry.descriptionValue,entry.description,entry.descriptionBox,bound,{...config,path:entry.descriptionPath,rich:Array.isArray(entry.descriptionValue),fill:bound.design.colors.mutedText}));
@@ -822,27 +816,19 @@ function renderCode(item, box, bound, options) {
   ];
   for (const part of layout.parts) {
     if (!part.fit) throw new OPFRenderError('layout-overflow', 'Code content has no usable internal space; increase its cell size before rendering.', {path:part.path,issues:layout.diagnostics});
-    const lines=part.fit.sourceLines.map((line,index)=>{
-      const baseline=part.box.y+part.fit.fontSize+index*part.fit.lineHeight;
-      const attributes={
+    const lines=part.fit.sourceLines.map((line,index)=>tag('text',{
       x:stableNumber(part.box.x),y:stableNumber(part.box.y+part.fit.fontSize+index*part.fit.lineHeight),
       'text-anchor':'start','font-family':fontStack(part.style.fontFamily,'monospace'),
       'font-size':stableNumber(part.fit.fontSize),'font-weight':part.style.fontWeight,'font-style':part.style.italic?'italic':undefined,
       'xml:space':'preserve',style:'white-space:pre','text-rendering':'geometricPrecision',fill:part.role==='body'?'#E5E7EB':'#93C5FD',
       ...traceAttrs(options,part.path),...(options.trace?{'data-opf-code-role':part.role,'data-opf-generated':part.generated?'true':undefined,
         'data-opf-text-start':line.start,'data-opf-text-end':line.end,'data-opf-text-next-start':line.nextStart,'data-opf-line-boundary':line.boundary}:{}),
-      };
-      const content=line.segments.map(segment=>tag('tspan',{
+    },line.segments.map(segment=>tag('tspan',{
       x:stableNumber(part.box.x+segment.x),
       // SVG's CSS tab-size does not place literal tabs at their measured stops.
       ...(segment.kind==='tab'?{textLength:stableNumber(segment.width),lengthAdjust:'spacingAndGlyphs'}:{}),
       ...(options.trace?{'data-opf-segment':segment.kind,'data-opf-text-start':segment.start,'data-opf-text-end':segment.end}:{}),
-      },escapeText(part.text.slice(segment.start,segment.end)))).join('');
-      return renderPaintedText(attributes,content,line.segments.filter(segment=>segment.kind!=='tab').map(segment=>({
-        text:part.text.slice(segment.start,segment.end),x:part.box.x+segment.x,y:baseline,
-        size:part.fit.fontSize,style:part.style,start:segment.start,fill:part.role==='body'?'#E5E7EB':'#93C5FD',
-      })),options);
-    });
+    },escapeText(part.text.slice(segment.start,segment.end)))).join('')));
     children.push(tag('g',{...traceAttrs(options,part.path),...(options.trace?{'data-opf-code-role':part.role,'data-opf-generated':part.generated?'true':undefined,
       'data-opf-box-x':part.box.x,'data-opf-box-y':part.box.y,'data-opf-box-width':part.box.width,'data-opf-box-height':part.box.height}:{}),
       ...(part.fit.overflow?{'data-opf-overflow':'true'}:{})},lines.join('\n')));
@@ -861,21 +847,16 @@ function renderMetric(item, box, bound, options) {
     if (!part.fit||part.linePositions?.length!==part.fit.sourceLines.length) throw new OPFRenderError('layout-overflow','Metric content has no accepted internal line positions; increase its cell size or coordinate package versions.',{path:part.path,issues:layout.diagnostics});
     const lines=part.fit.sourceLines.map((line,index)=>{
       const origin=part.linePositions[index];
-      const attributes={x:stableNumber(origin.x),y:stableNumber(origin.baseline),'text-anchor':'start',
+      return tag('text',{x:stableNumber(origin.x),y:stableNumber(origin.baseline),'text-anchor':'start',
         'font-family':fontStack(part.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(part.fit.fontSize),
         'font-weight':part.style.fontWeight,'font-style':part.style.italic?'italic':undefined,
         'xml:space':'preserve',style:'white-space:pre','text-rendering':'geometricPrecision',fill:part.role==='value'?bound.design.colors.primary:bound.design.colors.text,
         ...traceAttrs(options,part.path),...(options.trace?{'data-opf-metric-role':part.role,'data-opf-text-start':line.start,
           'data-opf-text-end':line.end,'data-opf-text-next-start':line.nextStart,'data-opf-line-boundary':line.boundary}:{}),
-      };
-      const content=line.segments.map(segment=>tag('tspan',{x:stableNumber(origin.x+segment.x),
+      },line.segments.map(segment=>tag('tspan',{x:stableNumber(origin.x+segment.x),
         ...(segment.kind==='tab'?{textLength:stableNumber(segment.width),lengthAdjust:'spacingAndGlyphs'}:{}),
         ...(options.trace?{'data-opf-segment':segment.kind,'data-opf-text-start':segment.start,'data-opf-text-end':segment.end}:{}),
-      },escapeText(part.text.slice(segment.start,segment.end)))).join('');
-      return renderPaintedText(attributes,content,line.segments.filter(segment=>segment.kind!=='tab').map(segment=>({
-        text:part.text.slice(segment.start,segment.end),x:origin.x+segment.x,y:origin.baseline,
-        size:part.fit.fontSize,style:part.style,start:segment.start,fill:part.role==='value'?bound.design.colors.primary:bound.design.colors.text,
-      })),options);
+      },escapeText(part.text.slice(segment.start,segment.end)))).join(''));
     });
     children.push(tag('g',{...traceAttrs(options,part.path),...(options.trace?{'data-opf-metric-role':part.role,
       'data-opf-box-x':part.box.x,'data-opf-box-y':part.box.y,'data-opf-box-width':part.box.width,'data-opf-box-height':part.box.height}:{}),
@@ -1186,16 +1167,11 @@ function fontStack(family, type) {
 function renderEmbeddedFonts(fonts = []) {
   if (!fonts.length) return "";
   const css = fonts.map(font => {
-    if (typeof font.family !== "string" || /[\u0000-\u001f"'\\<>;]/.test(font.family) || !/^data:font\/(ttf|otf|woff|woff2);base64,[A-Za-z0-9+/=]+$/.test(font.dataUrl) || font.sourceDataUrl!==undefined&&!/^data:font\/(ttf|otf|woff|woff2|collection|dfont);base64,[A-Za-z0-9+/=]+$/.test(font.sourceDataUrl) || !Number.isInteger(font.weight) || font.weight < 1 || font.weight > 1000) throw new OPFRenderError("invalid-embedded-font", "Embedded fonts require a plain family name, valid weight, and a font data URI.");
-    let variations;
-    try { variations=variationCss(font.variations); }
-    catch(error) { throw new OPFRenderError('invalid-embedded-font',error.message); }
-    return `@font-face{font-family:"${font.family}";font-weight:${font.weight};font-style:${font.italic ? "italic" : "normal"};${variations?`font-variation-settings:${variations};`:''}src:url("${font.dataUrl}")}`;
+    if (typeof font.family !== "string" || /[\u0000-\u001f"'\\<>;]/.test(font.family) || !/^data:font\/(ttf|otf|woff|woff2);base64,[A-Za-z0-9+/=]+$/.test(font.dataUrl) || !Number.isInteger(font.weight) || font.weight < 1 || font.weight > 1000) throw new OPFRenderError("invalid-embedded-font", "Embedded fonts require a plain family name, valid weight, and a font data URI.");
+    return `@font-face{font-family:"${font.family}";font-weight:${font.weight};font-style:${font.italic ? "italic" : "normal"};src:url("${font.dataUrl}")}`;
   }).join("\n");
   const licenses = [...new Set(fonts.map(font=>font.license).filter(Boolean))];
-  const sources=fonts.filter(font=>font.sourceDataUrl||font.variations).map(({family,weight,italic,sourceDataUrl,license,variations,namedInstance})=>({family,weight,italic,sourceDataUrl,license,...(variations?{variations}:{}),...(namedInstance?{namedInstance}:{})}));
-  return tag("style",{},css) + (licenses.length ? tag("metadata",{},escapeText(licenses.join("\n\n"))) : "") +
-    (sources.length?tag('metadata',{'data-opf-font-sources':'1'},escapeText(JSON.stringify(sources))):'');
+  return tag("style",{},css) + (licenses.length ? tag("metadata",{},escapeText(licenses.join("\n\n"))) : "");
 }
 
 function renderRichTextBox(value, box, bound, config) {
@@ -1203,91 +1179,6 @@ function renderRichTextBox(value, box, bound, config) {
   const fit=config.fit??fitRichText(value,box,config.fontSize*scale,((bound.composition??bound.geometry.composition).minFontSize??16)*scale,{style:{fontFamily:config.fontFamily,fontWeight:config.fontWeight??400,path:config.path},textMeasurement:config.options.textMeasurement});
   if(fit.overflow&&!config.diagnosticsHandled){const diagnostic={code:'text-overflow',path:config.path,message:'Mixed-style text exceeds its cell at the minimum font size.'};reportDiagnostic(diagnostic,config.options);if((bound.composition??bound.geometry.composition).overflow==='error')throw new OPFRenderError('layout-overflow',diagnostic.message,{issues:[diagnostic]});}
   return renderRichLines(value,fit,box,bound,config);
-}
-
-/** Visible ink uses accepted glyph positions; logical text and source mappings are retained. */
-function paintFillKey(fill){return String(fill).toLowerCase().replace(/^#([0-9a-f])([0-9a-f])([0-9a-f])$/,(_,r,g,b)=>`#${r}${r}${g}${g}${b}${b}`).replace(/^(#[0-9a-f]{6})$/,'$1ff');}
-
-function renderPaintedText(attributes, content, segments, options) {
-  if (!options.textPainting) return tag('text', attributes, content);
-  const painted = segments.map(segment => {
-    // Tabs already have accepted layout advances; they are not font glyphs.
-    const run = options.textPainting.shape(segment.advanceOnly?'':segment.text, segment.style);
-    const scale = segment.size / run.unitsPerEm;
-    const boundaries=[...new Intl.Segmenter(undefined,{granularity:'grapheme'}).segment(segment.text)].map(part=>part.index);
-    boundaries.push(segment.text.length);
-    const boundary=offset=>boundaries.find(value=>value>=offset)??segment.text.length;
-    const spans=(segment.paints??[{start:0,end:segment.text.length,fill:segment.fill,underline:segment.underline,strikethrough:segment.strikethrough}])
-      .map(paint=>({...paint,start:boundary(paint.start),end:boundary(paint.end)})).filter(paint=>paint.end>paint.start);
-    const paints=[];
-    for(const span of spans){
-      const previous=paints.at(-1);
-      if(previous&&previous.end===span.start&&paintFillKey(previous.fill)===paintFillKey(span.fill)&&!!previous.underline===!!span.underline&&!!previous.strikethrough===!!span.strikethrough)previous.end=span.end;
-      else paints.push({...span});
-    }
-    const caret=offset=>{
-      const point=run.caretGeometry?.stops.find(stop=>stop.offset===offset);
-      if(!point||!Number.isFinite(point.x))throw new OPFRenderError('invalid-text-painting','Painting a style boundary inside a shaped cluster requires same-run caret geometry.');
-      return point.x;
-    };
-    let x = 0, y = 0;
-    const glyphs = run.glyphs.map(glyph => {
-      // Compose in source precision before SVG parses the transform. Nested
-      // transforms can round the scale/origin before applying glyph offsets.
-      const position = `matrix(${scale} 0 0 ${-scale} ${segment.x + (x + glyph.xOffset) * scale} ${segment.y - (y + glyph.yOffset) * scale})`;
-      x += glyph.xAdvance; y += glyph.yAdvance;
-      const glyphAttributes={d:glyph.path,transform:position,
-        ...(options.trace ? {'data-opf-glyph-id':glyph.id,
-          'data-opf-glyph-source-start':segment.start + glyph.sourceStart,
-          'data-opf-glyph-source-end':segment.start + glyph.sourceEnd} : {})};
-      const colors=paints.filter(paint=>paint.start<glyph.sourceEnd&&paint.end>glyph.sourceStart);
-      if(colors.length<2||colors.every(paint=>paintFillKey(paint.fill)===paintFillKey(colors[0].fill)))return tag('path',{...glyphAttributes,fill:colors[0]?.fill??segment.fill});
-      // Whole glyphs keep their overhangs. Only a cluster crossing a color
-      // boundary is sliced, using positions from this complete shaped run.
-      const ink=run.outline;
-      if(!ink)return tag('path',{...glyphAttributes,fill:colors[0].fill});
-      const left=segment.x+ink.x*segment.size-1,right=segment.x+(ink.x+ink.width)*segment.size+1;
-      const top=segment.y+ink.y*segment.size-1,bottom=top+ink.height*segment.size+2;
-      return colors.map(paint=>{
-        const a=caret(Math.max(glyph.sourceStart,paint.start)),b=caret(Math.min(glyph.sourceEnd,paint.end));
-        let lo=segment.x+Math.min(a,b)*scale,hi=segment.x+Math.max(a,b)*scale;
-        const rtl=run.caretGeometry.direction==='rtl';
-        if(paint.start<=glyph.sourceStart){if(rtl)hi=right;else lo=left;}
-        if(paint.end>=glyph.sourceEnd){if(rtl)lo=left;else hi=right;}
-        const id=`${options._paintIds.prefix}-${options._paintIds.next++}`;
-        return tag('defs',{},tag('clipPath',{id,clipPathUnits:'userSpaceOnUse'},tag('rect',{x:lo,y:top,width:Math.max(0,hi-lo),height:bottom-top})))+
-          tag('g',{'clip-path':`url(#${id})`},tag('path',{...glyphAttributes,fill:paint.fill}));
-      }).join('');
-    });
-    for (const paint of paints)for (const decoration of ['underline','strikethrough']) if (paint[decoration]) {
-      const metric = run.decorations?.[decoration];
-      if (!metric || !Number.isFinite(metric.offset) || !Number.isFinite(metric.thickness) || metric.thickness <= 0)
-        throw new OPFRenderError('invalid-text-painting', 'Decorated text requires metrics from the same selected font.');
-      const complete=paint.start===0&&paint.end===segment.text.length;
-      const start=complete?0:caret(paint.start),end=complete?(segment.advanceOnly?segment.width/scale:x):caret(paint.end);
-      glyphs.push(tag('rect', {x:Math.min(start,end),y:metric.offset-metric.thickness/2,width:Math.abs(end-start),height:metric.thickness,fill:paint.fill,
-        transform:`matrix(${scale} 0 0 ${-scale} ${segment.x} ${segment.y})`,
-        'data-opf-text-decoration':decoration}));
-    }
-    // Font-unit coordinates and scale retain full precision. The general SVG
-    // number formatter is intentionally not used to quantize this transform.
-    const geometry=run.caretGeometry;
-    const caretMap=options.trace&&geometry?{
-      version:1,direction:geometry.direction,start:segment.start,end:segment.start+segment.text.length,
-      top:segment.y-geometry.ascent*scale,bottom:segment.y-geometry.descent*scale,
-      stops:segment.advanceOnly?[
-        {offset:segment.start,x:segment.x,basis:'layout'},
-        {offset:segment.start+segment.text.length,x:segment.x+segment.width,basis:'layout'},
-      ]:geometry.stops.map(stop=>({...stop,offset:segment.start+stop.offset,x:segment.x+stop.x*scale})),
-    }:undefined;
-    return tag('g', {
-      fill:segment.fill,'aria-hidden':'true','pointer-events':'none','data-opf-glyph-paint':run.engine,
-      ...(caretMap?{'data-opf-caret-map':JSON.stringify(caretMap)}:{}),
-    }, glyphs.join(''));
-  });
-  return tag('g', {'data-opf-shaped-text':'1'}, painted.join('') + tag('text', {
-    ...attributes,'fill-opacity':0,'data-opf-logical-text':'1','pointer-events':'all',
-  },content));
 }
 
 function renderRichLines(value,fit,box,bound,config) {
@@ -1300,37 +1191,15 @@ function renderRichLines(value,fit,box,bound,config) {
   const flow=!config.options.textMeasurement?.measure&&!fit.placement;
   const content=fit.richLines.map((line,lineIndex)=>{
     const fragments=line.fragments.map(fragment=>{
-    const sources=fragment.sources??[fragment],run=sources[0].run;
-    const sourceStart=runOffsets[sources[0].runIndex]+sources[0].start;
-    const offset=alignment==='right'?box.width-line.width:alignment==='center'?(box.width-line.width)/2:0;
+    const run=fragment.run,offset=alignment==='right'?box.width-line.width:alignment==='center'?(box.width-line.width)/2:0;
     const placed=fit.placement?.lines[lineIndex];
     // Accepted outline placement owns the horizontal advance. Geometric precision
     // avoids hinted browser advances; textLength also removes fractional-size
     // quantization drift. Height and baseline retain the selected font size.
     const position=flow?{'baseline-shift':fragment.baselineShift?stableNumber(-fragment.baselineShift):undefined}:{x:stableNumber((placed?.x??box.x+offset)+fragment.x),y:stableNumber((placed?.baseline??box.y+line.baseline)+fragment.baselineShift)};
-    const color=run=>/^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(run.color??'')?run.color:config.fill;
-    const decoration=run=>[run.underline?'underline':'',run.strikethrough?'line-through':''].filter(Boolean).join(' ')||undefined;
-    const fill=color(run);
-    const link=(run,content)=>run.link&&/^(https?:|mailto:)/i.test(run.link)?tag('a',{href:run.link,target:'_blank',rel:'noopener noreferrer'},content):content;
-    const logical=[];
-    for(const source of sources){
-      const previous=logical.at(-1);
-      if(previous&&paintFillKey(color(previous.run))===paintFillKey(color(source.run))&&decoration(previous.run)===decoration(source.run)&&previous.run.link===source.run.link)previous.text+=source.text;
-      else logical.push({text:source.text,run:source.run});
-    }
-    const content=logical.length>1?logical.map(source=>link(source.run,tag('tspan',{
-      fill:color(source.run),'text-decoration':decoration(source.run),
-    },escapeText(source.text)))).join(''):escapeText(fragment.text);
-    let paintOffset=0;
-    const paints=fragment.sources?sources.map(source=>{const start=paintOffset;paintOffset+=source.text.length;return {start,end:paintOffset,fill:color(source.run),underline:source.run.underline,strikethrough:source.run.strikethrough};}):undefined;
-    const fixedAdvance=placed||fragment.kind==='tab';
-    const attributes={...(config.options.trace?{'data-opf-text-start':sourceStart,'data-opf-text-end':sourceStart+fragment.text.length,...(fragment.sources?{'data-opf-run-spans':JSON.stringify(sources.map(({runIndex,start,end})=>({runIndex,start,end})))}:{})}:{}),...position,'xml:space':'preserve','text-rendering':flow?undefined:'geometricPrecision',textLength:fixedAdvance&&fragment.width>0?stableNumber(fragment.width):undefined,lengthAdjust:fixedAdvance&&fragment.width>0?'spacingAndGlyphs':undefined,'font-family':fontStack(fragment.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(fragment.fontSize),'font-weight':fragment.style.fontWeight,'font-style':fragment.style.italic?'italic':flow?'normal':undefined,'text-decoration':logical.length>1?undefined:decoration(run),fill};
-    const rendered=flow?tag('tspan',attributes,content):renderPaintedText(attributes,content,[
-      {text:fragment.text,x:(placed?.x??box.x+offset)+fragment.x,y:(placed?.baseline??box.y+line.baseline)+fragment.baselineShift,
-        size:fragment.fontSize,style:fragment.style,start:sourceStart,fill,paints,
-        underline:run.underline,strikethrough:run.strikethrough,advanceOnly:fragment.kind==='tab',width:fragment.width},
-    ],config.options);
-    return logical.length>1?rendered:link(run,rendered);
+    const rendered=tag(flow?'tspan':'text',{...(config.options.trace?{'data-opf-text-start':runOffsets[fragment.runIndex]+fragment.start,'data-opf-text-end':runOffsets[fragment.runIndex]+fragment.end}:{}),...position,'xml:space':'preserve','text-rendering':flow?undefined:'geometricPrecision',textLength:placed&&fragment.width>0?stableNumber(fragment.width):undefined,lengthAdjust:placed&&fragment.width>0?'spacingAndGlyphs':undefined,'font-family':fontStack(fragment.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(fragment.fontSize),'font-weight':fragment.style.fontWeight,'font-style':fragment.style.italic?'italic':flow?'normal':undefined,'text-decoration':[run.underline?'underline':'',run.strikethrough?'line-through':''].filter(Boolean).join(' ')||undefined,fill:/^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(run.color??'')?run.color:config.fill},escapeText(fragment.text));
+    if(run.link&&/^(https?:|mailto:)/i.test(run.link))return tag('a',{href:run.link,target:'_blank',rel:'noopener noreferrer'},rendered);
+    return rendered;
     });
     if(!flow)return fragments.join('\n');
     const x=alignment==='right'?box.x+box.width:alignment==='center'?box.x+box.width/2:box.x;
@@ -1378,7 +1247,7 @@ function renderTextBox(text, box, bound, config) {
       lengthAdjust:segment.kind==='tab'||placed?'spacingAndGlyphs':undefined,
       ...(config.options.trace?{'data-opf-source-start':segment.start,'data-opf-source-end':segment.end,'data-opf-segment':segment.kind}:{}),
     },escapeText(line.slice(segment.start-sourceLine.start,segment.end-sourceLine.start)))).join(''):escapeText(line);
-    const attributes = {
+    return tag("text", {
     x: stableNumber(tabs?origin:placed?placed.x+placed.width*factor:x), y: stableNumber(placed?.baseline??startY + index * fit.lineHeight),
     "text-anchor": tabs?'start':anchor, "font-family": fontStack(style.fontFamily, config.fontFamily === bound.design.fonts.code ? "monospace" : bound.design.fontScheme.type),
     "font-size": stableNumber(size), "font-weight": style.fontWeight, "font-style": style.italic ? "italic" : undefined, fill: config.fill,
@@ -1386,15 +1255,7 @@ function renderTextBox(text, box, bound, config) {
     textLength:!tabs&&placed?.width>0?stableNumber(placed.width):undefined,lengthAdjust:!tabs&&placed?.width>0?'spacingAndGlyphs':undefined,
     ...traceAttrs(config.options, config.path),
     ...(config.options.trace&&sourceLine?{'data-opf-source-start':sourceLine.start,'data-opf-source-end':sourceLine.end,'data-opf-source-next-start':sourceLine.nextStart,'data-opf-line-boundary':sourceLine.boundary}:{}),
-    };
-    if (!config.options.textPainting) return tag('text',attributes,content);
-    const baseline=placed?.baseline??startY + index * fit.lineHeight;
-    const paintSegments=tabs?sourceLine.segments.map(segment=>({
-      text:line.slice(segment.start-sourceLine.start,segment.end-sourceLine.start),x:origin+segment.x,
-      y:baseline,size,style,fill:config.fill,start:segment.start,advanceOnly:segment.kind==='tab',width:segment.width,
-    })):[{text:line,x:placed?.x??x-(sourceLine?.width??config.options.textMeasurement?.measure(line,size,style)??0)*factor,
-      y:baseline,size,style,fill:config.fill,start:sourceLine?.start??0}];
-    return renderPaintedText(attributes,content,paintSegments,config.options);
+  }, content);
   });
   return tag("g", { ...traceAttrs(config.options, config.path),
     ...(config.options.trace&&fit.sourceLines?{'data-opf-source-text':'true','data-opf-box-x':box.x,'data-opf-box-y':box.y,'data-opf-box-width':box.width,'data-opf-box-height':box.height}:{}),
