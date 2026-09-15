@@ -10,7 +10,7 @@ function nameForId(font,id){
 /** Validate maps before passing them to native shaping or CSS. Never clamp caller choices. */
 export function variationSettings(values){
   if(values===undefined)return undefined;
-  if(!values||typeof values!=='object'||Array.isArray(values))fail('Font variations require an axis/value object or a known instance name.');
+  if(!values||Object.prototype.toString.call(values)!=='[object Object]')fail('Font variations require an axis/value object or a known instance name.');
   const result={};
   for(const tag of Object.keys(values).sort()){
     const value=values[tag];
@@ -36,7 +36,11 @@ export function selectFontVariations(font,data,{variations,postscriptName}={}){
   const range=(offset,length)=>{if(offset<16||offset+length>view.byteLength)fail('Font variation records exceed their table.');};
   const major=view.getUint16(0),minor=view.getUint16(2),offset=view.getUint16(4),count=view.getUint16(8),axisSize=view.getUint16(10),instanceCount=view.getUint16(12),instanceSize=view.getUint16(14);
   if(major!==1||view.getUint16(6)!==2||axisSize<20||instanceSize<4+count*4)fail('The font variation table has an unsupported header.');
-  if(!count){if(variations!==undefined&&Object.keys(variationSettings(variations)).length)fail('This font has no functional variation axes.');return {font};}
+  if(!count){
+    if(variations!==undefined&&Object.keys(variationSettings(variations)).length)fail('This font has no functional variation axes.');
+    if(postscriptName!==undefined&&postscriptName!==font.postscriptName)throw new OPFFontError('font-collection','The requested PostScript name does not select this standalone font.');
+    return {font};
+  }
   range(offset,count*axisSize+instanceCount*instanceSize);
   const axes=[],seen=new Set();
   for(let i=0;i<count;i++){
