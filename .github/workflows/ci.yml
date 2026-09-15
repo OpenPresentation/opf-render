@@ -61,6 +61,8 @@ jobs:
         env:
           OPF_FONT_PROBE_BROWSER_CHANNEL: msedge
         run: npm run test:variation-paint-probe -- artifacts/font-shaping/variation-paint-edge
+      - name: Verify prepared glyph paths against independent RGBA pixels
+        run: npm run test:painting-browser
       - name: Preserve shaping portability evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -164,13 +166,17 @@ jobs:
         run: npm run test:variation-metrics-probe
       - name: Compare selected variable glyph painting
         run: npm run test:variation-paint-probe
+      - name: Verify prepared glyph paths against independent RGBA pixels
+        id: shaped-painting
+        run: npm run test:painting-browser
       - name: Verify fresh shaping packages including fixed variable instances
         id: shaping-packed
+        if: ${{ success() || steps.shaped-painting.conclusion == 'failure' }}
         run: npm run test:shaping-packed
       # Keep the unresolved variable advance gate visible without skipping the
       # existing installed-package and coordinated acceptance steps above.
       - name: Verify fixed variable instances against browser advances and pixels
-        if: ${{ success() || steps.shaping-packed.conclusion == 'failure' }}
+        if: ${{ success() || steps.shaped-painting.conclusion == 'failure' || steps.shaping-packed.conclusion == 'failure' }}
         run: npm run test:variations-browser
       - name: Preserve candidate and raster evidence
         if: always()

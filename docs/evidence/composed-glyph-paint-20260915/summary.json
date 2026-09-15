@@ -1,0 +1,86 @@
+{
+  "implementationHead": "75a20abe73a2faba9266bef23a36ba7294f8abf5",
+  "sourceBrowserStatus": "passed",
+  "cases": 663,
+  "supported": 650,
+  "coverageRejections": 13,
+  "maxChannelDifference": 0,
+  "sequentialTransformDifferences": 78,
+  "maxSequentialAlphaDifference": 8,
+  "slides": [
+    {
+      "index": 0,
+      "sha256": "0c9016f41c82aae45a6d0db2e9fe5a7f7ad585b5a1bdf86cdeb31b956f3f3774",
+      "headerInk": 155,
+      "footerInk": 491
+    },
+    {
+      "index": 1,
+      "sha256": "49320eda575469f3d4f6772225d83078ca7647f05201eebb122cb7dcb15b7cdb",
+      "headerInk": 155,
+      "footerInk": 491
+    },
+    {
+      "index": 2,
+      "sha256": "bb750caed857fe7f60a8f96a2a57100d4200a603d663ef27c9effc36b4d6bbae",
+      "headerInk": 155,
+      "footerInk": 491
+    },
+    {
+      "index": 3,
+      "sha256": "c99b393040111526ce5c3d30d2ec4c0d5be58a8e95f005d35d05fb6c9be49582",
+      "headerInk": 155,
+      "footerInk": 491
+    },
+    {
+      "index": 4,
+      "sha256": "7053596e67a1e04a047e63a0a771afa34a3fc2c20f8268859631c58a74c0c98c",
+      "headerInk": 155,
+      "footerInk": 491
+    }
+  ],
+  "scope": "Local source painting and reviewed fixture images. Cross-platform CI, editing/carets and native export remain separate.",
+  "installed": {
+    "node": "v24.21.0",
+    "consumer": "/var/folders/zj/5tv5dvds3793_qhx2jyxs0000000gn/T/opf-shaping-installed-kR2aFH/consumer",
+    "renderer": "sha512-ceqarFEoIN43mV/ZqcVE0MQqwrCw8B1vBg5EOQE867JSE+CUWxHljlcPrruwgiBUeh25vFSP+O1a8MEy7V/zHA==",
+    "core": "sha512-1AcIHfnuBPAYx1Ray6bPzR10usNyV/gcmJ4Mo+2lvR9ckQjnsyyXRTh/VSqNyMF11ufHe11vrR0S+RF770vZXQ==",
+    "paintingBrowserStatus": "passed",
+    "variableBrowserStatus": "failed",
+    "types": [
+      "TypeScript 5.9.3 NodeNext",
+      "TypeScript 5.9.3 Bundler"
+    ],
+    "knownVulnerabilities": 0,
+    "shippedFileHashes": 37,
+    "paintCases": 663,
+    "paintMaxChannelDifference": 0,
+    "slideHashesMatchSource": true
+  },
+  "editorProbe": [
+    {
+      "family": "Caladea",
+      "points": 22,
+      "maxCaretDifference": 0.02099609375,
+      "commit": true,
+      "undo": true,
+      "errors": []
+    },
+    {
+      "family": "Gelasio",
+      "points": 18,
+      "maxCaretDifference": 0.006256103515625,
+      "commit": true,
+      "undo": true,
+      "errors": []
+    },
+    {
+      "family": "Arimo",
+      "points": 22,
+      "maxCaretDifference": 0.006256103515625,
+      "commit": true,
+      "undo": true,
+      "errors": []
+    }
+  ]
+}

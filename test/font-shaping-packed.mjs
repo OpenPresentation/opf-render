@@ -35,17 +35,21 @@ await writeFile(path.join(consumer,'test/font-woff2-hmtx-fixtures.mjs'),await re
 await writeFile(path.join(consumer,'test/font-woff2-collections-fixtures.mjs'),await readFile(path.join(root,'test/font-woff2-collections-fixtures.mjs')));
 await writeFile(path.join(consumer,'test/font-dfont-fixtures.mjs'),await readFile(path.join(root,'test/font-dfont-fixtures.mjs')));
 await cp(path.join(root,'test/fixtures/font-formats'),path.join(consumer,'test/fixtures/font-formats'),{recursive:true});
-for(const name of ['font-variations-fixtures.mjs','font-variations-browser.mjs'])await writeFile(path.join(consumer,'test',name),await readFile(path.join(root,'test',name)));
-for(const name of ['font-dfont.mjs','font-shaping.mjs','font-shaping-formats.mjs','font-woff2-reconstruction.mjs','font-woff2-hmtx.mjs','font-woff2-collections.mjs','font-shaping-browser.mjs','font-variations.mjs','font-normalization.mjs']){
+for(const name of ['font-variations-fixtures.mjs','font-variations-browser.mjs','font-painting-fixtures.mjs'])await writeFile(path.join(consumer,'test',name),await readFile(path.join(root,'test',name)));
+for(const name of ['font-dfont.mjs','font-shaping.mjs','font-shaping-formats.mjs','font-woff2-reconstruction.mjs','font-woff2-hmtx.mjs','font-woff2-collections.mjs','font-shaping-browser.mjs','font-variations.mjs','font-normalization.mjs','font-painting.mjs']){
   let source=await readFile(path.join(root,'test',name),'utf8');
   for(const [file,entry]of Object.entries(modules))source=source.replaceAll(`'../dist/${file}'`,`'@openpresentation/opf-render/${entry}'`);
   for(const file of ['font-normalization.js','font-variations.js','font-sfnt.js'])source=source.replaceAll(`'../dist/${file}'`,JSON.stringify(pathToFileURL(path.join(installed,'dist',file)).href));
   await writeFile(path.join(consumer,'test',name),source);
   process.stdout.write(execFileSync(process.execPath,[path.join('test',name)],{cwd:consumer,encoding:'utf8',maxBuffer:8*1024*1024}));
 }
+let paintingSource=await readFile(path.join(root,'test/font-painting-browser.mjs'),'utf8');
+for(const [file,entry]of Object.entries(modules))paintingSource=paintingSource.replaceAll(`'../dist/${file}'`,`'@openpresentation/opf-render/${entry}'`);
+await writeFile(path.join(consumer,'test/font-painting-browser.mjs'),paintingSource);
 await writeFile(path.join(consumer,'types.mts'),`import {loadHarfBuzzShaper} from '@openpresentation/opf-render/font-shaping';
 import {loadOfficeFontRegistry} from '@openpresentation/opf-render/fonts-node';
-import {createFontRegistry,type FontFaceInput} from '@openpresentation/opf-render/fonts';
+import {createFontRegistry,type FontFaceInput,type TextPainting} from '@openpresentation/opf-render/fonts';
+import type {RenderSvgOptions} from '@openpresentation/opf-render/svg';
 const service=await loadHarfBuzzShaper({language:'en',features:['liga=0']});
 const registry=await loadOfficeFontRegistry({fontShaper:service,maxPreparedFontBytes:64*1024*1024});
 const axisEntry:FontFaceInput={data:new Uint8Array(),variations:{wght:700,opsz:20}};
@@ -60,6 +64,9 @@ const embeddingReason:'woff2-hmtx-compatibility'|'dfont-resource'|undefined=regi
 const retainedSource:string|undefined=registry.embeddedFonts[0].sourceDataUrl;
 const run=registry.shapeText?.('source',{fontFamily:'Roboto',fontWeight:400});
 const offset:number|undefined=run?.glyphs[0]?.sourceStart;
+const painter:TextPainting|undefined=registry.textPainting;
+const paintOptions:RenderSvgOptions={textMeasurement:registry.textMeasurement,textPainting:painter};
+const glyphPath:string|undefined=painter?.shape('source',{fontFamily:'Roboto',fontWeight:400})?.glyphs[0]?.path;
 registry.dispose();
 `);
 for(const mode of ['NodeNext','Bundler'])execFileSync(process.execPath,[path.join(consumer,'node_modules/typescript/bin/tsc'),'--noEmit','--strict','--target','ES2022','--module',mode==='NodeNext'?'NodeNext':'ESNext','--moduleResolution',mode,'types.mts'],{cwd:consumer,stdio:'inherit'});
@@ -67,9 +74,19 @@ const audit=JSON.parse(npm(['audit','--json'],consumer));assert.equal(audit.meta
 const browser=JSON.parse(await readFile(path.join(consumer,'artifacts/font-shaping/browser/report.json')));
 const variableNode=JSON.parse(await readFile(path.join(consumer,'artifacts/font-shaping/variations.json')));
 const normalization=JSON.parse(await readFile(path.join(consumer,'artifacts/font-shaping/normalization.json')));
-const report={node:process.version,consumer,renderer:packed.integrity,core:corePack.integrity,files,browser,variableNode,normalization,
+const paintingNode=JSON.parse(await readFile(path.join(consumer,'artifacts/font-shaping/painting/node.json')));
+const report={node:process.version,consumer,renderer:packed.integrity,core:corePack.integrity,files,browser,variableNode,normalization,paintingNode,
   types:['TypeScript 5.9.3 NodeNext','TypeScript 5.9.3 Bundler'],knownVulnerabilities:0,
   scope:'Fresh candidate tarballs, shipped-file hashes, Node and offline browser shaping, explicit failures and TypeScript. Not registry publication or native acceptance.'};
+let paintingError;
+try {
+  process.stdout.write(execFileSync(process.execPath,['test/font-painting-browser.mjs'],{cwd:consumer,encoding:'utf8',maxBuffer:8*1024*1024}));
+  report.paintingBrowserStatus='passed';
+} catch(error) {
+  paintingError=error;report.paintingBrowserStatus='failed';report.paintingBrowserFailure=String(error.stderr??error.message);
+}
+try { report.paintingBrowser=JSON.parse(await readFile(path.join(consumer,'artifacts/font-shaping/painting-browser/report.json'))); }
+catch(error) { if(!paintingError)throw error;report.paintingBrowserReportError=error.message; }
 let variableError;
 try {
   process.stdout.write(execFileSync(process.execPath,['test/font-variations-browser.mjs'],{cwd:consumer,encoding:'utf8',maxBuffer:8*1024*1024}));
@@ -82,5 +99,5 @@ try { report.variableBrowser=JSON.parse(await readFile(path.join(consumer,'artif
 catch(error) { if(!variableError)throw error;report.variableBrowserReportError=error.message; }
 await mkdir(path.join(root,'artifacts/font-shaping'),{recursive:true});
 await writeFile(path.join(root,'artifacts/font-shaping/installed.json'),JSON.stringify(report,null,2)+'\n');
-if(variableError)throw variableError;
+if(paintingError||variableError)throw new AggregateError([paintingError,variableError].filter(Boolean),'Fresh painting or native variable-font acceptance failed; complete reports were retained.');
 console.log(`Fresh shaping package passed; retained consumer ${consumer}`);

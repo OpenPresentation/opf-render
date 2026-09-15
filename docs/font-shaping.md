@@ -82,9 +82,9 @@ SVG text painting with the prepared measurement provider.
 This is a **draft implementation**, not accepted editor or export integration.
 The Node check covers 650 glyph runs, 13 explicit coverage failures and five
 slides with unchanged accepted geometry and logical text. The default
-805-slide raster regression remains unchanged. Browser pixel acceptance,
-precise caret/selection geometry, preview editing/undo, fresh installed painting
-checks and native export acceptance remain open. In particular, preserving
+805-slide raster regression remains unchanged. Cross-platform pixel acceptance,
+complete caret/selection and preview editing/undo coverage, and native export
+acceptance remain open. In particular, preserving
 logical text does not prove native DOM Range geometry matches the visible
 glyph paths. No package release or production-site adoption is implied.
 
@@ -102,6 +102,13 @@ five full-slide selection/native-font-independence controls remain explicit;
 the slides also require visible repeated header/footer ink. Run
 `npm run test:painting-browser`. These focused checks do not establish editor
 caret, general accessibility or native export acceptance.
+
+The [composed-transform checkpoint](evidence/composed-glyph-paint-20260915/README.md)
+also passes the same painting matrix from fresh tarballs and checks the public
+TypeScript interfaces. It adds the command to three-platform CI, whose results
+remain separate. The full installed command still fails the unchanged native
+variable-font gate. Three source-editor probes preserve live edits, formatting
+and one-step undo; broader editor acceptance remains open.
 
 ## Font containers and source preservation
 
