@@ -8,7 +8,8 @@ import {chromium} from 'playwright';
 import {fontFixtures,instanceCases} from './font-variations-fixtures.mjs';
 const records=(await fontFixtures()).filter(record=>Object.keys(record.axes).length);
 const out={node:process.version,platform:process.platform,harfbuzz:hb.versionString(),kind:'diagnostic-not-acceptance',cases:[]};
-const browser=await chromium.launch({channel:process.platform==='win32'?'msedge':undefined});
+const channel=process.env.OPF_FONT_PROBE_BROWSER_CHANNEL;
+const browser=await chromium.launch({...(channel?{channel}:{})});out.channel=channel??'pinned-chromium';
 try{
  out.browser=browser.version();const page=await browser.newPage();
  await page.route('**/*',route=>route.abort());
@@ -27,11 +28,11 @@ try{
    for(const item of inputs){
     const settings=Object.entries(item.coordinates).map(([tag,value])=>`"${tag}" ${value}`).join(', ');
     const face=new FontFace('MetricsProbe',bytes,{weight:'400',style:italic?'italic':'normal',variationSettings:settings});await face.load();document.fonts.add(face);
-    const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');ctx.fontKerning='none';ctx.textRendering='geometricPrecision';
+    const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');ctx.textRendering='geometricPrecision';
     const measured=[];
-    for(const size of [12,32,72])for(const count of [1,128]){
-     ctx.font=`${italic?'italic':'normal'} 400 ${size}px MetricsProbe`;
-     measured.push({size,count,width:ctx.measureText('H'.repeat(count)).width});
+    for(const kerning of ['none','normal'])for(const size of [12,32,72])for(const count of [1,128]){
+     ctx.fontKerning=kerning;ctx.font=`${italic?'italic':'normal'} 400 ${size}px MetricsProbe`;
+     measured.push({kerning,size,count,width:ctx.measureText('H'.repeat(count)).width});
     }
     observations.push({...item,measurements:measured});document.fonts.delete(face);
    }
@@ -46,6 +47,7 @@ out.summary={};
 for(const outline of ['CFF2','glyf']){
  const rows=out.cases.filter(row=>row.outline===outline),samples=rows.flatMap(row=>row.measurements.map(m=>({row,m})));
  out.summary[outline]={cases:rows.length,samples:samples.length,maxAbsoluteDriftPx:Object.fromEntries(['fontkitAdvance','harfbuzzAdvance','harfbuzzPreciseAdvance'].map(key=>[key,Math.max(...samples.map(({row,m})=>Math.abs(row[key]/row.unitsPerEm*m.size*m.count-m.width)))]))};
+ out.summary[outline].byKerning=Object.fromEntries(['none','normal'].map(kerning=>[kerning,Object.fromEntries(['fontkitAdvance','harfbuzzAdvance','harfbuzzPreciseAdvance'].map(key=>[key,Math.max(...samples.filter(({m})=>m.kerning===kerning).map(({row,m})=>Math.abs(row[key]/row.unitsPerEm*m.size*m.count-m.width)))]))]));
 }
 const destination=process.argv[2]??'artifacts/font-shaping/variation-metrics/native-probe.json';
 await mkdir(path.dirname(path.resolve(destination)),{recursive:true});

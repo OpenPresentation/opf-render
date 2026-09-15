@@ -45,11 +45,15 @@ jobs:
         run: npm install --ignore-scripts --no-save --package-lock=false ./core-candidate/packages/javascript
       - run: npm run build
       - run: npm run test:shaping
-      - name: Install the pinned Chromium probe on macOS
-        if: runner.os == 'macOS'
+      - name: Install the pinned Chromium probe
         run: npx playwright install chromium
       - name: Record native variable advance diagnostics
         run: npm run test:variation-metrics-probe
+      - name: Compare system Edge on Windows
+        if: runner.os == 'Windows'
+        env:
+          OPF_FONT_PROBE_BROWSER_CHANNEL: msedge
+        run: npm run test:variation-metrics-probe -- artifacts/font-shaping/variation-metrics/edge-native-probe.json
       - name: Preserve shaping portability evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
