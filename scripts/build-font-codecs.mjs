@@ -24,6 +24,7 @@ export async function buildFontCodecs(root, dist) {
   if (header.compressedOffset + header.compressedLength > input.length) throw new Error('Truncated WOFF2 Brotli stream');
   const headerSize = computeOffsetToFirstTable(header);
   if (headerSize > maxBytes || header.uncompressedSize > maxBytes) throw Object.assign(new Error('WOFF2 preparation exceeds the configured byte limit'), {code:'font-size-limit'});
+  validateWoff2Collections(header,WOFF2_FLAGS_TRANSFORM);
   const decompressed = brotliDecode(input.subarray(header.compressedOffset, header.compressedOffset + header.compressedLength), {maxOutputSize:header.uncompressedSize});`);
   const allocationStart=adapted.indexOf('\tlet outputSize = computeOffsetToFirstTable(header);');
   const allocationEnd=adapted.indexOf('\nfunction readHeader',allocationStart);
@@ -33,6 +34,7 @@ export async function buildFontCodecs(root, dist) {
   // a hard configured limit, without requiring resizable ArrayBuffer support.
   adapted=adapted.slice(0,allocationStart)+`
   const writer={data:new Uint8Array(Math.max(headerSize, Math.min(65536, maxBytes))),maxBytes};
+  header.glyphMetrics=new Map();
   header.requiresSfntEmbedding=false;
   writer.view=new DataView(writer.data.buffer);
   const fontInfos=writeHeaders(header,writer.data,writer.view);
@@ -60,7 +62,14 @@ export async function buildFontCodecs(root, dist) {
   let fontChecksum = header.ttcFonts.length > 0 ? header.ttcFonts[fontIndex].headerChecksum : 0;`);
   // Bound reconstruction buffers too. SFNT simple-glyph endpoint indices are
   // uint16; accepting more points would both allocate excessively and wrap IDs.
-  replace('reconstructGlyf(decompressed, glyfTable, locaTable, fontInfo)', 'reconstructGlyf(decompressed, glyfTable, locaTable, fontInfo, writer.maxBytes)');
+  replace('const result = reconstructGlyf(decompressed, glyfTable, locaTable, fontInfo);', `const result = reconstructGlyf(decompressed, glyfTable, locaTable, fontInfo, writer.maxBytes);
+    header.glyphMetrics.set(glyfTable.key,{numGlyphs:fontInfo.numGlyphs,indexFormat:fontInfo.indexFormat,xMins:fontInfo.xMins});`);
+  replace('if (existing) {', `if (existing) {
+    if(table.tag===TAG_GLYF&&(table.flags&WOFF2_FLAGS_TRANSFORM))Object.assign(fontInfo,header.glyphMetrics.get(tKey));
+    if(table.tag===TAG_HMTX&&(table.flags&WOFF2_FLAGS_TRANSFORM)){
+      const metrics=reconstructHmtx(decompressed,table,fontInfo.numGlyphs,fontInfo.numHMetrics,fontInfo.xMins);
+      if(metrics.length!==existing.dstLength||metrics.some((byte,index)=>byte!==output[existing.dstOffset+index]))throw new Error('Inconsistent shared WOFF2 horizontal metrics');
+    }`);
   replace('function reconstructGlyf(data, glyfTable, _locaTable, fontInfo)', 'function reconstructGlyf(data, glyfTable, _locaTable, fontInfo, maxBytes)');
   replace('let glyfOutput = new Uint8Array(glyfTable.origLength * 2);', 'let glyfOutput = new Uint8Array(Math.min(maxBytes, Math.max(256,glyfTable.transformLength)));');
   replace('const scratchSize = totalPoints * 2;', "if (totalPoints > 65536) throw new Error('Invalid glyph point count');\n\t\t\tconst scratchSize = totalPoints * 2;");
@@ -74,7 +83,7 @@ export async function buildFontCodecs(root, dist) {
   if(hmtxFlags===0||(hmtxFlags&~3)!==0||numHMetrics<1||numHMetrics>numGlyphs||xMins.length!==numGlyphs)throw new Error('Invalid transformed hmtx flags or glyph/metric counts');`);
   replace('const outputSize = numHMetrics * 4 + (numGlyphs - numHMetrics) * 2;', `const outputSize = numHMetrics * 4 + (numGlyphs - numHMetrics) * 2;
   if(hmtxStream.pos!==hmtxStream.end||outputSize!==table.origLength)throw new Error('Invalid transformed hmtx length');`);
-  await build({stdin:{contents:`import {brotliDecode} from 'brotli-lib/decode';\nimport {prepareHmtxMetrics} from './src/font-woff2-metrics.js';\n${adapted}`,resolveDir:fileURLToPath(root)},
+  await build({stdin:{contents:`import {brotliDecode} from 'brotli-lib/decode';\nimport {prepareHmtxMetrics} from './src/font-woff2-metrics.js';\nimport {validateWoff2Collections} from './src/font-woff2-collections.js';\n${adapted}`,resolveDir:fileURLToPath(root)},
     bundle:true,platform:'browser',format:'esm',target:'es2022',minifySyntax:true,
     banner:{js:`// Generated from woff-lib 0.0.3 (${hash}); bounded synchronous adapter in scripts/build-font-codecs.mjs. See bundled WOFF2 and Brotli licenses.`},
     outfile:fileURLToPath(new URL('font-woff2.js', dist))});

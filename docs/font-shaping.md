@@ -72,6 +72,10 @@ buffers grow with actual reconstructed data up to the configured byte limit.
 For TTC and WOFF2 collections, supply `postscriptName`. Measurement, browser
 FontFace loading and embedded CSS use that same selected standalone face.
 Extraction preserves its tables without subsetting or renumbering glyphs.
+WOFF2 collections validate shared glyph/location pairs. Reused glyph data
+supplies its reconstructed bounds to each face while horizontal metric counts
+remain specific to that face. Shared metric tables must reconstruct consistently;
+partial glyph/location sharing and inconsistent dependencies reject explicitly.
 DSIG signatures invalidated by reconstruction are removed, never represented
 as still valid. `registry.fontPreparations` returns copied records containing
 the selected PostScript name, source/measurement/embedded formats, whether a
@@ -122,7 +126,7 @@ cause and a hosting/CSP explanation.
 - `npm run test:shaping-browser`: 198 cases over 33 exact faces, including
   those 33 coverage rejections. Node/browser glyph runs agree; unadjusted SVG
   advances differ by at most 0.01525px within the existing 0.1px gate. This
-  also compares 171 actual canvas renders against the original selected faces,
+  also compares 373 actual canvas renders against the original selected faces,
   including both collection faces and compressed instances of all 33 fonts.
   These checks use geometric precision, matching SVG configuration, and do not
   establish full-slide containment. The test bundle includes Fontkit and the
@@ -140,6 +144,13 @@ cause and a hosting/CSP explanation.
   retention through actual SVG metadata and identical nonempty pixels.
   The independent test-only FontTools check and the known Google decoder
   limitation are recorded in [metrics evidence](evidence/woff2-hmtx-20260914/README.md).
+- `test/font-woff2-collections.mjs`: 198 selected-face cases across all 33
+  source faces with shared glyphs and distinct advances/metric counts; four
+  shared-metric/literal-glyph controls and seven malformed collection checks.
+  The browser retains one page and prepared shaper across bounded fixture
+  transfers. The independent check decodes each face's metrics, glyph geometry
+  and instructions through FontTools, with its collection/compilation limits
+  recorded in [collection evidence](evidence/woff2-collections-20260914/README.md).
 - `npm run test:shaping-packed`: fresh core/renderer tarballs, byte-identical
   shipped modules/WASM/notices, Node/offline-browser checks, public TypeScript
   NodeNext/Bundler consumers and dependency audit.
@@ -148,8 +159,7 @@ cause and a hosting/CSP explanation.
   all 8,568 prior glyph runs/metrics plus three `fitText` fixtures through the
   registry, preserving source ranges and the fixed 32px floor.
 
-Before default promotion: verify transformed metrics with shared collection
-glyph tables, DFont resource containers, CFF/CFF2 and
+Before default promotion: verify DFont resource containers, CFF/CFF2 and
 variable faces/instances, language/script itemization,
 paragraph bidi, supplementary characters, fallback, broader shaping settings,
 memory/performance, complete slide/ink review, and shared editing/undo/PPTX

@@ -3,9 +3,9 @@ import {brotliCompressSync,constants} from 'node:zlib';
 import {fontTables} from './font-container-fixtures.mjs';
 
 const base128=value=>{const bytes=[value&127];while((value=Math.floor(value/128)))bytes.unshift((value&127)|128);return Buffer.from(bytes);};
-/** WOFF2 with literal glyph/loca tables and the optional hmtx transform. */
-export function makeWoff2Hmtx(font, flags=3, {editTables,editMetrics}={}) {
-  const tables=fontTables(font),n=tables.get('maxp').readUInt16BE(4),m=tables.get('hhea').readUInt16BE(34);
+/** Encode metrics from independently read original TrueType table bytes. */
+export function transformHmtx(tables,flags=3) {
+  const n=tables.get('maxp').readUInt16BE(4),m=tables.get('hhea').readUInt16BE(34);
   const original=tables.get('hmtx'),glyf=tables.get('glyf'),loca=tables.get('loca');
   const stride=tables.get('head').readInt16BE(50)?4:2;
   const offset=index=>stride===4?loca.readUInt32BE(index*4):loca.readUInt16BE(index*2)*2;
@@ -17,7 +17,12 @@ export function makeWoff2Hmtx(font, flags=3, {editTables,editMetrics}={}) {
     if(index<m){advances.writeUInt16BE(original.readUInt16BE(index*4),index*2);proportional.writeInt16BE(left,index*2);}
     else monospace.writeInt16BE(left,(index-m)*2);
   }
-  let transformed=Buffer.concat([Buffer.from([flags]),advances,...(flags&1?[]:[proportional]),...(flags&2?[]:[monospace])]);
+  return Buffer.concat([Buffer.from([flags]),advances,...(flags&1?[]:[proportional]),...(flags&2?[]:[monospace])]);
+}
+/** WOFF2 with literal glyph/loca tables and the optional hmtx transform. */
+export function makeWoff2Hmtx(font, flags=3, {editTables,editMetrics}={}) {
+  const tables=fontTables(font),n=tables.get('maxp').readUInt16BE(4),m=tables.get('hhea').readUInt16BE(34);
+  let transformed=transformHmtx(tables,flags);
   editTables?.(tables);
   if(editMetrics)transformed=editMetrics(transformed);
   const directory=[],payload=[];

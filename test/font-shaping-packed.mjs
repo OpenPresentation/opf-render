@@ -32,7 +32,8 @@ for(const entry of ['dist/font-shaping.js','dist/font-shaping-browser.js','dist/
 const modules={'font-shaping.js':'font-shaping','fonts.js':'fonts','fonts-node.js':'fonts-node','svg.js':'svg'};
 await writeFile(path.join(consumer,'test/font-container-fixtures.mjs'),await readFile(path.join(root,'test/font-container-fixtures.mjs')));
 await writeFile(path.join(consumer,'test/font-woff2-hmtx-fixtures.mjs'),await readFile(path.join(root,'test/font-woff2-hmtx-fixtures.mjs')));
-for(const name of ['font-shaping.mjs','font-shaping-formats.mjs','font-woff2-reconstruction.mjs','font-woff2-hmtx.mjs','font-shaping-browser.mjs']){
+await writeFile(path.join(consumer,'test/font-woff2-collections-fixtures.mjs'),await readFile(path.join(root,'test/font-woff2-collections-fixtures.mjs')));
+for(const name of ['font-shaping.mjs','font-shaping-formats.mjs','font-woff2-reconstruction.mjs','font-woff2-hmtx.mjs','font-woff2-collections.mjs','font-shaping-browser.mjs']){
   let source=await readFile(path.join(root,'test',name),'utf8');
   for(const [file,entry]of Object.entries(modules))source=source.replaceAll(`'../dist/${file}'`,`'@openpresentation/opf-render/${entry}'`);
   await writeFile(path.join(consumer,'test',name),source);

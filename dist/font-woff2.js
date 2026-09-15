@@ -1268,6 +1268,28 @@ function prepareHmtxMetrics(data2, tables, info, transformFlag) {
   return Object.assign(info, { numGlyphs, indexFormat, xMins }), !0;
 }
 
+// src/font-woff2-collections.js
+function validateWoff2Collections(header, transformFlag) {
+  let glyphPairs = /* @__PURE__ */ new Map(), locationPairs = /* @__PURE__ */ new Map();
+  for (let font of header.ttcFonts) {
+    let tags = /* @__PURE__ */ new Map();
+    for (let index of font.tableIndices) {
+      let table = header.tables[index];
+      if (tags.has(table.tag)) throw new Error("Duplicate font table in WOFF2 collection");
+      tags.set(table.tag, index);
+    }
+    let glyph = tags.get(1735162214), location = tags.get(1819239265);
+    if (glyph === void 0 && location === void 0) continue;
+    if (glyph === void 0 || location === void 0) throw new Error("WOFF2 collection requires paired glyph/location tables");
+    let transformed = !!(header.tables[glyph].flags & transformFlag);
+    if (transformed !== !!(header.tables[location].flags & transformFlag) || transformed && location !== glyph + 1)
+      throw new Error("Mismatched glyph/location pair in WOFF2 collection");
+    if (glyphPairs.has(glyph) && glyphPairs.get(glyph) !== location || locationPairs.has(location) && locationPairs.get(location) !== glyph)
+      throw new Error("WOFF2 collection must share glyph/location tables together");
+    glyphPairs.set(glyph, location), locationPairs.set(location, glyph);
+  }
+}
+
 // <stdin>
 var Buffer$1 = class {
   constructor(data2, offset = 0, length) {
@@ -1433,10 +1455,11 @@ function woff2Decode(data2, maxBytes = 67108864) {
   if (header.compressedOffset + header.compressedLength > input.length) throw new Error("Truncated WOFF2 Brotli stream");
   let headerSize = computeOffsetToFirstTable(header);
   if (headerSize > maxBytes || header.uncompressedSize > maxBytes) throw Object.assign(new Error("WOFF2 preparation exceeds the configured byte limit"), { code: "font-size-limit" });
+  validateWoff2Collections(header, WOFF2_FLAGS_TRANSFORM);
   let decompressed = brotliDecode(input.subarray(header.compressedOffset, header.compressedOffset + header.compressedLength), { maxOutputSize: header.uncompressedSize });
   if (!decompressed || decompressed.byteLength !== header.uncompressedSize) throw new Error(`Brotli decompression failed: expected ${header.uncompressedSize} bytes, got ${decompressed?.byteLength ?? 0}`);
   let writer = { data: new Uint8Array(Math.max(headerSize, Math.min(65536, maxBytes))), maxBytes };
-  header.requiresSfntEmbedding = !1, writer.view = new DataView(writer.data.buffer);
+  header.glyphMetrics = /* @__PURE__ */ new Map(), header.requiresSfntEmbedding = !1, writer.view = new DataView(writer.data.buffer);
   let fontInfos = writeHeaders(header, writer.data, writer.view), writtenTables = /* @__PURE__ */ new Map(), nextTableOffset = headerSize, count = Math.max(1, header.ttcFonts.length);
   for (let index = 0; index < count; index++) nextTableOffset = reconstructFont(decompressed, header, index, fontInfos[index], writer, writtenTables, nextTableOffset);
   return { data: writer.data.slice(0, nextTableOffset), requiresSfntEmbedding: header.requiresSfntEmbedding };
@@ -1602,6 +1625,10 @@ function reconstructFont(decompressed, header, fontIndex, fontInfo, writer, writ
     if (entryOffset === void 0) continue;
     let tKey = table.key, existing = writtenTables.get(tKey);
     if (existing) {
+      if (table.tag === TAG_GLYF && table.flags & WOFF2_FLAGS_TRANSFORM && Object.assign(fontInfo, header.glyphMetrics.get(tKey)), table.tag === TAG_HMTX && table.flags & WOFF2_FLAGS_TRANSFORM) {
+        let metrics = reconstructHmtx(decompressed, table, fontInfo.numGlyphs, fontInfo.numHMetrics, fontInfo.xMins);
+        if (metrics.length !== existing.dstLength || metrics.some((byte, index) => byte !== output[existing.dstOffset + index])) throw new Error("Inconsistent shared WOFF2 horizontal metrics");
+      }
       updateTableEntry(outView, entryOffset, existing.checksum, existing.dstOffset, existing.dstLength), isTTC && (fontChecksum = fontChecksum + existing.checksum >>> 0, fontChecksum = fontChecksum + computeTableEntryChecksum(existing.checksum, existing.dstOffset, existing.dstLength) >>> 0);
       continue;
     }
@@ -1609,7 +1636,7 @@ function reconstructFont(decompressed, header, fontIndex, fontInfo, writer, writ
     let tableData, checksum;
     if ((table.flags & WOFF2_FLAGS_TRANSFORM) !== 0) if (table.tag === TAG_GLYF && glyfTable && locaTable) {
       let result = reconstructGlyf(decompressed, glyfTable, locaTable, fontInfo, writer.maxBytes);
-      tableData = result.glyfData, glyfTable.dstLength = result.glyfData.byteLength, locaTable.dstOffset = dstOffset + pad4(result.glyfData.byteLength), locaTable.dstLength = result.locaData.byteLength, ensureOutput(pad4(dstOffset + tableData.length)), output.set(tableData, dstOffset), checksum = computeChecksum(output, dstOffset, tableData.byteLength), updateTableEntry(outView, entryOffset, checksum, dstOffset, tableData.byteLength), isTTC && (fontChecksum = fontChecksum + checksum >>> 0, fontChecksum = fontChecksum + computeTableEntryChecksum(checksum, dstOffset, tableData.byteLength) >>> 0), writtenTables.set(tKey, {
+      header.glyphMetrics.set(glyfTable.key, { numGlyphs: fontInfo.numGlyphs, indexFormat: fontInfo.indexFormat, xMins: fontInfo.xMins }), tableData = result.glyfData, glyfTable.dstLength = result.glyfData.byteLength, locaTable.dstOffset = dstOffset + pad4(result.glyfData.byteLength), locaTable.dstLength = result.locaData.byteLength, ensureOutput(pad4(dstOffset + tableData.length)), output.set(tableData, dstOffset), checksum = computeChecksum(output, dstOffset, tableData.byteLength), updateTableEntry(outView, entryOffset, checksum, dstOffset, tableData.byteLength), isTTC && (fontChecksum = fontChecksum + checksum >>> 0, fontChecksum = fontChecksum + computeTableEntryChecksum(checksum, dstOffset, tableData.byteLength) >>> 0), writtenTables.set(tKey, {
         dstOffset,
         dstLength: tableData.byteLength,
         checksum

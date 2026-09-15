@@ -12,6 +12,7 @@ import {create} from 'fontkit';
 import wawoff2 from 'wawoff2';
 import {makeCollection,makeWoff,withGlyfLengthHint} from './font-container-fixtures.mjs';
 import {makeWoff2Hmtx} from './font-woff2-hmtx-fixtures.mjs';
+import {metricsVariant,collectionFixture,literalGlyphs} from './font-woff2-collections-fixtures.mjs';
 
 const output = new URL('../artifacts/font-shaping/browser/',import.meta.url);
 await mkdir(output,{recursive:true});
@@ -27,12 +28,26 @@ const faces = fonts.embeddedFonts.map(face=>({
 }));
 const containers=[];
 const decoded=face=>Buffer.from(face.dataUrl.split(',')[1],'base64');
-for(const face of faces) {
+for(const [faceIndex,face] of faces.entries()) {
   const data=decoded(face);
   for(const [format,bytes] of [['woff',makeWoff(data,true)],['woff2',Buffer.from(await wawoff2.compress(data))]])
     containers.push({format,family:face.family,weight:face.weight,italic:face.italic,reference:data.toString('base64'),data:bytes.toString('base64')});
   for(const flags of [1,2,3])containers.push({format:`woff2-hmtx-${flags}`,family:face.family,weight:face.weight,italic:face.italic,
     reference:data.toString('base64'),data:makeWoff2Hmtx(data,flags).data.toString('base64'),sourceMetadata:true});
+  const variant=metricsVariant(data,faceIndex),references=[data,variant.data],fixture=await collectionFixture(references);
+  for(const flags of [1,2,3]){
+    const encoded=fixture.transform(flags,{firstRaw:flags===2});
+    for(const reference of references)containers.push({format:`woff2-shared-glyf-hmtx-${flags}`,family:face.family,weight:face.weight,italic:face.italic,
+      reference:reference.toString('base64'),data:encoded.toString('base64'),postscriptName:create(reference).postscriptName});
+  }
+  if(faceIndex===0){
+    const same=metricsVariant(data,'Shared',{delta:0,expand:false}),sources=[data,same.data],shared=await collectionFixture(sources);
+    for(const raw of [false,true]){
+      const encoded=shared.transform(3,{edit:raw?container=>literalGlyphs(container,data):undefined});
+      for(const reference of sources)containers.push({format:raw?'woff2-shared-literal':'woff2-shared-metrics',family:face.family,weight:face.weight,italic:face.italic,
+        reference:reference.toString('base64'),data:encoded.toString('base64'),postscriptName:create(reference).postscriptName,...(raw?{sourceMetadata:true}:{})});
+    }
+  }
 }
 const collectionFaces=faces.filter(face=>face.family==='Roboto'&&!face.italic&&[400,700].includes(face.weight));
 const collection=makeCollection(collectionFaces.map(decoded)),collectionWoff2=Buffer.from(await wawoff2.compress(collection));
@@ -97,9 +112,22 @@ try {
     if(document.fonts.size!==before) throw new Error('Registry must release its own browser faces');
     return results;
   },faces));
-  const containerObservations=await page.evaluate(async fixtures=>{
-    const shaper=await fontTest.loadHarfBuzzShaper(),results=[],before=document.fonts.size;
-    let rawHmtxProbe;
+  // Keep one live page/service across the full matrix. Bound only the DevTools
+  // transfer: one large base64 argument exceeds Chromium's 100 MiB pipe limit.
+  const transferLimit=8*1024*1024,batches=[];
+  let batch=[],batchBytes=2;
+  for(const fixture of containers){
+    const size=Buffer.byteLength(JSON.stringify(fixture))+1;
+    assert.ok(size+2<=transferLimit,'Individual fixture must fit the protocol transfer budget');
+    if(batchBytes+size>transferLimit){batches.push({fixtures:batch,bytes:batchBytes});batch=[];batchBytes=2;}
+    batch.push(fixture);batchBytes+=size;
+  }
+  if(batch.length)batches.push({fixtures:batch,bytes:batchBytes});
+  await page.evaluate(async()=>{globalThis.containerState={shaper:await fontTest.loadHarfBuzzShaper(),before:document.fonts.size,completed:0};});
+  const containerObservations=[];
+  for(const batch of batches)containerObservations.push(...await page.evaluate(async fixtures=>{
+    const state=globalThis.containerState,{shaper,before}=state,results=[];
+    let rawHmtxProbe=state.rawHmtxProbe;
     const bytes=value=>Uint8Array.from(atob(value),c=>c.charCodeAt(0));
     for(const fixture of fixtures) {
       const entries=[{family:'Reference',data:bytes(fixture.reference)},{family:'Candidate',data:bytes(fixture.data),postscriptName:fixture.postscriptName}]
@@ -139,8 +167,16 @@ try {
       registry.dispose();
       if(document.fonts.size!==before)throw new Error('Container registry leaked a FontFace');
     }
+    state.rawHmtxProbe=rawHmtxProbe;state.completed+=results.length;
     return results;
-  },containers);
+  },batch.fixtures));
+  const lifecycle=await page.evaluate(()=>{
+    const state=globalThis.containerState;
+    const result={completed:state.completed,before:state.before,after:document.fonts.size};
+    delete globalThis.containerState;return result;
+  });
+  assert.equal(lifecycle.completed,containers.length);assert.equal(lifecycle.after,lifecycle.before);
+  const containerTransfer={limitBytes:transferLimit,batches:batches.length,maxBytes:Math.max(...batches.map(batch=>batch.bytes)),totalBytes:batches.reduce((total,batch)=>total+batch.bytes,0),lifecycle};
   await writeFile(new URL('containers.json',output),JSON.stringify(containerObservations,null,2)+'\n');
   for(const [index,result]of containerObservations.entries()) {
     assert.deepEqual(result.run,containers[index].expected);
@@ -150,7 +186,7 @@ try {
   }
   const report={node:process.version,browser:browser.version(),engine:shaper.engine,contentSecurityPolicy,requests,errors,
     payload:{bundle:bytes.length,bundleGzip:gzipSync(bytes).length,wasm:wasm.length,wasmGzip:gzipSync(wasm).length},
-    faces:faces.map(({family,weight,italic,sha256})=>({family,weight,italic,sha256})),observations,containerObservations,
+    faces:faces.map(({family,weight,italic,sha256})=>({family,weight,italic,sha256})),observations,containerObservations,containerTransfer,
     boundary:'Actual offline module/FontFace load, Node/browser glyph identity, unadjusted SVG advances, compressed/collection canvas pixels compared with original selected faces. Full-slide, variable/CFF matrices, mixed-script/bidi and native acceptance remain pending.'};
   await writeFile(new URL('report.json',output),JSON.stringify(report,null,2)+'\n');
   let index=0;
