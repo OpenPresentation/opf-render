@@ -37,11 +37,12 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Prepare coordinated core for SVG metadata checks
-        run: |
-          pnpm --dir core-candidate install --frozen-lockfile
-          pnpm --dir core-candidate --filter @openpresentation/opf build
-          npm install --ignore-scripts --no-save --package-lock=false ./core-candidate/packages/javascript
+      - name: Install coordinated core dependencies
+        run: pnpm --dir core-candidate install --frozen-lockfile
+      - name: Build coordinated core for SVG metadata checks
+        run: pnpm --dir core-candidate --filter @openpresentation/opf build
+      - name: Use coordinated core in the renderer
+        run: npm install --ignore-scripts --no-save --package-lock=false ./core-candidate/packages/javascript
       - run: npm run build
       - run: npm run test:shaping
   package:
