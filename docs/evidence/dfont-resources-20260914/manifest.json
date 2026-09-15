@@ -1,0 +1,126 @@
+{
+  "priorRenderer": "9bd4d320588750d8afa4f1b5732ec5fa4517393d",
+  "priorCI": {
+    "run": 34928184737,
+    "conclusion": "success",
+    "jobs": {
+      "macos": 104250611746,
+      "windows": 104250611965,
+      "linux": 104250611981
+    }
+  },
+  "node": "v24.21.0",
+  "sourceFiles": {
+    "src/font-dfont.js": "29dd6bfb84597576dd55f313c123019bd2a75b1d8c089d5538c2af2da2831700",
+    "src/fonts.js": "e78d7b17f50ff69fec0f16036b1f3e1105b17d33ca1696e2cf8536b4b2d9272e",
+    "src/fonts.d.ts": "8bb2a7ab3cdcef78428b5af8d99e5fb36bb28b669f8d50dadadf6c48b868481b",
+    "src/font-sfnt.js": "268fe021f953622c1a6a0ab5735076d457aac9055bc8f6c68dd2aae03ac9b94d",
+    "src/svg.js": "291f03f902a4aeb2ba01c262cb4e9c441ad4720073d519448db44f7d4e8b6db9",
+    "dist/font-dfont.js": "29dd6bfb84597576dd55f313c123019bd2a75b1d8c089d5538c2af2da2831700",
+    "dist/fonts.js": "e78d7b17f50ff69fec0f16036b1f3e1105b17d33ca1696e2cf8536b4b2d9272e",
+    "dist/fonts.d.ts": "8bb2a7ab3cdcef78428b5af8d99e5fb36bb28b669f8d50dadadf6c48b868481b",
+    "dist/svg.js": "291f03f902a4aeb2ba01c262cb4e9c441ad4720073d519448db44f7d4e8b6db9",
+    "scripts/build.mjs": "0500ab68ff0e024395d32cbbd6c05fe4a94909189eae5d07ff11a5b9240112d3",
+    "test/font-dfont.mjs": "7c69e054af1515612ad853dd087bd9c56f1681309f1f48ccba2f05eb3f0b0326",
+    "test/font-dfont-fixtures.mjs": "8af66663ba6db1fc9f5d0cfff2e5c1d6f00f959585e3f61322d55873e6bc611f",
+    "test/font-dfont-fonttools.py": "8d6540ad88a0b63c2417e2fafbd0464d3fa86fb9e7fb92faa48327fb642fa2ca",
+    "test/font-shaping-browser.mjs": "25075b4cccdb3f432a45236795c398ca5cf80bca8d353072a504933dabf07e43",
+    "test/font-shaping-packed.mjs": "6dce2e0409f4192d0ae4caa5601ba609b2b30696cd0a7d8e5e0bb120dc08f423",
+    "package.json": "73952cb9d5a013aecd3835478536c637984e74b0ffaa66e7a70cb55e5aa89014",
+    "package-lock.json": "1f8fac1fa0d0a79c79633d21395b63f6f21d57eafbb58c6c4f20baaaa481288d",
+    ".github/workflows/ci.yml": "a99896c6647970a4a7abb0f33e0e7602437a3398289484ee80b1d10987525672"
+  },
+  "evidence": {
+    "node.json.gz": {
+      "sha256": "7a96730b5c6607621b645cc0f13281a9748d90e3c6449b1bf31be86d9f954418",
+      "bytes": 5075,
+      "decodedSha256": "63284ad67d9ded276d6ee3df14f8aa4c4f5537405c2edb47479feec88da7773e",
+      "decodedBytes": 25545
+    },
+    "fonttools.json.gz": {
+      "sha256": "dc697bbce1e5f546c95536c8be8535db6eb6ffe783e14c0d447c84b6ecd34d02",
+      "bytes": 2024,
+      "decodedSha256": "ec905c8939dd80cbe218521517962c974e4369bbff22d84aa3739813636a6924",
+      "decodedBytes": 12523
+    },
+    "installed.json.gz": {
+      "sha256": "1313900c5fca5092931cb2c24f0feab00cffe6612f10030401997cf0d19419dd",
+      "bytes": 55004,
+      "decodedSha256": "da5d289c79ee95696809eff7d1cddfbc54368b5ef7d0720ef99f02a72e87efd4",
+      "decodedBytes": 2811140
+    },
+    "initial-product.log.gz": {
+      "sha256": "ba30bccedc3681e6b9a13989cf450d04403d59b88b826cc16fccbcac81122369",
+      "bytes": 313,
+      "decodedSha256": "45a9e7d02bcda5e9e6e8c958570a438417bba1f8005518a141a0f602cdc9c37d",
+      "decodedBytes": 438
+    },
+    "initial-fixture.log.gz": {
+      "sha256": "9c6af0df63d4377945b3f0f50fc8dec9a3a61b74e6359336603d3b8810da1642",
+      "bytes": 388,
+      "decodedSha256": "0feb6b5d46c0d85834a32469cdab9972789ff0e9ecde8bae9edc0832cdc8a41f",
+      "decodedBytes": 805
+    },
+    "prior-installed.log.gz": {
+      "sha256": "3f12a760d7a5b51fdea3f8b67d5ddaf986b48b96d85b30414df09a419586fad8",
+      "bytes": 232,
+      "decodedSha256": "5549df561bd205958c7e79407988e36755b3215d044c699e327d4ee76e6aba0f",
+      "decodedBytes": 298
+    },
+    "node.log.gz": {
+      "sha256": "d737c12b9873f8f19474c8a41da9364a1c0e54f68050ed72d89265277f3bc11a",
+      "bytes": 134,
+      "decodedSha256": "d4b0d3581fded8b587e71c3c71e18d8b1e8f83279dedf27c9abdc6982722e8bb",
+      "decodedBytes": 150
+    },
+    "fonttools.log.gz": {
+      "sha256": "c4ef58fc2ecbf145a2a1e6e6f0078604f4b7fe8075edb7575a140759f1041814",
+      "bytes": 113,
+      "decodedSha256": "524a28f191999e38d57ca46b83a9f0f0e3b0f7ee4d701741fc6afbd2547cf905",
+      "decodedBytes": 110
+    },
+    "browser.log.gz": {
+      "sha256": "d96a9e613989df719989c6e4647be2e14bc5baf6c0d0cdaecfab226b9f5a6aea",
+      "bytes": 230,
+      "decodedSha256": "813f479eac6160df24b8b7fb5851e7f9c541fbf722729d2c0838d8044f1a9e44",
+      "decodedBytes": 294
+    },
+    "full.log.gz": {
+      "sha256": "7c9e40ee6aeb4d3da9777b4140717935e9a080b79a1c19c9aaf0a78c0b6d3eeb",
+      "bytes": 2065,
+      "decodedSha256": "f7485dc7aca2e0156138561b14cbb9fcdbb95c77b9688f11d879ab41e516d302",
+      "decodedBytes": 4997
+    },
+    "packed.log.gz": {
+      "sha256": "019bb0f124c451e1132c2346a1247fb3903ae824ef3d569c68e03bea289d3181",
+      "bytes": 748,
+      "decodedSha256": "180fe53411611093f69723d68a7b0b18c6644ab8d6aa39b2f7ef1241fadd59b7",
+      "decodedBytes": 1457
+    },
+    "typecheck.log.gz": {
+      "sha256": "edab794f5b6db64dae6c5d06e14b07899ffea87de7e4d1aa67db7701a245349a",
+      "bytes": 467,
+      "decodedSha256": "e02762a0b3a5d82388bdea8f07f2317e30ac567c2519d4b093538a54baa89dfa",
+      "decodedBytes": 2233
+    },
+    "prior-ci-linux.log.gz": {
+      "sha256": "8e344b2f5587f66d1dc0f85976e94a81857c508cf36650974dffae13d3f55f04",
+      "bytes": 30681,
+      "decodedSha256": "15bf1f44b5548951ca62dd4959d520fe0758e865d7f5dfcb764bdbd71ea128a5",
+      "decodedBytes": 162891
+    },
+    "prior-ci-macos.log.gz": {
+      "sha256": "f72ce06d4fb63839fc3641833c442e7631a820956599829ed845da5fdc26da3e",
+      "bytes": 9272,
+      "decodedSha256": "1db4114e8381b69313699a25b03021125b02f773ad293afd54370591da8e4aee",
+      "decodedBytes": 48675
+    },
+    "prior-ci-windows.log.gz": {
+      "sha256": "83962d394dd51999bc7a5826e0c7ca39f4715ed06b0f64346fc4cd6584ed1a2f",
+      "bytes": 10573,
+      "decodedSha256": "ff327dfcc6d824685b6aac79ff2fdbd51113445b327490b86830502c1d72580d",
+      "decodedBytes": 52442
+    }
+  },
+  "scope": "DFont resource extraction and source preservation with default Fontkit and opt-in HarfBuzz. Fresh installed Node/browser and unchanged corpus. Current-head CI and native acceptance remain separate."
+}

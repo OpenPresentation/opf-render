@@ -32,7 +32,10 @@ export interface FontPreparation {
   selectedCollectionFace: boolean;
   /** A DSIG signature was removed from reconstructed measurement/selected-face bytes. */
   removedSignature: boolean;
-  embeddingReason?: 'woff2-hmtx-compatibility';
+  embeddingReason?: 'woff2-hmtx-compatibility' | 'dfont-resource';
+  /** Original sfnt resource ID and zero-based index in a DFont container. */
+  selectedResourceId?: number;
+  selectedResourceIndex?: number;
 }
 export declare class OPFFontError extends Error { code:string; details:Record<string,unknown>; constructor(code:string,message:string,details?:Record<string,unknown>) }
 export declare function createFontRegistry(entries: FontFaceInput[], options?: FontRegistryOptions): FontRegistry;

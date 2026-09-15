@@ -82,9 +82,22 @@ the selected PostScript name, source/measurement/embedded formats, whether a
 collection face was selected, and `removedSignature`. A preserved original
 standalone wrapper is distinct from reconstructed measurement bytes.
 
+For a DFont, supply raw data-fork/resource-fork bytes and a unique
+`postscriptName`, even when the container has one face. Both registry backends
+extract the selected `sfnt` resource for measurement, browser loading and CSS.
+The complete resource container, including other resources, names and trailing
+bytes, remains in `sourceDataUrl` and SVG metadata alongside the license.
+Preparation reports `sourceFormat: 'dfont'`, `embeddingReason: 'dfont-resource'`,
+the original signed `selectedResourceId` and zero-based `selectedResourceIndex`.
+Map/data boundaries, resource references, names, type/ID uniqueness and selected
+font-table bounds are checked. Duplicate PostScript names require a different
+input with an unambiguous selection. No OS resource lookup or font installation
+occurs; MacBinary/AppleDouble wrappers and Type 1 suitcase conversion are not
+implemented by this raw-resource reader.
+
 `maxPreparedFontBytes` in registry options defaults to 64 MiB. It bounds source,
 decoded data and selected-face output during prepared-service decoding, and
-TTC extraction with either backend. It is not a general memory budget for the
+TTC/DFont extraction with either backend. It is not a general memory budget for the
 existing Fontkit default backend. Invalid bounds, checksum failures and
 over-expanding streams reject explicitly. Brotli output is limited before
 reconstruction; zlib is streamed with declared-length checks. Essential font
@@ -126,8 +139,10 @@ cause and a hosting/CSP explanation.
 - `npm run test:shaping-browser`: 198 cases over 33 exact faces, including
   those 33 coverage rejections. Node/browser glyph runs agree; unadjusted SVG
   advances differ by at most 0.01525px within the existing 0.1px gate. This
-  also compares 373 actual canvas renders against the original selected faces,
-  including both collection faces and compressed instances of all 33 fonts.
+  also compares 439 actual canvas renders against the original selected faces,
+  including both collection faces, compressed instances of all 33 fonts, and
+  DFont selection through both backends. The 33 default-backend DFont cases
+  compare Fontkit metrics/outlines; prepared cases compare shaped glyph runs.
   These checks use geometric precision, matching SVG configuration, and do not
   establish full-slide containment. The test bundle includes Fontkit and the
   actual SVG renderer; consult its
@@ -151,6 +166,13 @@ cause and a hosting/CSP explanation.
   transfers. The independent check decodes each face's metrics, glyph geometry
   and instructions through FontTools, with its collection/compilation limits
   recorded in [collection evidence](evidence/woff2-collections-20260914/README.md).
+- `test/font-dfont.mjs`: 66 selected-face/backend cases across all 33 bundled
+  faces, first/single-resource controls and 19 malformed/selection checks.
+  All selected tables, source runs, entire original containers and licenses
+  survive; both backends load the same selected face in offline Chromium.
+  Optional `test/font-dfont-fonttools.py` independently reads all 66 `sfnt`
+  resources from the 33 raw resource containers and verifies their exact bytes,
+  identities and order. See [resource evidence](evidence/dfont-resources-20260914/README.md).
 - `npm run test:shaping-packed`: fresh core/renderer tarballs, byte-identical
   shipped modules/WASM/notices, Node/offline-browser checks, public TypeScript
   NodeNext/Bundler consumers and dependency audit.
@@ -159,11 +181,11 @@ cause and a hosting/CSP explanation.
   all 8,568 prior glyph runs/metrics plus three `fitText` fixtures through the
   registry, preserving source ranges and the fixed 32px floor.
 
-Before default promotion: verify DFont resource containers, CFF/CFF2 and
+Before default promotion: verify CFF/CFF2 and
 variable faces/instances, language/script itemization,
 paragraph bidi, supplementary characters, fallback, broader shaping settings,
 memory/performance, complete slide/ink review, and shared editing/undo/PPTX
-installed workflows with this backend. TTF, WOFF/WOFF2 and selected TTC
+installed workflows with this backend. TTF, WOFF/WOFF2 and selected TTC/DFont
 measurement/painting are exercised; accepting an OTF/SFNT signature alone is
 not a CFF fixture matrix.
 Guessed buffer properties are not paragraph itemization or bidi. Unsupported

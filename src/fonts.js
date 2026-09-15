@@ -2,6 +2,7 @@ import { create } from "fontkit";
 import { FONT_COMPATIBILITY } from "./font-compatibility.js";
 import { OPFFontError } from './font-error.js';
 import { fontFormat, extractSfnt, checkFontByteLimit } from './font-sfnt.js';
+import { readDfontResources } from './font-dfont.js';
 export { FONT_COMPATIBILITY, EXPERIMENTAL_FONT_CANDIDATES } from "./font-compatibility.js";
 export { OPFFontError } from './font-error.js';
 const key = (family, weight, italic) => `${family.toLowerCase()}:${weight}:${!!italic}`;
@@ -24,18 +25,35 @@ export function createFontRegistry(entries, options = {}) {
   const maxPreparedFontBytes = checkFontByteLimit(options.maxPreparedFontBytes);
   const faces = entries.map(entry => {
     if (!(entry.data instanceof Uint8Array)) throw new OPFFontError("invalid-font-data", "Font data must be a Uint8Array.");
-    if ((fontShaper?.prepareFontData || fontFormat(entry.data) === 'collection') && entry.data.length > maxPreparedFontBytes)
+    const inputFormat = fontFormat(entry.data);
+    if ((fontShaper?.prepareFontData || inputFormat === 'collection' || !inputFormat) && entry.data.length > maxPreparedFontBytes)
       throw new OPFFontError('font-size-limit','Font source exceeds the configured preparation byte limit.');
     // Buffer.slice() aliases memory; own bytes even when the caller supplies a
     // Node Buffer and later reuses its storage.
-    const sourceData = Uint8Array.from(entry.data), sourceFormat = fontFormat(sourceData) ?? 'unknown';
+    const sourceData = Uint8Array.from(entry.data);
+    let sourceFormat = inputFormat ?? 'unknown';
     const prepared = fontShaper?.prepareFontData?.(sourceData, maxPreparedFontBytes);
     let data = prepared?.data ?? sourceData, removedSignature = prepared?.removedSignature ?? false;
-    let font;
-    try { font = create(data, entry.postscriptName); } catch (error) { throw new OPFFontError("invalid-font-data", error.message); }
+    let font, resource;
+    if (!fontFormat(data)) {
+      const resources = readDfontResources(data, maxPreparedFontBytes);
+      sourceFormat = 'dfont';
+      if (typeof entry.postscriptName !== 'string' || !entry.postscriptName)
+        throw new OPFFontError('font-collection', 'Select one font resource with postscriptName.');
+      const matches = resources.filter(candidate => {
+        try { return create(candidate.data).postscriptName === entry.postscriptName; }
+        catch (error) { throw new OPFFontError('invalid-font-container', error.message); }
+      });
+      if (matches.length !== 1)
+        throw new OPFFontError('font-collection', 'Select a unique PostScript name from the font resources.');
+      resource = matches[0];
+      const selected = extractSfnt(resource.data, 0, maxPreparedFontBytes);
+      data = selected.data; removedSignature ||= selected.removedSignature;
+    }
+    try { font = create(data, resource ? undefined : entry.postscriptName); } catch (error) { throw new OPFFontError("invalid-font-data", error.message); }
     if (!font?.layout || !font.unitsPerEm) throw new OPFFontError("font-collection", "Select one font from a collection with postscriptName.");
-    const collection = fontFormat(data) === 'collection';
-    if (collection) {
+    const collection = fontFormat(data) === 'collection' || !!resource;
+    if (fontFormat(data) === 'collection') {
       const faceIndex = create(data).fonts.findIndex(candidate => candidate.postscriptName === font.postscriptName);
       if (faceIndex < 0) throw new OPFFontError('font-collection', 'The selected collection face could not be located.');
       const selected = extractSfnt(data, faceIndex, maxPreparedFontBytes);
@@ -57,12 +75,13 @@ export function createFontRegistry(entries, options = {}) {
     // Preserve standalone wrappers. When browser decoding needs a reconstructed
     // face, retain the original separately for SVG metadata. Collections embed
     // the actual selected standalone face.
-    const embeddingReason=prepared?.embeddingReason;
+    const embeddingReason=resource ? 'dfont-resource' : prepared?.embeddingReason;
     const embeddedData = collection || embeddingReason ? data : sourceData;
     const format = fontFormat(embeddedData) ?? 'ttf';
     const preparation = {family,postscriptName:font.postscriptName,sourceFormat,
       measurementFormat:fontFormat(data) ?? 'unknown',embeddedFormat:format,
-      selectedCollectionFace:collection,removedSignature,...(embeddingReason?{embeddingReason}:{})};
+      selectedCollectionFace:collection,removedSignature,...(embeddingReason?{embeddingReason}:{}),
+      ...(resource?{selectedResourceId:resource.id,selectedResourceIndex:resource.index}:{})};
     return {family,familyGroup,fontFace,weight,italic,font,data,embeddedData,format,preparation,
       ...(embeddingReason?{sourceData,sourceFormat}:{}),license:entry.license,cache:new Map(),cachedGlyphs:0};
   });

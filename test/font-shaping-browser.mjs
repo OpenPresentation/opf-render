@@ -11,6 +11,7 @@ import {createFontRegistry} from '../dist/fonts.js';
 import {create} from 'fontkit';
 import wawoff2 from 'wawoff2';
 import {makeCollection,makeWoff,withGlyfLengthHint} from './font-container-fixtures.mjs';
+import {makeDfont} from './font-dfont-fixtures.mjs';
 import {makeWoff2Hmtx} from './font-woff2-hmtx-fixtures.mjs';
 import {metricsVariant,collectionFixture,literalGlyphs} from './font-woff2-collections-fixtures.mjs';
 
@@ -30,6 +31,9 @@ const containers=[];
 const decoded=face=>Buffer.from(face.dataUrl.split(',')[1],'base64');
 for(const [faceIndex,face] of faces.entries()) {
   const data=decoded(face);
+  const resource=makeDfont([decoded(faces[(faceIndex+1)%faces.length]),data],{dataOffset:faceIndex%2?512:256,mapFirst:faceIndex%2===1});
+  for(const backend of ['fontkit','harfbuzz'])containers.push({format:`dfont-${backend}`,backend,family:face.family,weight:face.weight,italic:face.italic,
+    reference:data.toString('base64'),data:resource.toString('base64'),postscriptName:create(data).postscriptName,sourceMetadata:true,sourceFormat:'dfont'});
   for(const [format,bytes] of [['woff',makeWoff(data,true)],['woff2',Buffer.from(await wawoff2.compress(data))]])
     containers.push({format,family:face.family,weight:face.weight,italic:face.italic,reference:data.toString('base64'),data:bytes.toString('base64')});
   for(const flags of [1,2,3])containers.push({format:`woff2-hmtx-${flags}`,family:face.family,weight:face.weight,italic:face.italic,
@@ -56,8 +60,9 @@ for(const hint of [1,1000000])containers.push({...hintReference,format:`woff2-gl
 for(const face of collectionFaces)for(const [format,data]of [['collection',collection],['woff2-collection',collectionWoff2]])
   containers.push({format,family:face.family,weight:face.weight,italic:face.italic,reference:decoded(face).toString('base64'),data:data.toString('base64'),postscriptName:create(decoded(face)).postscriptName});
 for(const fixture of containers) {
-  const registry=createFontRegistry([{data:Buffer.from(fixture.reference,'base64'),family:'Candidate',weight:fixture.weight,italic:fixture.italic}],{fontShaper:shaper});
-  fixture.expected=registry.shapeText('office AVATAR  123',{fontFamily:'Candidate',fontWeight:fixture.weight,italic:fixture.italic});
+  const registry=createFontRegistry([{data:Buffer.from(fixture.reference,'base64'),family:'Candidate',weight:fixture.weight,italic:fixture.italic}],fixture.backend==='fontkit'?{}:{fontShaper:shaper});
+  const text='office AVATAR  123',style={fontFamily:'Candidate',fontWeight:fixture.weight,italic:fixture.italic};
+  fixture.expected=fixture.backend==='fontkit'?{text,width:registry.textMeasurement.measure(text,1,style),outline:registry.textMeasurement.outlineBounds(text,1,style)}:registry.shapeText(text,style);
   registry.dispose();
 }
 const bundle = await build({
@@ -132,15 +137,15 @@ try {
     for(const fixture of fixtures) {
       const entries=[{family:'Reference',data:bytes(fixture.reference)},{family:'Candidate',data:bytes(fixture.data),postscriptName:fixture.postscriptName}]
         .map(entry=>({...entry,weight:fixture.weight,italic:fixture.italic,license:'Keep "author" & <license>\nverbatim'}));
-      const registry=await fontTest.loadBrowserFontRegistry(entries,{fontShaper:shaper});
+      const registry=await fontTest.loadBrowserFontRegistry(entries,fixture.backend==='fontkit'?{}:{fontShaper:shaper});
       let retainedMetadata=false;
       if(fixture.sourceMetadata) {
-        if(rawHmtxProbe===undefined) {
+        if(rawHmtxProbe===undefined&&fixture.sourceFormat!=='dfont') {
           try {await new FontFace('RawHmtxProbe',bytes(fixture.data)).load();rawHmtxProbe='accepted';}
           catch(error){rawHmtxProbe=error.message;}
         }
         const descriptor=registry.embeddedFonts[1];
-        if(!descriptor.dataUrl.startsWith('data:font/ttf;')||descriptor.sourceDataUrl!==`data:font/woff2;base64,${fixture.data}`)throw new Error('Prepare a compatible face and retain original font bytes');
+        if(!descriptor.dataUrl.startsWith('data:font/ttf;')||descriptor.sourceDataUrl!==`data:font/${fixture.sourceFormat??'woff2'};base64,${fixture.data}`)throw new Error('Prepare a compatible face and retain original font bytes');
         const svg=fontTest.renderSvg({slides:[{title:'Retain source fonts'}]},{embeddedFonts:registry.embeddedFonts});
         const parsed=new DOMParser().parseFromString(svg,'image/svg+xml');
         if(parsed.querySelector('parsererror'))throw new Error('Font metadata broke SVG XML');
@@ -149,7 +154,7 @@ try {
         retainedMetadata=true;
       }
       const style={fontFamily:'Candidate',fontWeight:fixture.weight,italic:fixture.italic};
-      const run=registry.shapeText(fixture.expected.text,style);
+      const run=fixture.backend==='fontkit'?{text:fixture.expected.text,width:registry.textMeasurement.measure(fixture.expected.text,1,style),outline:registry.textMeasurement.outlineBounds(fixture.expected.text,1,style)}:registry.shapeText(fixture.expected.text,style);
       const snapshots=[];
       for(const family of ['Reference','Candidate']) {
         const canvas=document.createElement('canvas');canvas.width=850;canvas.height=90;

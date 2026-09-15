@@ -1167,7 +1167,7 @@ function fontStack(family, type) {
 function renderEmbeddedFonts(fonts = []) {
   if (!fonts.length) return "";
   const css = fonts.map(font => {
-    if (typeof font.family !== "string" || /[\u0000-\u001f"'\\<>;]/.test(font.family) || !/^data:font\/(ttf|otf|woff|woff2);base64,[A-Za-z0-9+/=]+$/.test(font.dataUrl) || font.sourceDataUrl!==undefined&&!/^data:font\/(ttf|otf|woff|woff2|collection);base64,[A-Za-z0-9+/=]+$/.test(font.sourceDataUrl) || !Number.isInteger(font.weight) || font.weight < 1 || font.weight > 1000) throw new OPFRenderError("invalid-embedded-font", "Embedded fonts require a plain family name, valid weight, and a font data URI.");
+    if (typeof font.family !== "string" || /[\u0000-\u001f"'\\<>;]/.test(font.family) || !/^data:font\/(ttf|otf|woff|woff2);base64,[A-Za-z0-9+/=]+$/.test(font.dataUrl) || font.sourceDataUrl!==undefined&&!/^data:font\/(ttf|otf|woff|woff2|collection|dfont);base64,[A-Za-z0-9+/=]+$/.test(font.sourceDataUrl) || !Number.isInteger(font.weight) || font.weight < 1 || font.weight > 1000) throw new OPFRenderError("invalid-embedded-font", "Embedded fonts require a plain family name, valid weight, and a font data URI.");
     return `@font-face{font-family:"${font.family}";font-weight:${font.weight};font-style:${font.italic ? "italic" : "normal"};src:url("${font.dataUrl}")}`;
   }).join("\n");
   const licenses = [...new Set(fonts.map(font=>font.license).filter(Boolean))];
