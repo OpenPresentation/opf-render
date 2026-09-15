@@ -16,7 +16,7 @@ for (const name of ["svg.js","svg.d.ts","raster.js","raster-images.js","fonts-br
 
 for (const name of ['font-shaping.js','font-shaping.d.ts','font-shaping-browser.js','font-shaping-service.js'])
   await copyFile(new URL(`src/${name}`,root),new URL(name,dist));
-for (const name of ['font-error.js','font-sfnt.js','font-dfont.js','font-variations.js','font-woff.js','font-preparation.js'])
+for (const name of ['font-error.js','font-sfnt.js','font-dfont.js','font-variations.js','font-normalization.js','font-woff.js','font-preparation.js'])
   await copyFile(new URL(`src/${name}`,root),new URL(name,dist));
 await buildFontCodecs(root, dist);
 // Keep this opt-in runtime out of the existing SVG/font entrypoint bundles.

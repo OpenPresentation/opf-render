@@ -105,7 +105,16 @@ passes the same coordinates to Fontkit, HarfBuzz, browser FontFace and SVG CSS.
 The bounded `fvar` metadata adapter handles standard subfamily name IDs that
 Fontkit 2.0.4 otherwise cannot resolve. Source font bytes remain unchanged.
 
-This variable-instance checkpoint is **not accepted for release**. All 712
+Fontkit's selected instance now uses the OpenType fixed-point normalization
+sequence before glyph, blend-vector and feature-variation caches are populated.
+This includes the zero coordinate when an axis default equals its maximum,
+validated `avar` 1.0 maps, and exact four-character axis tags. Original user
+coordinates and font bytes remain intact. Unsupported mapping versions and
+malformed mapping records fail explicitly; `avar` 2 is not implemented in this
+adapter. This correction does not round derived glyph advances or change the
+prepared HarfBuzz engine's metric policy.
+
+This variable-instance work is **not accepted for release**. The initial 712
 local format/instance/backend cases have matching nonempty browser pixels, but
 10 advance comparisons exceed the unchanged 0.1px gate: five Fontkit CFF2
 cases and five HarfBuzz variable-TTF cases. The largest observed differences

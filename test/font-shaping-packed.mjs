@@ -3,7 +3,7 @@ import {execFileSync} from 'node:child_process';
 import {cp,mkdtemp,mkdir,readFile,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath,pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
@@ -28,7 +28,7 @@ for(const file of packed.files){
   assert.equal(hash(bytes),hash(await readFile(path.join(root,file.path))));
   files[file.path]=hash(bytes);
 }
-for(const entry of ['dist/font-shaping.js','dist/font-shaping-browser.js','dist/font-shaping-service.js','dist/font-shaping.d.ts','dist/harfbuzz-browser.js','dist/harfbuzz.wasm','dist/harfbuzzjs-LICENSE','dist/HarfBuzz-LICENSE','dist/font-preparation.js','dist/font-variations.js','dist/font-dfont.js','dist/font-woff2.js','dist/WOFF2-LICENSE','dist/WOFF2-LICENSE_THIRD_PARTY','dist/Brotli-LICENSE','dist/Brotli-LICENSE_THIRD_PARTY'])assert.ok(files[entry]);
+for(const entry of ['dist/font-shaping.js','dist/font-shaping-browser.js','dist/font-shaping-service.js','dist/font-shaping.d.ts','dist/harfbuzz-browser.js','dist/harfbuzz.wasm','dist/harfbuzzjs-LICENSE','dist/HarfBuzz-LICENSE','dist/font-preparation.js','dist/font-variations.js','dist/font-normalization.js','dist/font-dfont.js','dist/font-woff2.js','dist/WOFF2-LICENSE','dist/WOFF2-LICENSE_THIRD_PARTY','dist/Brotli-LICENSE','dist/Brotli-LICENSE_THIRD_PARTY'])assert.ok(files[entry]);
 const modules={'font-shaping.js':'font-shaping','fonts.js':'fonts','fonts-node.js':'fonts-node','svg.js':'svg'};
 await writeFile(path.join(consumer,'test/font-container-fixtures.mjs'),await readFile(path.join(root,'test/font-container-fixtures.mjs')));
 await writeFile(path.join(consumer,'test/font-woff2-hmtx-fixtures.mjs'),await readFile(path.join(root,'test/font-woff2-hmtx-fixtures.mjs')));
@@ -36,9 +36,10 @@ await writeFile(path.join(consumer,'test/font-woff2-collections-fixtures.mjs'),a
 await writeFile(path.join(consumer,'test/font-dfont-fixtures.mjs'),await readFile(path.join(root,'test/font-dfont-fixtures.mjs')));
 await cp(path.join(root,'test/fixtures/font-formats'),path.join(consumer,'test/fixtures/font-formats'),{recursive:true});
 for(const name of ['font-variations-fixtures.mjs','font-variations-browser.mjs'])await writeFile(path.join(consumer,'test',name),await readFile(path.join(root,'test',name)));
-for(const name of ['font-dfont.mjs','font-shaping.mjs','font-shaping-formats.mjs','font-woff2-reconstruction.mjs','font-woff2-hmtx.mjs','font-woff2-collections.mjs','font-shaping-browser.mjs','font-variations.mjs']){
+for(const name of ['font-dfont.mjs','font-shaping.mjs','font-shaping-formats.mjs','font-woff2-reconstruction.mjs','font-woff2-hmtx.mjs','font-woff2-collections.mjs','font-shaping-browser.mjs','font-variations.mjs','font-normalization.mjs']){
   let source=await readFile(path.join(root,'test',name),'utf8');
   for(const [file,entry]of Object.entries(modules))source=source.replaceAll(`'../dist/${file}'`,`'@openpresentation/opf-render/${entry}'`);
+  for(const file of ['font-normalization.js','font-variations.js','font-sfnt.js'])source=source.replaceAll(`'../dist/${file}'`,JSON.stringify(pathToFileURL(path.join(installed,'dist',file)).href));
   await writeFile(path.join(consumer,'test',name),source);
   process.stdout.write(execFileSync(process.execPath,[path.join('test',name)],{cwd:consumer,encoding:'utf8',maxBuffer:8*1024*1024}));
 }
@@ -65,7 +66,8 @@ for(const mode of ['NodeNext','Bundler'])execFileSync(process.execPath,[path.joi
 const audit=JSON.parse(npm(['audit','--json'],consumer));assert.equal(audit.metadata.vulnerabilities.total,0);
 const browser=JSON.parse(await readFile(path.join(consumer,'artifacts/font-shaping/browser/report.json')));
 const variableNode=JSON.parse(await readFile(path.join(consumer,'artifacts/font-shaping/variations.json')));
-const report={node:process.version,consumer,renderer:packed.integrity,core:corePack.integrity,files,browser,variableNode,
+const normalization=JSON.parse(await readFile(path.join(consumer,'artifacts/font-shaping/normalization.json')));
+const report={node:process.version,consumer,renderer:packed.integrity,core:corePack.integrity,files,browser,variableNode,normalization,
   types:['TypeScript 5.9.3 NodeNext','TypeScript 5.9.3 Bundler'],knownVulnerabilities:0,
   scope:'Fresh candidate tarballs, shipped-file hashes, Node and offline browser shaping, explicit failures and TypeScript. Not registry publication or native acceptance.'};
 let variableError;

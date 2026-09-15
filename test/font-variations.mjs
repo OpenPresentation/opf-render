@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {mkdir,writeFile} from 'node:fs/promises';
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {create} from 'fontkit';
 import * as hb from 'harfbuzzjs';
 import {createFontRegistry} from '../dist/fonts.js';
@@ -8,6 +8,7 @@ import {renderSvg} from '../dist/svg.js';
 import {fontTables} from './font-container-fixtures.mjs';
 import {fontFixtures,instanceCases,containersFor,sha256} from './font-variations-fixtures.mjs';
 const shaper=await loadHarfBuzzShaper(),records=await fontFixtures(),report={node:process.version,cases:[],negativeControls:[]};
+const normalizedReference=JSON.parse(await readFile(new URL('./fixtures/font-formats/normalization-reference.json',import.meta.url)));
 const texts=['  office affine AVATAR  ','HHHH WWWW','o\u0302\u0301','Ágj'];
 for(const record of records){
   const raw=create(record.data),blob=new hb.Blob(record.data.buffer.slice(record.data.byteOffset,record.data.byteOffset+record.data.byteLength)),face=new hb.Face(blob),refFont=new hb.Font(face);
@@ -17,6 +18,11 @@ for(const record of records){
     for(const item of selected){
       const coordinates=item.coordinates;
       const reference=Object.keys(coordinates).length?raw.getVariation(coordinates):raw;
+      if(Object.keys(coordinates).length){
+        const expected=normalizedReference.cases.find(row=>row.file===record.file&&row.id===item.id);
+        assert.ok(expected,'Require independent normalized coordinates for each fixture instance');
+        reference._variationProcessor.normalizedCoords=expected.normalized;
+      }
       refFont.setVariations(Object.entries(coordinates).map(([tag,value])=>new hb.Variation(tag,value)));
       for(const backend of ['fontkit','harfbuzz']){
         const registry=createFontRegistry([{data:container.data,family:'Fixture',italic:record.italic,license:record.license,...(container.postscriptName?{postscriptName:container.postscriptName}:{}),...(item.variations!==undefined?{variations:item.variations}:{})}],backend==='harfbuzz'?{fontShaper:shaper}:{});

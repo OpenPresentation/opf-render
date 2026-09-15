@@ -1,4 +1,5 @@
 import {OPFFontError} from './font-error.js';
+import {readVariationMaps,normalizeVariationCoordinates} from './font-normalization.js';
 
 const tagPattern=/^[\x20-\x7e]{4}$/;
 const fail=message=>{throw new OPFFontError('invalid-font-variations',message);};
@@ -80,5 +81,12 @@ export function selectFontVariations(font,data,{variations,postscriptName}={}){
     resolved[axis.axisTag]=value;
   }
   const values=variationSettings(resolved);
-  return {font:font.getVariation(values),variations:values,...(namedInstance?{namedInstance}:{})};
+  const maps=readVariationMaps(data,font.directory.tables.avar,axes.length);
+  if(maps)font._tables.avar=maps;
+  const selectedFont=font.getVariation(values);
+  // Fontkit trims axis tags and leaves normalized coordinates as floats.
+  // Install exact axis-order coordinates before it creates glyph/layout caches.
+  selectedFont.variationCoords=axes.map(axis=>values[axis.axisTag]);
+  selectedFont._variationProcessor.normalizedCoords=normalizeVariationCoordinates(axes,values,maps);
+  return {font:selectedFont,variations:values,...(namedInstance?{namedInstance}:{})};
 }
