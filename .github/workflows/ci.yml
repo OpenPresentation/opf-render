@@ -49,11 +49,18 @@ jobs:
         run: npx playwright install chromium
       - name: Record native variable advance diagnostics
         run: npm run test:variation-metrics-probe
+      - name: Compare selected variable glyph painting
+        run: npm run test:variation-paint-probe
       - name: Compare system Edge on Windows
         if: runner.os == 'Windows'
         env:
           OPF_FONT_PROBE_BROWSER_CHANNEL: msedge
         run: npm run test:variation-metrics-probe -- artifacts/font-shaping/variation-metrics/edge-native-probe.json
+      - name: Compare selected variable glyph painting in Edge
+        if: runner.os == 'Windows'
+        env:
+          OPF_FONT_PROBE_BROWSER_CHANNEL: msedge
+        run: npm run test:variation-paint-probe -- artifacts/font-shaping/variation-paint-edge
       - name: Preserve shaping portability evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -155,6 +162,8 @@ jobs:
       - run: npm pack --dry-run
       - name: Record native variable advance diagnostics
         run: npm run test:variation-metrics-probe
+      - name: Compare selected variable glyph painting
+        run: npm run test:variation-paint-probe
       - name: Verify fresh shaping packages including fixed variable instances
         id: shaping-packed
         run: npm run test:shaping-packed
