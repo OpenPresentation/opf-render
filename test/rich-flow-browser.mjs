@@ -34,9 +34,23 @@ try {
           const node=nodes[cursor++];if(!node||source.slice(+node.dataset.opfTextStart,+node.dataset.opfTextEnd)!==node.textContent||node.textContent!==fragment.text)throw Error('Source trace changed');
           const start=node.getStartPositionOfChar(0),end=node.getEndPositionOfChar(node.getNumberOfChars()-1),computed=getComputedStyle(node);
           if(computed.fontWeight!==String(fragment.style.fontWeight)||computed.fontStyle!==(fragment.style.italic?'italic':'normal'))throw Error('Physical style changed');
-          if(fragment.run.link&&node.closest('a')?.getAttribute('href')!==fragment.run.link)throw Error('Link changed');
-          if(fragment.run.underline&&!computed.textDecorationLine.includes('underline'))throw Error('Underline lost');
-          if(fragment.run.strikethrough&&!computed.textDecorationLine.includes('line-through'))throw Error('Strike lost');
+          const sources=fragment.sources??[fragment];
+          if(fragment.sources&&JSON.stringify(JSON.parse(node.dataset.opfRunSpans))!==JSON.stringify(sources.map(({runIndex,start,end})=>({runIndex,start,end}))))throw Error('Source run map changed');
+          const walker=document.createTreeWalker(node,NodeFilter.SHOW_TEXT),textNodes=[];let offset=0;
+          while(walker.nextNode()){const text=walker.currentNode;textNodes.push({element:text.parentElement,start:offset,end:offset+text.length});offset+=text.length;}
+          let sourceOffset=0;
+          for(const source of sources){
+            const end=sourceOffset+source.text.length;
+            const pieces=textNodes.filter(piece=>piece.start<end&&piece.end>sourceOffset);
+            if(!pieces.length)throw Error('Missing styled source text');
+            for(const {element}of pieces){
+              const style=getComputedStyle(element);
+              if(source.run.link&&element.closest('a')?.getAttribute('href')!==source.run.link)throw Error('Link changed');
+              if(source.run.underline&&!style.textDecorationLine.includes('underline'))throw Error('Underline lost');
+              if(source.run.strikethrough&&!style.textDecorationLine.includes('line-through'))throw Error('Strike lost');
+            }
+            sourceOffset=end;
+          }
           const placed=item.text.placement?.lines[lineIndex],expectedY=(placed?.baseline??item.box.y+line.baseline)+fragment.baselineShift;
           let intrinsicWidth=null;
           if(mode==='measured'){
