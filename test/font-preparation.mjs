@@ -52,7 +52,7 @@ try{
   await writeFile(path.join(temporary,'package.json'),JSON.stringify({type:'module'}));
   await cp(path.join(root,'dist'),path.join(temporary,'dist'),{recursive:true});
   await mkdir(path.join(temporary,'node_modules/@expo-google-fonts'),{recursive:true});
-  await symlink(path.join(root,'node_modules/fontkit'),path.join(temporary,'node_modules/fontkit'),process.platform==='win32'?'junction':'dir');
+  for(const dependency of ['fontkit','fflate'])await symlink(path.join(root,'node_modules',dependency),path.join(temporary,'node_modules',dependency),process.platform==='win32'?'junction':'dir');
   for(const namespace of ['@openpresentation','@resvg'])await symlink(path.join(root,'node_modules',namespace),path.join(temporary,'node_modules',namespace),process.platform==='win32'?'junction':'dir');
   for(const pkg of BUNDLED_FONT_MANIFEST.packages.filter(p=>p.pack==='base')){
     await cp(path.dirname(require.resolve(`${pkg.name}/package.json`)),path.join(temporary,'node_modules',pkg.name),{recursive:true});

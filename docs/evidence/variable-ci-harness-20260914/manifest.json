@@ -1,0 +1,22 @@
+{
+  "renderer": "28bd820286e0bf28b2efcaca3610d56988b1079e",
+  "failedRun": 34932416004,
+  "evidence": {
+    "linux-failure.log.gz": {
+      "sha256": "1efeada0876f1d8a3928c3f6ef01922df83b6ab548dbbd5fea0f2e88751e9c3d",
+      "decodedSha256": "21cc6d2c455c3f50c26d2b93e146f6b9bde562d6096acc04ebd433ae9ebbc72a"
+    },
+    "windows-failure.log.gz": {
+      "sha256": "8bc212553f06390a3509de9dcdfebabe5b472c3fb91fbd3cff9318a8b771e7cb",
+      "decodedSha256": "e99a74f221c1bb6ba8c4c1636cfe3e99ca642bd05723751e87bd61bbda293bf2"
+    },
+    "local-correction.log.gz": {
+      "sha256": "074bc5a03a45e4b323075aacd779fbcb012185b7b4f8d12a34a2f4d8e338f07b",
+      "decodedSha256": "a67a7fd532fc984e9e5fb4e37afb753f0b8119d026547168a91dda97539850e7"
+    }
+  },
+  "sourceFiles": {
+    ".gitattributes": "1fddec3a9e7266c70a4a1069cd1d7dc85ae81046effe66fdbac6d5ecd82fe2bd",
+    "test/font-preparation.mjs": "c8fc2bca6abcd3a25feb63a743c26d2833c30d1b44e7d0e48e000058bc6214fa"
+  }
+}

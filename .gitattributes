@@ -1,0 +1,2 @@
+# Pinned upstream license hashes describe exact bytes, including line endings.
+test/fixtures/font-formats/*/LICENSE.md -text
