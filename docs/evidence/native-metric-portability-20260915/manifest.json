@@ -1,0 +1,230 @@
+{
+  "testedRenderer": "41311deeaf18fa738f7e5934620c7e84710fde9e",
+  "status": "native-widths-incompatible-default-and-prepared-truetype-gates-open",
+  "scope": "Diagnostic command and documentation only; no runtime, source font, acceptance threshold, default, release or deployment change.",
+  "sourceFiles": {
+    "src/font-variations.js": "f026226b3368d5775251623ea7f8056a07b85d926f265fe3947033b580425edb",
+    "dist/font-variations.js": "f026226b3368d5775251623ea7f8056a07b85d926f265fe3947033b580425edb",
+    "src/font-shaping-service.js": "b6e1644dc6e7a4531af1aafeccb575bd270b58dd7072a0bd140874b240732abd",
+    "dist/font-shaping-service.js": "b6e1644dc6e7a4531af1aafeccb575bd270b58dd7072a0bd140874b240732abd",
+    "test/font-variation-metrics-probe.mjs": "a4600094e492c12c6018bca367df78889b8a207b415f47efbcd4ea9794e98f3a",
+    "test/font-variation-paint-probe.mjs": "8900b03affb6eb47979274a78b8631569f459f07fa8517185118ade71d930807",
+    "test/font-variations-browser.mjs": "8adaeca8fcd63976961ce13abaac9b3b20d9e793a604468e467ab7c3962c9812",
+    "test/font-variation-portability-report.mjs": "e8979a7770712053a00c4e99d0029d6536ff5e1e845a9247b1279dcd7a505673",
+    "package.json": "0242a0cce080776ebdd50499c8f76913d4c5749efdb7f429987b14141f0d9fbf",
+    ".github/workflows/ci.yml": "f31e247fe026e80f7482d91da7ef92bd450a520b21be976e56c5f66a25a65c06"
+  },
+  "evidence": {
+    "macos-paint.json.gz": {
+      "sha256": "b1047281143090a21c00e08ec94440cf3b9909f91efe3f97ae09db5894a942bb",
+      "bytes": 42992,
+      "decodedSha256": "3a89aac091e32f4b1d236dfb67c8ef2f0cde7bcdf46e16b617d489069f4a61f4",
+      "decodedBytes": 578261
+    },
+    "macos-metrics.json.gz": {
+      "sha256": "797d194ae9b7f33520073d8a944c289f805270c91c7f4a0e6e8066e3d6b66863",
+      "bytes": 18531,
+      "decodedSha256": "300afdc65be831929789daccfedc487ccd7d0b2f34c4b3c55eb29583d7f02792",
+      "decodedBytes": 375656
+    },
+    "macos-ci.log.gz": {
+      "sha256": "6185dfb32c31a3266646274fbdb1fa7e16736f81c700573a33eeae2cea3a5876",
+      "bytes": 12340,
+      "decodedSha256": "0d75b2131711c98cb98674b4c11095d0070618ed37c97871f5d7bad3349646c2",
+      "decodedBytes": 65082
+    },
+    "windows-paint.json.gz": {
+      "sha256": "629186307085956ea567a1944047c88b32169f2feaec2108fbf2511b920a2848",
+      "bytes": 41024,
+      "decodedSha256": "3946ae93126128aadf6c4afbe9b785984b39b92d37d4ccca38149129e1b3759f",
+      "decodedBytes": 574021
+    },
+    "windows-metrics.json.gz": {
+      "sha256": "b5f9d8f3f2a02cfcb41f789ff5ffe62aff8f5d669b3df50fb0a889b24e100b9c",
+      "bytes": 13626,
+      "decodedSha256": "57fd84000ee6aeefee8188fb37b7a937a635596ffee316596d1c22c1e63bb3d2",
+      "decodedBytes": 362010
+    },
+    "windows-ci.log.gz": {
+      "sha256": "792c5d41e1a568e99e350933a4cd05e5269527723ce4449e3420c33b134c1352",
+      "bytes": 13748,
+      "decodedSha256": "7c9cff3a336741ef73edecd643880bb1df9e76fdb578c76fee5a9bf7e55fa667",
+      "decodedBytes": 72207
+    },
+    "linux-paint.json.gz": {
+      "sha256": "67cf8d73cd5b7abc42eb9a3268c26dfb3e6972089d6605ac42c2ca3dacd852a4",
+      "bytes": 42481,
+      "decodedSha256": "a3addb7d05e1eb1a0f98f6b732c4ca60b348e9cf2e6eb76177f47ff8a78d3715",
+      "decodedBytes": 578586
+    },
+    "linux-metrics.json.gz": {
+      "sha256": "2ffcf83f5f46c51bfee750651b9ca8eddc7bd2438e664749feebaca3faae68e1",
+      "bytes": 18233,
+      "decodedSha256": "a59355561d629cadb9acfe4e42afada1f910b38ae45cea8e6e2c3cdc03b4783a",
+      "decodedBytes": 375661
+    },
+    "linux-ci.log.gz": {
+      "sha256": "3dec2fff0f63303bb5a8b391a635b0aea85cbaf134a8ab67bb845036c14857a2",
+      "bytes": 33383,
+      "decodedSha256": "fbab7d44bcf491ccc9356b025c08fba82cc059476c0c1634eb6c9fd201ac535c",
+      "decodedBytes": 174643
+    },
+    "windows-edge-paint.json.gz": {
+      "sha256": "888bb50033a207310add3f192e4f3627007bbbd53a5f2a6769f0d702e5f660e2",
+      "bytes": 41015,
+      "decodedSha256": "44e6dee29b499c525a38ef7064d8c963afe48b3982b4556d10b188d2b9bc6b65",
+      "decodedBytes": 574012
+    },
+    "windows-edge-metrics.json.gz": {
+      "sha256": "5465311730f71015804f185d8bb6671f3bcb906ebdac08143e6c4cf779e884b7",
+      "bytes": 13620,
+      "decodedSha256": "5d432457b05978cb6c2e09a6bfdcae5497133022f6eef319394c53213e458144",
+      "decodedBytes": 362001
+    },
+    "linux-browser.json.gz": {
+      "sha256": "ef3c9464e59ffab895ea227144917ca70b4f7055491643e5c7f3ccf2857786d3",
+      "bytes": 21119,
+      "decodedSha256": "3e555f022594c58583972827bd4ee32d37795a8297d3a5c1aec190806bedea5e",
+      "decodedBytes": 603653
+    },
+    "linux-installed.json.gz": {
+      "sha256": "5eaec86a2e59ca7ede981411f50758f9172dc6085f97049d879e2bca3721cf2d",
+      "bytes": 117631,
+      "decodedSha256": "cc38dc1d793dba334403c3d288a32652797bc4b844b72bac843815872bdff04a",
+      "decodedBytes": 4495415
+    },
+    "portability.json.gz": {
+      "sha256": "4fb5bb57f307610f64a79ca2fd7c9eb00eb697db8a05e2715dab6005f1d2d26a",
+      "bytes": 99130,
+      "decodedSha256": "f3f4a007d514dfaaa0fba51352767b4c4d5e75d6fa1054e3b89178a8817acf1d",
+      "decodedBytes": 3235303
+    },
+    "report-guards.json.gz": {
+      "sha256": "67dc72e0c14d02d4509f4bfff97a4151e89305ca468e288f248b9948f45a346c",
+      "bytes": 599,
+      "decodedSha256": "e69f232b72a4d17a632ec832062811c3179a55e670858c7023d3d48c3056fa4a",
+      "decodedBytes": 2309
+    },
+    "portability.log.gz": {
+      "sha256": "e6a8c91ba8da61474806897ad93483d3be8122f3905ae535f346b59404fdf2e5",
+      "bytes": 2118,
+      "decodedSha256": "440d85cefa87d61d40c9553181bdd8565ccc00d862bc9c0c72ed83c08cdefb1d",
+      "decodedBytes": 20761
+    },
+    "typecheck.log.gz": {
+      "sha256": "ec43ddc0209078fd37510821e525c393c8fb0da75420f96bf81632ec0cefbf7f",
+      "bytes": 534,
+      "decodedSha256": "e5634972292f403c0621c5236244456dc6fd42cfaedfb9f0868e0f09d8e58478",
+      "decodedBytes": 2713
+    },
+    "ci-run.json.gz": {
+      "sha256": "bc9dee8bf9cbe362a486ded96255a1d48fdef80dfaa7581e6409a52b5c1d5033",
+      "bytes": 1805,
+      "decodedSha256": "d75ed7628fad517b0c8b45cca376df56a7a37472d669c548bb298b31ff42717f",
+      "decodedBytes": 16552
+    },
+    "ci-artifacts.json.gz": {
+      "sha256": "cf1739cecc99a6408c891452efa274e746bc08ab32f75beaf5a2044f0426d45d",
+      "bytes": 334,
+      "decodedSha256": "8b1de1e74f4eb9c5f79df66981f5554d92f2fec58e728351310677390b830d23",
+      "decodedBytes": 572
+    },
+    "upstream-DEPS.gz": {
+      "sha256": "dbe98b5b6f4b4dbe9697374606e7598864c9c927d07464fd5f9921f0222dada6",
+      "bytes": 41820,
+      "decodedSha256": "9b3b7db0bb23ac4e8211ebdedd06f3582d74d43132d07f5bb4440530f9d069b8",
+      "decodedBytes": 196718
+    },
+    "upstream-third_party_blink_renderer_platform_fonts_shaping_harfbuzz_face.cc.gz": {
+      "sha256": "3c393bfd89173f21c4a9dec034b3796671ede08f075deefcef0480c4e2d4b784",
+      "bytes": 7173,
+      "decodedSha256": "f41c18018116c16943de528171b4cd31e8715de81138fcaff2c1e84bddd2046f",
+      "decodedBytes": 27341
+    },
+    "upstream-third_party_blink_renderer_platform_fonts_win_font_platform_data_win.cc.gz": {
+      "sha256": "34e2a081ef38cf16e676a1c2343ba0ee616eb49f5015c3b68c3c3ae0534ed7b6",
+      "bytes": 1699,
+      "decodedSha256": "a7078052d19c3a38fdba6c0987a6a7193f74ba5f635e8a13ea30687e0a05f240",
+      "decodedBytes": 3986
+    },
+    "upstream-third_party_blink_renderer_platform_fonts_web_font_typeface_factory.cc.gz": {
+      "sha256": "46d72c0dc6fd0825440d630ab556632d758eac7389e1cd68a9bbc4356f36376c",
+      "bytes": 1896,
+      "decodedSha256": "638b39bbd4c78a0d8e65548df3c09d5e523be32ea7e9a2af6e1f1341bc48e47d",
+      "decodedBytes": 7291
+    },
+    "upstream-third_party_blink_renderer_platform_fonts_skia_skia_text_metrics.cc.gz": {
+      "sha256": "9553c9b0610690f37f47cd3f2017b1059123b8b1cc7e322f0bc0eb66684c6af4",
+      "bytes": 2472,
+      "decodedSha256": "80809728dcfe37b32de56faaa4c1badd1eda57bd9ef660e96f796e19b2eaf4fa",
+      "decodedBytes": 7856
+    },
+    "upstream-src_ports_SkTypeface_fontations.cpp.gz": {
+      "sha256": "46dc65de9b08aaf6619d0ce86e39cd651e2895df78cace248606c8fb41e55086",
+      "bytes": 16170,
+      "decodedSha256": "3291a320dbfee6f772837cc1b625782c90bc37a09fc94311db2284cce74fedca",
+      "decodedBytes": 78392
+    },
+    "upstream-src_ports_SkScalerContext_win_dw.cpp.gz": {
+      "sha256": "51897681a41c11042584de5e95e12f751d8e442af6feb9913fbee1a40cfd021b",
+      "bytes": 19959,
+      "decodedSha256": "f167f07c33808eeb06e527905ea6a5b61e22dc9803543f4e2428375867d96c71",
+      "decodedBytes": 100684
+    }
+  },
+  "upstreamSources": {
+    "DEPS": {
+      "url": "https://chromium.googlesource.com/chromium/src/+/153.0.8010.12/DEPS",
+      "sha256": "9b3b7db0bb23ac4e8211ebdedd06f3582d74d43132d07f5bb4440530f9d069b8",
+      "evidence": "upstream-DEPS.gz"
+    },
+    "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face.cc": {
+      "url": "https://chromium.googlesource.com/chromium/src/+/153.0.8010.12/third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face.cc",
+      "sha256": "f41c18018116c16943de528171b4cd31e8715de81138fcaff2c1e84bddd2046f",
+      "evidence": "upstream-third_party_blink_renderer_platform_fonts_shaping_harfbuzz_face.cc.gz"
+    },
+    "third_party/blink/renderer/platform/fonts/win/font_platform_data_win.cc": {
+      "url": "https://chromium.googlesource.com/chromium/src/+/153.0.8010.12/third_party/blink/renderer/platform/fonts/win/font_platform_data_win.cc",
+      "sha256": "a7078052d19c3a38fdba6c0987a6a7193f74ba5f635e8a13ea30687e0a05f240",
+      "evidence": "upstream-third_party_blink_renderer_platform_fonts_win_font_platform_data_win.cc.gz"
+    },
+    "third_party/blink/renderer/platform/fonts/web_font_typeface_factory.cc": {
+      "url": "https://chromium.googlesource.com/chromium/src/+/153.0.8010.12/third_party/blink/renderer/platform/fonts/web_font_typeface_factory.cc",
+      "sha256": "638b39bbd4c78a0d8e65548df3c09d5e523be32ea7e9a2af6e1f1341bc48e47d",
+      "evidence": "upstream-third_party_blink_renderer_platform_fonts_web_font_typeface_factory.cc.gz"
+    },
+    "third_party/blink/renderer/platform/fonts/skia/skia_text_metrics.cc": {
+      "url": "https://chromium.googlesource.com/chromium/src/+/153.0.8010.12/third_party/blink/renderer/platform/fonts/skia/skia_text_metrics.cc",
+      "sha256": "80809728dcfe37b32de56faaa4c1badd1eda57bd9ef660e96f796e19b2eaf4fa",
+      "evidence": "upstream-third_party_blink_renderer_platform_fonts_skia_skia_text_metrics.cc.gz"
+    },
+    "src/ports/SkTypeface_fontations.cpp": {
+      "url": "https://skia.googlesource.com/skia/+/9d07e5bad9e3e21da2426946e589daa647218271/src/ports/SkTypeface_fontations.cpp",
+      "sha256": "3291a320dbfee6f772837cc1b625782c90bc37a09fc94311db2284cce74fedca",
+      "evidence": "upstream-src_ports_SkTypeface_fontations.cpp.gz"
+    },
+    "src/ports/SkScalerContext_win_dw.cpp": {
+      "url": "https://skia.googlesource.com/skia/+/9d07e5bad9e3e21da2426946e589daa647218271/src/ports/SkScalerContext_win_dw.cpp",
+      "sha256": "f167f07c33808eeb06e527905ea6a5b61e22dc9803543f4e2428375867d96c71",
+      "evidence": "upstream-src_ports_SkScalerContext_win_dw.cpp.gz"
+    }
+  },
+  "reviewedImages": {
+    "windows-cff2-caption-extralight-italic.png": {
+      "sha256": "4cce96c10054c13928de917d6d2580743c27b4d120d9034defb020d1ed765b9c",
+      "bytes": 31305
+    },
+    "linux-cff2-caption-extralight-italic.png": {
+      "sha256": "e0014067c97c6ef754e79e9698ad2f135504b92cce614cd1fe5adf100657c478",
+      "bytes": 31808
+    },
+    "windows-truetype-display-extralight-italic.png": {
+      "sha256": "56457eead593c70f4110655b65ef021e2c494bbe107d38611a878f76195420ea",
+      "bytes": 32142
+    }
+  },
+  "windowsEdgeCasesEqual": {
+    "paintCases": 564,
+    "metricCases": 188
+  }
+}

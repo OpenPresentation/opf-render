@@ -118,20 +118,34 @@ positioning keep their own precision. TrueType advances and the prepared
 HarfBuzz engine's metric policy remain unchanged. This is a deterministic
 measurement policy, not a claim that every native rasterizer paints alike.
 
-This variable-instance work is **not accepted for release**. The initial 712
-local format/instance/backend cases have matching nonempty browser pixels, but
-10 advance comparisons exceed the unchanged 0.1px gate: five Fontkit CFF2
-cases and five HarfBuzz variable-TTF cases. The largest observed differences
-are 0.134625px and 0.132061px respectively. See the retained
-[checkpoint and failure evidence](evidence/variable-instances-draft-20260914/README.md).
-Fresh packages reproduce the Mac failures; their Node matrix, public TypeScript
-API and original 439 browser comparisons pass. A later Linux run passes prepared
-HarfBuzz advances but fails ten Fontkit cases, exposing a platform-dependent
-TrueType advance difference. Metadata controls cover relocated and optional
-records, named PostScript selection and explicit malformed inputs; the pinned
-HarfBuzz backend still rejects hypothetical extended records. See the
-[portability and installed evidence](evidence/variable-metrics-portability-20260914/README.md).
-A verified metric/paint contract and native instance export remain outstanding.
+This variable-instance work is **not accepted for release**. After the CFF2
+advance fix, source and fresh installed Mac matrices pass all 356 default
+Fontkit cases; five prepared HarfBuzz TrueType cases remain above the unchanged
+0.1px gate (maximum 0.132061px). The completed Linux run at `41311de` passes
+all CFF2 cases and all 356 HarfBuzz cases, but fails five Fontkit TrueType cases
+(maximum 0.134625px). All 712 source and installed pixel comparisons match
+their original selected fonts. Matching those pixels verifies source-wrapper
+and instance consistency; it does not establish agreement with measured glyph
+positions. The fresh package still verifies 37 shipped-file hashes, the Node
+matrix, public TypeScript consumers, 439 earlier browser pixel comparisons and
+a zero-finding dependency audit before retaining the variable-font failure.
+
+The [native portability evidence](evidence/native-metric-portability-20260915/README.md)
+compares identical source fonts and instances in Chromium 153 on Mac, Windows
+and Linux. Selected-outline controls support instance selection for the sampled
+`H`, `g` and `W` glyphs; their rasterization is not identical. Native CFF2
+advances agree between Mac and Linux but are rounded to pixels on Windows.
+Repeated TrueType advances also differ between Mac and the other targets.
+Some native widths differ by more than twice the precision target, so no one
+common width can agree with both. This diagnostic does not relax a gate or
+change product metrics. Painting the accepted shaped positions, logical text
+preservation and native instance export still require a verified contract.
+
+Metadata controls cover relocated and optional records, named PostScript
+selection and explicit malformed inputs. The pinned HarfBuzz backend still
+rejects hypothetical extended records. Earlier failures remain in the
+[initial checkpoint](evidence/variable-instances-draft-20260914/README.md) and
+[normalization/portability evidence](evidence/variable-metrics-portability-20260914/README.md).
 
 `maxPreparedFontBytes` in registry options defaults to 64 MiB. It bounds source,
 decoded data and selected-face output during prepared-service decoding, and
