@@ -1,5 +1,6 @@
 import { OPFFontError } from './fonts.js';
 import { prepareFontData } from './font-preparation.js';
+import { variationSettings } from './font-variations.js';
 
 function configuration(hb, options) {
   const {language = 'und', script, direction, features = []} = options;
@@ -27,7 +28,7 @@ export function createHarfBuzzService(hb, options) {
     engine,
     cacheKey: `${engine}:${settings.key}`,
     prepareFontData,
-    createFace({data, faceIndex = 0, unitsPerEm}) {
+    createFace({data, faceIndex = 0, unitsPerEm, variations}) {
       if (!(data instanceof Uint8Array) || data.byteLength < 12 || !Number.isInteger(unitsPerEm) || unitsPerEm <= 0 || !Number.isInteger(faceIndex) || faceIndex < 0)
         throw new OPFFontError('invalid-shaping-font', 'Supply parsed font bytes, a valid selected face index, and units per em.');
       const signature = new DataView(data.buffer, data.byteOffset, data.byteLength).getUint32(0);
@@ -41,6 +42,10 @@ export function createHarfBuzzService(hb, options) {
         throw new OPFFontError('shaping-font-mismatch', 'The shaping engine did not load the selected physical font face.');
       let font = new hb.Font(face), buffer = new hb.Buffer();
       font.setScale(unitsPerEm, unitsPerEm);
+      const values=variationSettings(variations),axes=face.getAxisInfos();
+      for(const [tag,value]of Object.entries(values??{}))
+        if(!axes[tag]||value<axes[tag].min||value>axes[tag].max)throw new OPFFontError('invalid-font-variations',`Unsupported variation value for '${tag}'.`);
+      if(values)font.setVariations(Object.entries(values).map(([tag,value])=>new hb.Variation(tag,value)));
       return {
         shape(text) {
           if (!font) throw new OPFFontError('font-registry-disposed', 'Create a new font registry after disposal.');

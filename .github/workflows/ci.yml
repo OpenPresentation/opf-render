@@ -137,6 +137,10 @@ jobs:
           node scripts/test-furniture-workflow.mjs artifacts/furniture-workflow installed
           node scripts/test-timeline-acceptance.mjs artifacts/timeline-acceptance.json
       - run: npm pack --dry-run
+      # Keep the unresolved variable advance gate visible without skipping the
+      # existing installed-package and coordinated acceptance steps above.
+      - name: Verify fixed variable instances against browser advances and pixels
+        run: npm run test:variations-browser
       - name: Preserve candidate and raster evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

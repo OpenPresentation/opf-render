@@ -95,10 +95,32 @@ input with an unambiguous selection. No OS resource lookup or font installation
 occurs; MacBinary/AppleDouble wrappers and Type 1 suitcase conversion are not
 implemented by this raw-resource reader.
 
+Fixed variable instances are available in this draft through a font entry's
+`variations` value: an axis map such as `{wght: 700, opsz: 20}` or a unique named
+instance from that font. Omitted axes use the font's defaults; the logical CSS
+weight does not choose an axis value. Unknown axes, ambiguous names and
+out-of-range values reject instead of silently changing the caller's selection.
+The registry records copied coordinates and the selected instance name and
+passes the same coordinates to Fontkit, HarfBuzz, browser FontFace and SVG CSS.
+The bounded `fvar` metadata adapter handles standard subfamily name IDs that
+Fontkit 2.0.4 otherwise cannot resolve. Source font bytes remain unchanged.
+
+This variable-instance checkpoint is **not accepted for release**. All 712
+local format/instance/backend cases have matching nonempty browser pixels, but
+10 advance comparisons exceed the unchanged 0.1px gate: five Fontkit CFF2
+cases and five HarfBuzz variable-TTF cases. The largest observed differences
+are 0.134625px and 0.132061px respectively. See the retained
+[checkpoint and failure evidence](evidence/variable-instances-draft-20260914/README.md).
+Fresh installed variable tests, additional malformed/extended `fvar` controls,
+browser payload measurement and native instance export remain outstanding.
+
 `maxPreparedFontBytes` in registry options defaults to 64 MiB. It bounds source,
 decoded data and selected-face output during prepared-service decoding, and
-TTC/DFont extraction with either backend. It is not a general memory budget for the
-existing Fontkit default backend. Invalid bounds, checksum failures and
+WOFF/WOFF2 decoding and TTC/DFont extraction with either backend. Compressed
+fonts now use the bounded decoder in the default backend as well, because
+Fontkit instance processing requires standalone bytes. This adds the codec to
+the default browser dependency graph; its payload impact remains to be measured.
+The byte limit is not a general memory budget for Fontkit. Invalid bounds, checksum failures and
 over-expanding streams reject explicitly. Brotli output is limited before
 reconstruction; zlib is streamed with declared-length checks. Essential font
 preparation makes no network request.
@@ -181,13 +203,13 @@ cause and a hosting/CSP explanation.
   all 8,568 prior glyph runs/metrics plus three `fitText` fixtures through the
   registry, preserving source ranges and the fixed 32px floor.
 
-Before default promotion: verify CFF/CFF2 and
-variable faces/instances, language/script itemization,
+Before default promotion: resolve the retained CFF2/variable advance failures and
+complete installed variable-face/instance acceptance, language/script itemization,
 paragraph bidi, supplementary characters, fallback, broader shaping settings,
 memory/performance, complete slide/ink review, and shared editing/undo/PPTX
 installed workflows with this backend. TTF, WOFF/WOFF2 and selected TTC/DFont
 measurement/painting are exercised; accepting an OTF/SFNT signature alone is
-not a CFF fixture matrix.
+not proof that the additional draft CFF/variable matrix is accepted.
 Guessed buffer properties are not paragraph itemization or bidi. Unsupported
 inputs must not silently switch shapers. Native Office recovery, tab/image
 failures and physical-font identity retain their separate gates. No restricted

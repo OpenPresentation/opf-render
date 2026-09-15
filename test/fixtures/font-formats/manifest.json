@@ -1,0 +1,169 @@
+{
+  "license": "SIL Open Font License 1.1; unmodified upstream files for tests only",
+  "fonts": [
+    {
+      "file": "source-sans/OTF/SourceSans3-Regular.otf",
+      "repository": "adobe-fonts/source-sans",
+      "revision": "87b37a2daaed80fcb8e8ccb0085c4d72ddade12e",
+      "upstreamPath": "OTF/SourceSans3-Regular.otf",
+      "gitBlob": "7a261d93d6bd4046f5e51a865b6957849b8e14b5",
+      "sha256": "08df266400933d3178d081a45f94a08814c3e55b4b7dd2e0ff69cb1329f13ab6",
+      "bytes": 334924
+    },
+    {
+      "file": "source-sans/OTF/SourceSans3-Bold.otf",
+      "repository": "adobe-fonts/source-sans",
+      "revision": "87b37a2daaed80fcb8e8ccb0085c4d72ddade12e",
+      "upstreamPath": "OTF/SourceSans3-Bold.otf",
+      "gitBlob": "d2129396eab406f5d268806c7598b78eb7bfdafb",
+      "sha256": "7776ddb9f3eb58683e59f28d558d8896b768c2d0c80799fb3f1c56c54dfd98c9",
+      "bytes": 343596
+    },
+    {
+      "file": "source-sans/OTF/SourceSans3-It.otf",
+      "repository": "adobe-fonts/source-sans",
+      "revision": "87b37a2daaed80fcb8e8ccb0085c4d72ddade12e",
+      "upstreamPath": "OTF/SourceSans3-It.otf",
+      "gitBlob": "00dbccb862f999428863c678881d42b6357a6eb7",
+      "sha256": "430b9f0eb1170be0981706d14b6cf87122efba9d86c373bbdf69daf276421462",
+      "bytes": 239048
+    },
+    {
+      "file": "source-sans/OTF/SourceSans3-BoldIt.otf",
+      "repository": "adobe-fonts/source-sans",
+      "revision": "87b37a2daaed80fcb8e8ccb0085c4d72ddade12e",
+      "upstreamPath": "OTF/SourceSans3-BoldIt.otf",
+      "gitBlob": "c6029d09aeb50a3ca5b659f78fd5121bc618b02f",
+      "sha256": "05e97d9adc01059607e97b167a68afb25680db904db7aba831dc2510f14b6515",
+      "bytes": 243664
+    },
+    {
+      "file": "source-sans/VF/SourceSans3VF-Upright.otf",
+      "repository": "adobe-fonts/source-sans",
+      "revision": "87b37a2daaed80fcb8e8ccb0085c4d72ddade12e",
+      "upstreamPath": "VF/SourceSans3VF-Upright.otf",
+      "gitBlob": "8ee0150af161d18470985cc871bd89553c246d46",
+      "sha256": "3d0dfd6a3a644ab3d462a737923ffac41fb0ae007ce9ba83c24e6bfa76aa56c7",
+      "bytes": 538164
+    },
+    {
+      "file": "source-sans/VF/SourceSans3VF-Italic.otf",
+      "repository": "adobe-fonts/source-sans",
+      "revision": "87b37a2daaed80fcb8e8ccb0085c4d72ddade12e",
+      "upstreamPath": "VF/SourceSans3VF-Italic.otf",
+      "gitBlob": "1c7053d1985878c9e26cd20842df2950a7909eeb",
+      "sha256": "3f5646523c6e8c504d06a34ce05a190b87c071c4d318296fd88794fd7b6bab57",
+      "bytes": 303192
+    },
+    {
+      "file": "source-sans/VF/SourceSans3VF-Upright.ttf",
+      "repository": "adobe-fonts/source-sans",
+      "revision": "87b37a2daaed80fcb8e8ccb0085c4d72ddade12e",
+      "upstreamPath": "VF/SourceSans3VF-Upright.ttf",
+      "gitBlob": "4b31756ce969ae438bdae0056db06c7ad12462c1",
+      "sha256": "1147db9a3f0edd4956068de77930148acce2742dd76d57f7239b2b1c687ac63f",
+      "bytes": 646540
+    },
+    {
+      "file": "source-sans/VF/SourceSans3VF-Italic.ttf",
+      "repository": "adobe-fonts/source-sans",
+      "revision": "87b37a2daaed80fcb8e8ccb0085c4d72ddade12e",
+      "upstreamPath": "VF/SourceSans3VF-Italic.ttf",
+      "gitBlob": "e4d4d8704fbb3eb320c92930900c1f1da5bd3afc",
+      "sha256": "c34791f4f889af43d84e2f84ebeb02e6eed07058aca21e6729d26e6436d18965",
+      "bytes": 395500
+    },
+    {
+      "file": "source-serif/OTF/SourceSerif4-Regular.otf",
+      "repository": "adobe-fonts/source-serif",
+      "revision": "80d3f8894c09c937bebfa9011247d2e1c79fd6f4",
+      "upstreamPath": "OTF/SourceSerif4-Regular.otf",
+      "gitBlob": "fc9f84e94b2537b3cc10aaebcab08a0bc2a0e16b",
+      "sha256": "edf160d0d584deee8a3bb2c3371b2a7624ca63580fbe02c57c1f4c91e84d8787",
+      "bytes": 241392
+    },
+    {
+      "file": "source-serif/OTF/SourceSerif4-Bold.otf",
+      "repository": "adobe-fonts/source-serif",
+      "revision": "80d3f8894c09c937bebfa9011247d2e1c79fd6f4",
+      "upstreamPath": "OTF/SourceSerif4-Bold.otf",
+      "gitBlob": "35a3350e3fe5157876b1f26630f9d39a5ec26c28",
+      "sha256": "f5fb9a7b1611353fdfebcf8b1e46c7d9108470f25999b841816d8b643b1856ff",
+      "bytes": 251844
+    },
+    {
+      "file": "source-serif/OTF/SourceSerif4-It.otf",
+      "repository": "adobe-fonts/source-serif",
+      "revision": "80d3f8894c09c937bebfa9011247d2e1c79fd6f4",
+      "upstreamPath": "OTF/SourceSerif4-It.otf",
+      "gitBlob": "550c8547051aefd8a40632307e6e3433dbd103b3",
+      "sha256": "f8062257f4693e438a8e317c9fe2b4393f0d4eed84d897edcbfd733c30a1c1a1",
+      "bytes": 169132
+    },
+    {
+      "file": "source-serif/OTF/SourceSerif4-BoldIt.otf",
+      "repository": "adobe-fonts/source-serif",
+      "revision": "80d3f8894c09c937bebfa9011247d2e1c79fd6f4",
+      "upstreamPath": "OTF/SourceSerif4-BoldIt.otf",
+      "gitBlob": "c18bc8e07eb7d7f1d5e29fb71120112796aae2e8",
+      "sha256": "ebb5394e1e11e09480619c9bb10f020aded9530833edcbdb735a4702ae6fa09e",
+      "bytes": 175576
+    },
+    {
+      "file": "source-serif/VAR/SourceSerif4Variable-Roman.otf",
+      "repository": "adobe-fonts/source-serif",
+      "revision": "80d3f8894c09c937bebfa9011247d2e1c79fd6f4",
+      "upstreamPath": "VAR/SourceSerif4Variable-Roman.otf",
+      "gitBlob": "dda52e9d2b13bc834d57a306b7ce7f6386a86f41",
+      "sha256": "867b73c6a954a4a64616906d179f94572a748790a1d022ebeeff07f56ea0221a",
+      "bytes": 1884148
+    },
+    {
+      "file": "source-serif/VAR/SourceSerif4Variable-Italic.otf",
+      "repository": "adobe-fonts/source-serif",
+      "revision": "80d3f8894c09c937bebfa9011247d2e1c79fd6f4",
+      "upstreamPath": "VAR/SourceSerif4Variable-Italic.otf",
+      "gitBlob": "7f3fc506816bdb8f0cb447679c7badb3c98df695",
+      "sha256": "68220a94535e9cffb9b7d844140583ac2a3195eabdd4890b15f83272c8bfcfe4",
+      "bytes": 1303316
+    },
+    {
+      "file": "source-serif/VAR/SourceSerif4Variable-Roman.ttf",
+      "repository": "adobe-fonts/source-serif",
+      "revision": "80d3f8894c09c937bebfa9011247d2e1c79fd6f4",
+      "upstreamPath": "VAR/SourceSerif4Variable-Roman.ttf",
+      "gitBlob": "83a2dd1f5e2b0cca388ba1d840d8ddf49ef00f11",
+      "sha256": "14d360ee1b76655da9276628b229e11671bc1f5d1083636144db6677d452cf55",
+      "bytes": 1204208
+    },
+    {
+      "file": "source-serif/VAR/SourceSerif4Variable-Italic.ttf",
+      "repository": "adobe-fonts/source-serif",
+      "revision": "80d3f8894c09c937bebfa9011247d2e1c79fd6f4",
+      "upstreamPath": "VAR/SourceSerif4Variable-Italic.ttf",
+      "gitBlob": "c27d20422faf6fa432396d4ae73af574914bf575",
+      "sha256": "6a059a64838978d54e8fab71ed86b0d82e948c0e12b2664d0c15166326dcff82",
+      "bytes": 850036
+    }
+  ],
+  "licenses": [
+    {
+      "file": "source-sans/LICENSE.md",
+      "repository": "adobe-fonts/source-sans",
+      "revision": "87b37a2daaed80fcb8e8ccb0085c4d72ddade12e",
+      "upstreamPath": "LICENSE.md",
+      "gitBlob": "22c601b82f29fc6bb801445098c9f23ffdca4f94",
+      "sha256": "56af9b9c6715597e458284a474dc118a50a4150e9d547c70f7b4a33c3e6a9328",
+      "bytes": 4486
+    },
+    {
+      "file": "source-serif/LICENSE.md",
+      "repository": "adobe-fonts/source-serif",
+      "revision": "80d3f8894c09c937bebfa9011247d2e1c79fd6f4",
+      "upstreamPath": "LICENSE.md",
+      "gitBlob": "5871e1f3d1b3362453b3a1f6c493fbefdbd3dcf3",
+      "sha256": "c21d7293d87b6d7ab1d0229a2f55b77f33a7613a6a4e66f6693d68d7d8d09464",
+      "bytes": 4491
+    }
+  ]
+}

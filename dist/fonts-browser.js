@@ -1,4 +1,5 @@
 import { createFontRegistry, OPFFontError } from "./fonts.js";
+import { variationCss } from './font-variations.js';
 /** Fetch only host-selected font files, then use those exact bytes for shaping and CSS. */
 export async function loadBrowserFontRegistry(entries, options = {}) {
   const documentRef = options.document ?? globalThis.document;
@@ -42,6 +43,7 @@ export async function loadBrowserFontRegistry(entries, options = {}) {
           {
             weight: String(descriptor.weight),
             style: descriptor.italic ? "italic" : "normal",
+            ...(descriptor.variations?{variationSettings:variationCss(descriptor.variations)}:{}),
           },
         );
         await face.load();
