@@ -13,6 +13,11 @@ export interface ShapedText {
   engine: string; text: string; unitsPerEm: number; glyphs: ShapedGlyph[]; width: number;
   outline: {x: number; y: number; width: number; height: number} | null;
 }
+export interface PaintedText extends ShapedText {
+  glyphs: (ShapedGlyph & {path: string})[];
+  /** Positions and thicknesses in font units; offsets are positive above the baseline. */
+  decorations?: Record<'underline'|'strikethrough', {offset:number; thickness:number}>;
+}
 export interface FontShaper {
   readonly engine: string;
   readonly cacheKey: string;
@@ -20,6 +25,9 @@ export interface FontShaper {
   prepareFontData?(data: Uint8Array, maxBytes?: number): {data: Uint8Array; removedSignature: boolean; embeddingReason?: 'woff2-hmtx-compatibility'};
   createFace(input: {data: Uint8Array; faceIndex?: number; unitsPerEm: number; variations?: Record<string,number>}): {
     shape(text: string): ShapedText;
+    /** Optional vector painter for the same selected face, in font units with y up. Empty means no ink. */
+    glyphPath?(glyphId: number): string;
+    decorationMetrics?(): NonNullable<PaintedText['decorations']>;
     dispose(): void;
   };
 }

@@ -218,8 +218,40 @@ export function createFontRegistry(entries, options = {}) {
     const bounds=metrics(text,size,style,true).outline;
     return bounds===null?null:{x:bounds.x*size,y:bounds.y*size,width:bounds.width*size,height:bounds.height*size};
   };
+  const textMeasurement = {measure,resolveStyle,outlineBounds};
+  const textPainting = fontShaper && faces.every(face => typeof face.shaper.glyphPath === 'function')
+    ? Object.freeze({textMeasurement, shape(text, style) {
+      const run = structuredClone(metrics(text,1,style,true).run), face = resolveFace(style);
+      // Color and bitmap glyph painting requires its own paint-graph contract.
+      // Do not silently replace color glyphs with a monochrome base outline.
+      if (['COLR','CBDT','sbix','SVG '].some(tag => face.font.directory.tables[tag]))
+        throw new OPFFontError('unsupported-font-painting', 'Shaped vector painting of color or bitmap fonts is not implemented.', {path:style.path,fontFamily:face.family});
+      if (run.text !== text || run.unitsPerEm !== face.font.unitsPerEm || !Array.isArray(run.glyphs))
+        throw new OPFFontError('invalid-shaped-paint', 'The painter must use the measured source text and selected font.');
+      const paths = new Map();
+      for (const glyph of run.glyphs) {
+        if (![glyph.id,glyph.cluster,glyph.sourceStart,glyph.sourceEnd].every(Number.isInteger) ||
+            glyph.id < 0 || glyph.sourceStart !== glyph.cluster || glyph.sourceStart < 0 ||
+            glyph.sourceEnd < glyph.sourceStart || glyph.sourceEnd > text.length ||
+            ![glyph.xAdvance,glyph.yAdvance,glyph.xOffset,glyph.yOffset].every(Number.isFinite))
+          throw new OPFFontError('invalid-shaped-paint', 'The painter requires valid glyph positions and original UTF-16 source ranges.');
+        if (!paths.has(glyph.id)) {
+          const value = face.shaper.glyphPath(glyph.id);
+          if (typeof value !== 'string' || /[^MmLlHhVvCcSsQqTtAaZz0-9eE+.,\s-]/.test(value) ||
+              !(value.match(/[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/g) ?? []).every(number => Number.isFinite(Number(number))))
+            throw new OPFFontError('invalid-shaped-paint', 'The selected glyph has no valid finite SVG outline.');
+          paths.set(glyph.id, value);
+        }
+        glyph.path = paths.get(glyph.id);
+      }
+      if (run.glyphs.reduce((sum,glyph) => sum + glyph.xAdvance,0) / run.unitsPerEm !== run.width)
+        throw new OPFFontError('invalid-shaped-paint', 'Painted glyph advances must equal the measured run width.');
+      if (face.shaper.decorationMetrics) run.decorations = face.shaper.decorationMetrics();
+      return run;
+    }}) : undefined;
   return {
-    textMeasurement: {measure,resolveStyle,outlineBounds},
+    textMeasurement,
+    ...(textPainting ? {textPainting} : {}),
     ...(fontShaper ? {shapeText(text,style) { return structuredClone(metrics(text,1,style,true).run); }} : {}),
     dispose() {
       if (disposed) return;

@@ -18,7 +18,7 @@ const {registry, options} = await prepareNodeFonts({
 });
 // Pass these same options to layout, SVG, editing, and PPTX export.
 const run = registry.shapeText('Original o\u0302\u0301 source', {
-  fontFamily: 'Roboto', fontWeight: 400,
+  fontFamily: 'Arimo', fontWeight: 400,
 });
 registry.dispose(); // When this registry's final owner is finished.
 ```
@@ -50,6 +50,43 @@ by physical face, engine and settings, with per-face limits of 512 entries and
 Idempotent registry disposal drops its reusable font/buffer references;
 upstream uses garbage-collection finalizers, so this does not promise immediate
 WASM memory reclamation. Other registries remain usable.
+
+## Experimental SVG glyph painting
+
+A prepared HarfBuzz registry now exposes `textPainting`. Its `shape(text,
+style)` returns a copied measured run with a vector `path` on each glyph and
+underline/strikethrough metrics from the selected physical font and instance.
+It does not add paths to the measurement cache or change source text, glyph
+positions, advances, or layout. Color and bitmap font painting is unsupported
+and rejects explicitly instead of substituting monochrome outlines.
+
+`prepareNodeFonts({fontShaper})` includes this provider in its returned options.
+For browser registries, supply both providers from the same registry:
+
+```js
+const options = {
+  textMeasurement: registry.textMeasurement,
+  textPainting: registry.textPainting,
+  embeddedFonts: registry.embeddedFonts,
+  trace: true,
+};
+```
+
+SVG rejects a painter paired with a different measurement provider. Visible
+paths use the selected glyphs and their complete per-glyph positions, without
+stretching ink to a final width. Logical SVG text remains transparent and
+selectable, preserving whitespace, links, formatting and traced source ranges.
+Fontkit remains the default; callers can omit `textPainting` to retain native
+SVG text painting with the prepared measurement provider.
+
+This is a **draft implementation**, not accepted editor or export integration.
+The Node check covers 650 glyph runs, 13 explicit coverage failures and five
+slides with unchanged accepted geometry and logical text. The default
+805-slide raster regression remains unchanged. Browser pixel acceptance,
+precise caret/selection geometry, preview editing/undo, fresh installed painting
+checks and native export acceptance remain open. In particular, preserving
+logical text does not prove native DOM Range geometry matches the visible
+glyph paths. No package release or production-site adoption is implied.
 
 ## Font containers and source preservation
 
@@ -138,8 +175,9 @@ advances agree between Mac and Linux but are rounded to pixels on Windows.
 Repeated TrueType advances also differ between Mac and the other targets.
 Some native widths differ by more than twice the precision target, so no one
 common width can agree with both. This diagnostic does not relax a gate or
-change product metrics. Painting the accepted shaped positions, logical text
-preservation and native instance export still require a verified contract.
+change product metrics. The experimental painter above supplies accepted
+shaped positions and logical text; browser/editor acceptance and native
+instance export still require a verified contract.
 
 Metadata controls cover relocated and optional records, named PostScript
 selection and explicit malformed inputs. The pinned HarfBuzz backend still

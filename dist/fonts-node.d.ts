@@ -17,6 +17,7 @@ export interface PreparedNodeFonts {
   manifest: BundledFontManifest;
   options: {
     textMeasurement: FontRegistry["textMeasurement"];
+    textPainting?: FontRegistry["textPainting"];
     embeddedFonts: EmbeddedFont[];
     fontFiles: string[];
     useBundledFonts: false;

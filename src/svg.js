@@ -536,6 +536,9 @@ export function renderSvgDeck(input, options = {}) {
 }
 
 function renderResolvedSlide(resolved, slideIndex, options) {
+  if (options.textPainting && (typeof options.textPainting.shape !== 'function' ||
+      !options.textMeasurement?.measure || options.textPainting.textMeasurement !== options.textMeasurement))
+    throw new OPFRenderError('invalid-text-painting', 'SVG painting and layout must share the same prepared font registry.');
   options = { ...options, _diagnosticPaths: new Set() };
   const bound = resolved.slides[slideIndex];
   const { width, height } = bound.design.dimensions;
@@ -553,8 +556,8 @@ function renderResolvedSlide(resolved, slideIndex, options) {
     "svg",
     {
       xmlns: "http://www.w3.org/2000/svg",
-      role: "img",
-      "aria-label": title,
+      role: options.textPainting ? "group" : "img",
+      "aria-label": options.textPainting ? flattenText(title) : title,
       viewBox: `0 0 ${width} ${height}`,
       width,
       height,
@@ -683,7 +686,9 @@ function renderList(item, box, bound, options) {
   const fit=item.text?.listEntries?item.text:fitList(item.value,box,25*scale,((bound.composition??bound.geometry.composition).minFontSize??16)*scale,{style:{fontFamily:bound.design.fonts.body,fontWeight:400,path:item.path},textMeasurement:options.textMeasurement});
   const children=[];
   for(const entry of fit.listEntries){
-    children.push(tag('text',{x:stableNumber(entry.marker.x),y:stableNumber(entry.marker.y),'font-family':fontStack(entry.marker.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(entry.marker.fontSize),fill:bound.design.colors.text,'aria-hidden':'true'},escapeText(entry.marker.text)));
+    children.push(renderPaintedText({x:stableNumber(entry.marker.x),y:stableNumber(entry.marker.y),'font-family':fontStack(entry.marker.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(entry.marker.fontSize),fill:bound.design.colors.text,'aria-hidden':'true'},escapeText(entry.marker.text),[
+      {text:entry.marker.text,x:entry.marker.x,y:entry.marker.y,size:entry.marker.fontSize,style:entry.marker.style,fill:bound.design.colors.text,start:0},
+    ],options));
     const config={path:entry.textPath,align:'left',fill:bound.design.colors.text,rich:Array.isArray(entry.value),options};
     children.push(renderRichLines(typeof entry.value==='string'?[entry.value]:entry.value,entry.text,entry.textBox,bound,config));
     if(entry.description)children.push(renderRichLines(typeof entry.descriptionValue==='string'?[entry.descriptionValue]:entry.descriptionValue,entry.description,entry.descriptionBox,bound,{...config,path:entry.descriptionPath,rich:Array.isArray(entry.descriptionValue),fill:bound.design.colors.mutedText}));
@@ -817,19 +822,27 @@ function renderCode(item, box, bound, options) {
   ];
   for (const part of layout.parts) {
     if (!part.fit) throw new OPFRenderError('layout-overflow', 'Code content has no usable internal space; increase its cell size before rendering.', {path:part.path,issues:layout.diagnostics});
-    const lines=part.fit.sourceLines.map((line,index)=>tag('text',{
+    const lines=part.fit.sourceLines.map((line,index)=>{
+      const baseline=part.box.y+part.fit.fontSize+index*part.fit.lineHeight;
+      const attributes={
       x:stableNumber(part.box.x),y:stableNumber(part.box.y+part.fit.fontSize+index*part.fit.lineHeight),
       'text-anchor':'start','font-family':fontStack(part.style.fontFamily,'monospace'),
       'font-size':stableNumber(part.fit.fontSize),'font-weight':part.style.fontWeight,'font-style':part.style.italic?'italic':undefined,
       'xml:space':'preserve',style:'white-space:pre','text-rendering':'geometricPrecision',fill:part.role==='body'?'#E5E7EB':'#93C5FD',
       ...traceAttrs(options,part.path),...(options.trace?{'data-opf-code-role':part.role,'data-opf-generated':part.generated?'true':undefined,
         'data-opf-text-start':line.start,'data-opf-text-end':line.end,'data-opf-text-next-start':line.nextStart,'data-opf-line-boundary':line.boundary}:{}),
-    },line.segments.map(segment=>tag('tspan',{
+      };
+      const content=line.segments.map(segment=>tag('tspan',{
       x:stableNumber(part.box.x+segment.x),
       // SVG's CSS tab-size does not place literal tabs at their measured stops.
       ...(segment.kind==='tab'?{textLength:stableNumber(segment.width),lengthAdjust:'spacingAndGlyphs'}:{}),
       ...(options.trace?{'data-opf-segment':segment.kind,'data-opf-text-start':segment.start,'data-opf-text-end':segment.end}:{}),
-    },escapeText(part.text.slice(segment.start,segment.end)))).join('')));
+      },escapeText(part.text.slice(segment.start,segment.end)))).join('');
+      return renderPaintedText(attributes,content,line.segments.filter(segment=>segment.kind!=='tab').map(segment=>({
+        text:part.text.slice(segment.start,segment.end),x:part.box.x+segment.x,y:baseline,
+        size:part.fit.fontSize,style:part.style,start:segment.start,fill:part.role==='body'?'#E5E7EB':'#93C5FD',
+      })),options);
+    });
     children.push(tag('g',{...traceAttrs(options,part.path),...(options.trace?{'data-opf-code-role':part.role,'data-opf-generated':part.generated?'true':undefined,
       'data-opf-box-x':part.box.x,'data-opf-box-y':part.box.y,'data-opf-box-width':part.box.width,'data-opf-box-height':part.box.height}:{}),
       ...(part.fit.overflow?{'data-opf-overflow':'true'}:{})},lines.join('\n')));
@@ -848,16 +861,21 @@ function renderMetric(item, box, bound, options) {
     if (!part.fit||part.linePositions?.length!==part.fit.sourceLines.length) throw new OPFRenderError('layout-overflow','Metric content has no accepted internal line positions; increase its cell size or coordinate package versions.',{path:part.path,issues:layout.diagnostics});
     const lines=part.fit.sourceLines.map((line,index)=>{
       const origin=part.linePositions[index];
-      return tag('text',{x:stableNumber(origin.x),y:stableNumber(origin.baseline),'text-anchor':'start',
+      const attributes={x:stableNumber(origin.x),y:stableNumber(origin.baseline),'text-anchor':'start',
         'font-family':fontStack(part.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(part.fit.fontSize),
         'font-weight':part.style.fontWeight,'font-style':part.style.italic?'italic':undefined,
         'xml:space':'preserve',style:'white-space:pre','text-rendering':'geometricPrecision',fill:part.role==='value'?bound.design.colors.primary:bound.design.colors.text,
         ...traceAttrs(options,part.path),...(options.trace?{'data-opf-metric-role':part.role,'data-opf-text-start':line.start,
           'data-opf-text-end':line.end,'data-opf-text-next-start':line.nextStart,'data-opf-line-boundary':line.boundary}:{}),
-      },line.segments.map(segment=>tag('tspan',{x:stableNumber(origin.x+segment.x),
+      };
+      const content=line.segments.map(segment=>tag('tspan',{x:stableNumber(origin.x+segment.x),
         ...(segment.kind==='tab'?{textLength:stableNumber(segment.width),lengthAdjust:'spacingAndGlyphs'}:{}),
         ...(options.trace?{'data-opf-segment':segment.kind,'data-opf-text-start':segment.start,'data-opf-text-end':segment.end}:{}),
-      },escapeText(part.text.slice(segment.start,segment.end)))).join(''));
+      },escapeText(part.text.slice(segment.start,segment.end)))).join('');
+      return renderPaintedText(attributes,content,line.segments.filter(segment=>segment.kind!=='tab').map(segment=>({
+        text:part.text.slice(segment.start,segment.end),x:origin.x+segment.x,y:origin.baseline,
+        size:part.fit.fontSize,style:part.style,start:segment.start,fill:part.role==='value'?bound.design.colors.primary:bound.design.colors.text,
+      })),options);
     });
     children.push(tag('g',{...traceAttrs(options,part.path),...(options.trace?{'data-opf-metric-role':part.role,
       'data-opf-box-x':part.box.x,'data-opf-box-y':part.box.y,'data-opf-box-width':part.box.width,'data-opf-box-height':part.box.height}:{}),
@@ -1187,6 +1205,38 @@ function renderRichTextBox(value, box, bound, config) {
   return renderRichLines(value,fit,box,bound,config);
 }
 
+/** Visible ink uses accepted glyph positions; logical text and source mappings are retained. */
+function renderPaintedText(attributes, content, segments, options) {
+  if (!options.textPainting) return tag('text', attributes, content);
+  const painted = segments.filter(segment => segment.text.length).map(segment => {
+    const run = options.textPainting.shape(segment.text, segment.style);
+    const scale = segment.size / run.unitsPerEm;
+    let x = 0, y = 0;
+    const glyphs = run.glyphs.map(glyph => {
+      const position = `translate(${x + glyph.xOffset} ${y + glyph.yOffset})`;
+      x += glyph.xAdvance; y += glyph.yAdvance;
+      return tag('path', {d:glyph.path,transform:position,
+        ...(options.trace ? {'data-opf-glyph-id':glyph.id,
+          'data-opf-glyph-source-start':segment.start + glyph.sourceStart,
+          'data-opf-glyph-source-end':segment.start + glyph.sourceEnd} : {})});
+    });
+    for (const decoration of ['underline','strikethrough']) if (segment[decoration]) {
+      const metric = run.decorations?.[decoration];
+      if (!metric || !Number.isFinite(metric.offset) || !Number.isFinite(metric.thickness) || metric.thickness <= 0)
+        throw new OPFRenderError('invalid-text-painting', 'Decorated text requires metrics from the same selected font.');
+      glyphs.push(tag('rect', {x:0,y:metric.offset-metric.thickness/2,width:x,height:metric.thickness,
+        'data-opf-text-decoration':decoration}));
+    }
+    // Font-unit coordinates and scale retain full precision. The general SVG
+    // number formatter is intentionally not used to quantize this transform.
+    return tag('g', {transform:`translate(${segment.x} ${segment.y}) scale(${scale} ${-scale})`,
+      fill:segment.fill,'aria-hidden':'true','pointer-events':'none','data-opf-glyph-paint':run.engine}, glyphs.join(''));
+  });
+  return tag('g', {'data-opf-shaped-text':'1'}, painted.join('') + tag('text', {
+    ...attributes,'fill-opacity':0,'data-opf-logical-text':'1','pointer-events':'all',
+  },content));
+}
+
 function renderRichLines(value,fit,box,bound,config) {
   const alignment=fit.placement?.alignment??config.align??bound.design.contentAlignment;
   let textOffset=0;
@@ -1203,7 +1253,13 @@ function renderRichLines(value,fit,box,bound,config) {
     // avoids hinted browser advances; textLength also removes fractional-size
     // quantization drift. Height and baseline retain the selected font size.
     const position=flow?{'baseline-shift':fragment.baselineShift?stableNumber(-fragment.baselineShift):undefined}:{x:stableNumber((placed?.x??box.x+offset)+fragment.x),y:stableNumber((placed?.baseline??box.y+line.baseline)+fragment.baselineShift)};
-    const rendered=tag(flow?'tspan':'text',{...(config.options.trace?{'data-opf-text-start':runOffsets[fragment.runIndex]+fragment.start,'data-opf-text-end':runOffsets[fragment.runIndex]+fragment.end}:{}),...position,'xml:space':'preserve','text-rendering':flow?undefined:'geometricPrecision',textLength:placed&&fragment.width>0?stableNumber(fragment.width):undefined,lengthAdjust:placed&&fragment.width>0?'spacingAndGlyphs':undefined,'font-family':fontStack(fragment.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(fragment.fontSize),'font-weight':fragment.style.fontWeight,'font-style':fragment.style.italic?'italic':flow?'normal':undefined,'text-decoration':[run.underline?'underline':'',run.strikethrough?'line-through':''].filter(Boolean).join(' ')||undefined,fill:/^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(run.color??'')?run.color:config.fill},escapeText(fragment.text));
+    const fill=/^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(run.color??'')?run.color:config.fill;
+    const attributes={...(config.options.trace?{'data-opf-text-start':runOffsets[fragment.runIndex]+fragment.start,'data-opf-text-end':runOffsets[fragment.runIndex]+fragment.end}:{}),...position,'xml:space':'preserve','text-rendering':flow?undefined:'geometricPrecision',textLength:placed&&fragment.width>0?stableNumber(fragment.width):undefined,lengthAdjust:placed&&fragment.width>0?'spacingAndGlyphs':undefined,'font-family':fontStack(fragment.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(fragment.fontSize),'font-weight':fragment.style.fontWeight,'font-style':fragment.style.italic?'italic':flow?'normal':undefined,'text-decoration':[run.underline?'underline':'',run.strikethrough?'line-through':''].filter(Boolean).join(' ')||undefined,fill};
+    const rendered=flow?tag('tspan',attributes,escapeText(fragment.text)):renderPaintedText(attributes,escapeText(fragment.text),[
+      {text:fragment.text,x:(placed?.x??box.x+offset)+fragment.x,y:(placed?.baseline??box.y+line.baseline)+fragment.baselineShift,
+        size:fragment.fontSize,style:fragment.style,start:runOffsets[fragment.runIndex]+fragment.start,fill,
+        underline:run.underline,strikethrough:run.strikethrough},
+    ],config.options);
     if(run.link&&/^(https?:|mailto:)/i.test(run.link))return tag('a',{href:run.link,target:'_blank',rel:'noopener noreferrer'},rendered);
     return rendered;
     });
@@ -1253,7 +1309,7 @@ function renderTextBox(text, box, bound, config) {
       lengthAdjust:segment.kind==='tab'||placed?'spacingAndGlyphs':undefined,
       ...(config.options.trace?{'data-opf-source-start':segment.start,'data-opf-source-end':segment.end,'data-opf-segment':segment.kind}:{}),
     },escapeText(line.slice(segment.start-sourceLine.start,segment.end-sourceLine.start)))).join(''):escapeText(line);
-    return tag("text", {
+    const attributes = {
     x: stableNumber(tabs?origin:placed?placed.x+placed.width*factor:x), y: stableNumber(placed?.baseline??startY + index * fit.lineHeight),
     "text-anchor": tabs?'start':anchor, "font-family": fontStack(style.fontFamily, config.fontFamily === bound.design.fonts.code ? "monospace" : bound.design.fontScheme.type),
     "font-size": stableNumber(size), "font-weight": style.fontWeight, "font-style": style.italic ? "italic" : undefined, fill: config.fill,
@@ -1261,7 +1317,15 @@ function renderTextBox(text, box, bound, config) {
     textLength:!tabs&&placed?.width>0?stableNumber(placed.width):undefined,lengthAdjust:!tabs&&placed?.width>0?'spacingAndGlyphs':undefined,
     ...traceAttrs(config.options, config.path),
     ...(config.options.trace&&sourceLine?{'data-opf-source-start':sourceLine.start,'data-opf-source-end':sourceLine.end,'data-opf-source-next-start':sourceLine.nextStart,'data-opf-line-boundary':sourceLine.boundary}:{}),
-  }, content);
+    };
+    if (!config.options.textPainting) return tag('text',attributes,content);
+    const baseline=placed?.baseline??startY + index * fit.lineHeight;
+    const paintSegments=tabs?sourceLine.segments.filter(segment=>segment.kind!=='tab').map(segment=>({
+      text:line.slice(segment.start-sourceLine.start,segment.end-sourceLine.start),x:origin+segment.x,
+      y:baseline,size,style,fill:config.fill,start:segment.start,
+    })):[{text:line,x:placed?.x??x-(sourceLine?.width??config.options.textMeasurement?.measure(line,size,style)??0)*factor,
+      y:baseline,size,style,fill:config.fill,start:sourceLine?.start??0}];
+    return renderPaintedText(attributes,content,paintSegments,config.options);
   });
   return tag("g", { ...traceAttrs(config.options, config.path),
     ...(config.options.trace&&fit.sourceLines?{'data-opf-source-text':'true','data-opf-box-x':box.x,'data-opf-box-y':box.y,'data-opf-box-width':box.width,'data-opf-box-height':box.height}:{}),

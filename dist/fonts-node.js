@@ -65,6 +65,7 @@ export async function prepareNodeFonts({pack = "base", ...options} = {}) {
     manifest:BUNDLED_FONT_MANIFEST,
     options:{
       textMeasurement:registry.textMeasurement,
+      ...(registry.textPainting ? {textPainting:registry.textPainting} : {}),
       embeddedFonts:registry.embeddedFonts,
       fontFiles:[...registry.fontFiles],
       useBundledFonts:false,

@@ -47,6 +47,18 @@ export function createHarfBuzzService(hb, options) {
         if(!axes[tag]||value<axes[tag].min||value>axes[tag].max)throw new OPFFontError('invalid-font-variations',`Unsupported variation value for '${tag}'.`);
       if(values)font.setVariations(Object.entries(values).map(([tag,value])=>new hb.Variation(tag,value)));
       return {
+        glyphPath(glyphId) {
+          if (!font) throw new OPFFontError('font-registry-disposed', 'Create a new font registry after disposal.');
+          return font.glyphToPath(glyphId);
+        },
+        decorationMetrics() {
+          if (!font) throw new OPFFontError('font-registry-disposed', 'Create a new font registry after disposal.');
+          const metric = tag => font.getMetricPositionWithFallback(tag);
+          return {
+            underline: {offset: metric(hb.MetricsTag.UNDERLINE_OFFSET), thickness: metric(hb.MetricsTag.UNDERLINE_SIZE)},
+            strikethrough: {offset: metric(hb.MetricsTag.STRIKEOUT_OFFSET), thickness: metric(hb.MetricsTag.STRIKEOUT_SIZE)},
+          };
+        },
         shape(text) {
           if (!font) throw new OPFFontError('font-registry-disposed', 'Create a new font registry after disposal.');
           if (typeof text !== 'string' || !text.isWellFormed())

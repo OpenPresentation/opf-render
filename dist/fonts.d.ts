@@ -1,5 +1,5 @@
 import type { TextMeasurement, TextStyle } from "@openpresentation/opf/composition";
-import type { FontShaper, ShapedText } from './font-shaping.js';
+import type { FontShaper, ShapedText, PaintedText } from './font-shaping.js';
 export interface FontFaceInput { data: Uint8Array; family?: string; weight?: number; italic?: boolean; postscriptName?: string; license?: string; /** Fixed design-space coordinates or a named instance; omitted axes use font defaults. */ variations?: Record<string,number> | string }
 export interface EmbeddedFont { family: string; weight: number; italic?: boolean; dataUrl: string; license?: string; variations?: Record<string,number>; namedInstance?: string; /** Original bytes retained when browser compatibility requires a reconstructed face. */ sourceDataUrl?: string }
 export type FontCompatibility = "exact" | "metric" | "visual" | "generic";
@@ -18,6 +18,8 @@ export declare const EXPERIMENTAL_FONT_CANDIDATES: readonly Readonly<{requestedF
 export interface FontRegistry {
   /** Available when a prepared fontShaper was supplied. Does not rewrite text. */
   shapeText?(text: string, style: TextStyle): ShapedText;
+  /** Opt-in SVG paint provider using the same registry, source ranges and glyph positions. */
+  textPainting?: TextPainting;
   dispose(): void;
   textMeasurement: TextMeasurement & {outlineBounds: NonNullable<TextMeasurement['outlineBounds']>};
   clearSubstitutions(): void;
@@ -25,6 +27,10 @@ export interface FontRegistry {
   readonly embeddedFonts: EmbeddedFont[];
   readonly fontPreparations: FontPreparation[];
   readonly substitutions: FontResolution[];
+}
+export interface TextPainting {
+  readonly textMeasurement: TextMeasurement;
+  shape(text: string, style: TextStyle): PaintedText;
 }
 export interface FontPreparation {
   family: string; postscriptName: string;
