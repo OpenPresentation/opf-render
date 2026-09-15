@@ -15,6 +15,11 @@ With tracing enabled, SVG glyph groups carry `data-opf-caret-map` in slide
 coordinates. The map uses the same scale and origin as visible glyph paths.
 Logical text remains available for accessibility and source mapping. Consumers
 apply the group's screen transform when positioning caret and selection UI.
+The map also carries resolved horizontal direction for keyboard editing. Tabs
+carry original source boundaries and accepted layout stops marked
+`basis: 'layout'`; they never enter the font shaper. Underline/strike decoration
+uses the accepted whitespace advance. Rich tabs require coordinated core
+`e4980f8b52dfad641d1db6c86ac3b0e8799c0bef` or a descendant containing that change.
 
 The pinned HarfBuzz wrapper does not expose its resolved buffer direction. The
 generated Unicode 17 / HarfBuzz 14.4.0 direction table reproduces the existing
@@ -28,6 +33,8 @@ isolation and direction against pinned WASM. `npm run test:shaping` includes it;
 `npm run test:shaping-packed` also exercises the shipped geometry and TypeScript
 contract in fresh candidate packages. Editor interaction coverage belongs to
 the dependent editor PR.
+`test/font-caret-layout.mjs` checks scalar/rich consecutive and tab-only source
+fields against the shared layout and verifies emitted direction and decoration.
 
 This remains part of the draft font-rendering work. Paragraph bidi, broader
 font/settings coverage, performance and lifetime checks, and native/export

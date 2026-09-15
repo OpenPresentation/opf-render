@@ -1209,7 +1209,8 @@ function renderRichTextBox(value, box, bound, config) {
 function renderPaintedText(attributes, content, segments, options) {
   if (!options.textPainting) return tag('text', attributes, content);
   const painted = segments.map(segment => {
-    const run = options.textPainting.shape(segment.text, segment.style);
+    // Tabs already have accepted layout advances; they are not font glyphs.
+    const run = options.textPainting.shape(segment.advanceOnly?'':segment.text, segment.style);
     const scale = segment.size / run.unitsPerEm;
     let x = 0, y = 0;
     const glyphs = run.glyphs.map(glyph => {
@@ -1226,7 +1227,7 @@ function renderPaintedText(attributes, content, segments, options) {
       const metric = run.decorations?.[decoration];
       if (!metric || !Number.isFinite(metric.offset) || !Number.isFinite(metric.thickness) || metric.thickness <= 0)
         throw new OPFRenderError('invalid-text-painting', 'Decorated text requires metrics from the same selected font.');
-      glyphs.push(tag('rect', {x:0,y:metric.offset-metric.thickness/2,width:x,height:metric.thickness,
+      glyphs.push(tag('rect', {x:0,y:metric.offset-metric.thickness/2,width:segment.advanceOnly?segment.width/scale:x,height:metric.thickness,
         transform:`matrix(${scale} 0 0 ${-scale} ${segment.x} ${segment.y})`,
         'data-opf-text-decoration':decoration}));
     }
@@ -1234,9 +1235,12 @@ function renderPaintedText(attributes, content, segments, options) {
     // number formatter is intentionally not used to quantize this transform.
     const geometry=run.caretGeometry;
     const caretMap=options.trace&&geometry?{
-      version:1,start:segment.start,end:segment.start+segment.text.length,
+      version:1,direction:geometry.direction,start:segment.start,end:segment.start+segment.text.length,
       top:segment.y-geometry.ascent*scale,bottom:segment.y-geometry.descent*scale,
-      stops:geometry.stops.map(stop=>({...stop,offset:segment.start+stop.offset,x:segment.x+stop.x*scale})),
+      stops:segment.advanceOnly?[
+        {offset:segment.start,x:segment.x,basis:'layout'},
+        {offset:segment.start+segment.text.length,x:segment.x+segment.width,basis:'layout'},
+      ]:geometry.stops.map(stop=>({...stop,offset:segment.start+stop.offset,x:segment.x+stop.x*scale})),
     }:undefined;
     return tag('g', {
       fill:segment.fill,'aria-hidden':'true','pointer-events':'none','data-opf-glyph-paint':run.engine,
@@ -1265,11 +1269,12 @@ function renderRichLines(value,fit,box,bound,config) {
     // quantization drift. Height and baseline retain the selected font size.
     const position=flow?{'baseline-shift':fragment.baselineShift?stableNumber(-fragment.baselineShift):undefined}:{x:stableNumber((placed?.x??box.x+offset)+fragment.x),y:stableNumber((placed?.baseline??box.y+line.baseline)+fragment.baselineShift)};
     const fill=/^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(run.color??'')?run.color:config.fill;
-    const attributes={...(config.options.trace?{'data-opf-text-start':runOffsets[fragment.runIndex]+fragment.start,'data-opf-text-end':runOffsets[fragment.runIndex]+fragment.end}:{}),...position,'xml:space':'preserve','text-rendering':flow?undefined:'geometricPrecision',textLength:placed&&fragment.width>0?stableNumber(fragment.width):undefined,lengthAdjust:placed&&fragment.width>0?'spacingAndGlyphs':undefined,'font-family':fontStack(fragment.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(fragment.fontSize),'font-weight':fragment.style.fontWeight,'font-style':fragment.style.italic?'italic':flow?'normal':undefined,'text-decoration':[run.underline?'underline':'',run.strikethrough?'line-through':''].filter(Boolean).join(' ')||undefined,fill};
+    const fixedAdvance=placed||fragment.kind==='tab';
+    const attributes={...(config.options.trace?{'data-opf-text-start':runOffsets[fragment.runIndex]+fragment.start,'data-opf-text-end':runOffsets[fragment.runIndex]+fragment.end}:{}),...position,'xml:space':'preserve','text-rendering':flow?undefined:'geometricPrecision',textLength:fixedAdvance&&fragment.width>0?stableNumber(fragment.width):undefined,lengthAdjust:fixedAdvance&&fragment.width>0?'spacingAndGlyphs':undefined,'font-family':fontStack(fragment.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(fragment.fontSize),'font-weight':fragment.style.fontWeight,'font-style':fragment.style.italic?'italic':flow?'normal':undefined,'text-decoration':[run.underline?'underline':'',run.strikethrough?'line-through':''].filter(Boolean).join(' ')||undefined,fill};
     const rendered=flow?tag('tspan',attributes,escapeText(fragment.text)):renderPaintedText(attributes,escapeText(fragment.text),[
       {text:fragment.text,x:(placed?.x??box.x+offset)+fragment.x,y:(placed?.baseline??box.y+line.baseline)+fragment.baselineShift,
         size:fragment.fontSize,style:fragment.style,start:runOffsets[fragment.runIndex]+fragment.start,fill,
-        underline:run.underline,strikethrough:run.strikethrough},
+        underline:run.underline,strikethrough:run.strikethrough,advanceOnly:fragment.kind==='tab',width:fragment.width},
     ],config.options);
     if(run.link&&/^(https?:|mailto:)/i.test(run.link))return tag('a',{href:run.link,target:'_blank',rel:'noopener noreferrer'},rendered);
     return rendered;
@@ -1331,9 +1336,9 @@ function renderTextBox(text, box, bound, config) {
     };
     if (!config.options.textPainting) return tag('text',attributes,content);
     const baseline=placed?.baseline??startY + index * fit.lineHeight;
-    const paintSegments=tabs?sourceLine.segments.filter(segment=>segment.kind!=='tab').map(segment=>({
+    const paintSegments=tabs?sourceLine.segments.map(segment=>({
       text:line.slice(segment.start-sourceLine.start,segment.end-sourceLine.start),x:origin+segment.x,
-      y:baseline,size,style,fill:config.fill,start:segment.start,
+      y:baseline,size,style,fill:config.fill,start:segment.start,advanceOnly:segment.kind==='tab',width:segment.width,
     })):[{text:line,x:placed?.x??x-(sourceLine?.width??config.options.textMeasurement?.measure(line,size,style)??0)*factor,
       y:baseline,size,style,fill:config.fill,start:sourceLine?.start??0}];
     return renderPaintedText(attributes,content,paintSegments,config.options);

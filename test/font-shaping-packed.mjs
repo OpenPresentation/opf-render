@@ -36,7 +36,7 @@ await writeFile(path.join(consumer,'test/font-woff2-collections-fixtures.mjs'),a
 await writeFile(path.join(consumer,'test/font-dfont-fixtures.mjs'),await readFile(path.join(root,'test/font-dfont-fixtures.mjs')));
 await cp(path.join(root,'test/fixtures/font-formats'),path.join(consumer,'test/fixtures/font-formats'),{recursive:true});
 for(const name of ['font-variations-fixtures.mjs','font-variations-browser.mjs','font-painting-fixtures.mjs'])await writeFile(path.join(consumer,'test',name),await readFile(path.join(root,'test',name)));
-for(const name of ['font-dfont.mjs','font-shaping.mjs','font-shaping-formats.mjs','font-woff2-reconstruction.mjs','font-woff2-hmtx.mjs','font-woff2-collections.mjs','font-shaping-browser.mjs','font-variations.mjs','font-normalization.mjs','font-painting.mjs','font-carets.mjs']){
+for(const name of ['font-dfont.mjs','font-shaping.mjs','font-shaping-formats.mjs','font-woff2-reconstruction.mjs','font-woff2-hmtx.mjs','font-woff2-collections.mjs','font-shaping-browser.mjs','font-variations.mjs','font-normalization.mjs','font-painting.mjs','font-carets.mjs','font-caret-layout.mjs']){
   let source=await readFile(path.join(root,'test',name),'utf8');
   for(const [file,entry]of Object.entries(modules))source=source.replaceAll(`'../dist/${file}'`,`'@openpresentation/opf-render/${entry}'`);
   for(const file of ['font-normalization.js','font-variations.js','font-sfnt.js','font-direction.js','font-direction-data.js'])source=source.replaceAll(`'../dist/${file}'`,JSON.stringify(pathToFileURL(path.join(installed,'dist',file)).href));
