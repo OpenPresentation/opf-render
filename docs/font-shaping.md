@@ -58,7 +58,9 @@ the selected face and HarfBuzz shapes it. Standalone compressed inputs retain
 their complete original bytes in `embeddedFonts`, including wrapper metadata
 and private data. Reconstructed measurement bytes preserve OpenType tables,
 with required checksum repair. WOFF2's glyf/loca/hmtx reconstruction may change
-table packing; byte identity of reconstructed SFNT is not promised.
+table packing; byte identity of reconstructed SFNT is not promised. Transformed
+glyph-table `origLength` is an advisory value, not an allocation bound. Output
+buffers grow with actual reconstructed data up to the configured byte limit.
 
 For TTC and WOFF2 collections, supply `postscriptName`. Measurement, browser
 FontFace loading and embedded CSS use that same selected standalone face.
@@ -113,11 +115,15 @@ cause and a hosting/CSP explanation.
 - `npm run test:shaping-browser`: 198 cases over 33 exact faces, including
   those 33 coverage rejections. Node/browser glyph runs agree; unadjusted SVG
   advances differ by at most 0.01525px within the existing 0.1px gate. This
-  also compares 70 actual canvas renders against the original selected faces,
+  also compares 72 actual canvas renders against the original selected faces,
   including both collection faces and compressed instances of all 33 fonts.
   These checks use geometric precision, matching SVG configuration, and do not
   establish full-slide containment. The test bundle includes Fontkit; consult its
   recorded size rather than treating it as marginal application download cost.
+- `test/font-woff2-reconstruction.mjs`: tiny and oversized transformed glyph
+  length hints accepted by the independent Google decoder retain the original
+  glyph runs with bounded output growth. Browser and fresh-package tests include
+  both controls; actual decoded-size limits continue to reject.
 - `npm run test:shaping-packed`: fresh core/renderer tarballs, byte-identical
   shipped modules/WASM/notices, Node/offline-browser checks, public TypeScript
   NodeNext/Bundler consumers and dependency audit.

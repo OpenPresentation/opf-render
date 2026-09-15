@@ -55,3 +55,24 @@ export function fontTables(font) {
   }
   return result;
 }
+/** Change only a transformed glyf origLength hint; decoded table bytes stay identical. */
+export function withGlyfLengthHint(source, value) {
+  let offset=48;
+  const readLength=()=>{const start=offset;let value=0,byte;do{byte=source[offset++];value=value*128+(byte&127);}while(byte&128);return {start,end:offset,value};};
+  for(let index=0;index<source.readUInt16BE(12);index++) {
+    const flags=source[offset++],version=flags>>6,indexed=flags&63;
+    let tag=indexed===10?'glyf':indexed===11?'loca':null;
+    if(indexed===63){tag=source.toString('ascii',offset,offset+4);offset+=4;}
+    const length=readLength();
+    if(tag==='glyf'&&version===0) {
+      const bytes=[value&127];while((value=Math.floor(value/128)))bytes.unshift((value&127)|128);
+      const shifted=Buffer.concat([source.subarray(0,length.start),Buffer.from(bytes),source.subarray(length.end)]);
+      const result=Buffer.alloc(Math.ceil(shifted.length/4)*4);shifted.copy(result);
+      const delta=shifted.length-source.length;result.writeUInt32BE(result.length,8);
+      for(const position of [28,40])if(result.readUInt32BE(position))result.writeUInt32BE(result.readUInt32BE(position)+delta,position);
+      return result;
+    }
+    if((tag==='glyf'||tag==='loca')?version===0:version!==0)readLength();
+  }
+  throw new Error('Fixture requires a transformed glyf table');
+}

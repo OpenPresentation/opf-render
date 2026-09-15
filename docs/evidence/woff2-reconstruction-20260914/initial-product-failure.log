@@ -1,0 +1,4 @@
+hint 1 Google reconstructed bytes 160324
+955aaf8 rejected: font-size-limit WOFF2 glyph reconstruction exceeds the byte limit
+hint 1000000 Google reconstructed bytes 160324
+955aaf8 rejected: font-size-limit WOFF2 preparation exceeds the configured byte limit

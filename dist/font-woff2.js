@@ -1405,16 +1405,15 @@ function woff2Decode(data2, maxBytes = 67108864) {
   if (!header) throw new Error("Failed to read WOFF2 header");
   if (!Number.isSafeInteger(maxBytes) || maxBytes <= 0 || maxBytes > 4294967295) throw new Error("Invalid font byte limit");
   if (header.compressedOffset + header.compressedLength > input.length) throw new Error("Truncated WOFF2 Brotli stream");
-  if (computeOffsetToFirstTable(header) + header.tables.reduce((size, table) => size + Math.ceil(table.origLength / 4) * 4, 0) > maxBytes || header.uncompressedSize > maxBytes) throw Object.assign(new Error("WOFF2 preparation exceeds the configured byte limit"), { code: "font-size-limit" });
+  let headerSize = computeOffsetToFirstTable(header);
+  if (headerSize > maxBytes || header.uncompressedSize > maxBytes) throw Object.assign(new Error("WOFF2 preparation exceeds the configured byte limit"), { code: "font-size-limit" });
   let decompressed = brotliDecode(input.subarray(header.compressedOffset, header.compressedOffset + header.compressedLength), { maxOutputSize: header.uncompressedSize });
   if (!decompressed || decompressed.byteLength !== header.uncompressedSize) throw new Error(`Brotli decompression failed: expected ${header.uncompressedSize} bytes, got ${decompressed?.byteLength ?? 0}`);
-  let outputSize = computeOffsetToFirstTable(header);
-  for (let table of header.tables)
-    outputSize += table.origLength, outputSize += (4 - table.origLength % 4) % 4;
-  let output = new Uint8Array(outputSize), outView = new DataView(output.buffer), fontInfos = writeHeaders(header, output, outView), writtenTables = /* @__PURE__ */ new Map(), nextTableOffset = computeOffsetToFirstTable(header);
-  if (header.ttcFonts.length > 0) for (let i = 0; i < header.ttcFonts.length; i++) nextTableOffset = reconstructFont(decompressed, header, i, fontInfos[i], output, outView, writtenTables, nextTableOffset);
-  else reconstructFont(decompressed, header, 0, fontInfos[0], output, outView, writtenTables, nextTableOffset);
-  return output;
+  let writer = { data: new Uint8Array(Math.max(headerSize, Math.min(65536, maxBytes))), maxBytes };
+  writer.view = new DataView(writer.data.buffer);
+  let fontInfos = writeHeaders(header, writer.data, writer.view), writtenTables = /* @__PURE__ */ new Map(), nextTableOffset = headerSize, count = Math.max(1, header.ttcFonts.length);
+  for (let index = 0; index < count; index++) nextTableOffset = reconstructFont(decompressed, header, index, fontInfos[index], writer, writtenTables, nextTableOffset);
+  return writer.data.slice(0, nextTableOffset);
 }
 function readHeader(buf, totalLength) {
   if (buf.readU32() !== WOFF2_SIGNATURE) return null;
@@ -1558,8 +1557,14 @@ function writeOffsetTable(view, offset, flavor, numTables) {
 function writeTableEntry(view, offset, tag) {
   return view.setUint32(offset, tag), view.setUint32(offset + 4, 0), view.setUint32(offset + 8, 0), view.setUint32(offset + 12, 0), offset + SFNT_ENTRY_SIZE;
 }
-function reconstructFont(decompressed, header, fontIndex, fontInfo, output, outView, writtenTables, dstOffset) {
-  let sortedTables = [...header.ttcFonts.length > 0 ? header.ttcFonts[fontIndex].tableIndices.map((i) => header.tables[i]) : header.tables].sort((a, b) => a.tag - b.tag), glyfTable = sortedTables.find((t) => t.tag === TAG_GLYF), locaTable = sortedTables.find((t) => t.tag === TAG_LOCA), hheaTable = sortedTables.find((t) => t.tag === TAG_HHEA);
+function reconstructFont(decompressed, header, fontIndex, fontInfo, writer, writtenTables, dstOffset) {
+  let output = writer.data, outView = writer.view, ensureOutput = (length) => {
+    if (length > writer.maxBytes) throw Object.assign(new Error("WOFF2 reconstructed font exceeds the byte limit"), { code: "font-size-limit" });
+    if (length > output.length) {
+      let grown = new Uint8Array(Math.min(writer.maxBytes, Math.max(length, output.length * 2)));
+      grown.set(output), writer.data = output = grown, writer.view = outView = new DataView(grown.buffer);
+    }
+  }, sortedTables = [...header.ttcFonts.length > 0 ? header.ttcFonts[fontIndex].tableIndices.map((i) => header.tables[i]) : header.tables].sort((a, b) => a.tag - b.tag), glyfTable = sortedTables.find((t) => t.tag === TAG_GLYF), locaTable = sortedTables.find((t) => t.tag === TAG_LOCA), hheaTable = sortedTables.find((t) => t.tag === TAG_HHEA);
   if (hheaTable) {
     let hheaData = decompressed.subarray(hheaTable.srcOffset, hheaTable.srcOffset + hheaTable.srcLength);
     hheaData.byteLength >= 36 && (fontInfo.numHMetrics = new DataView(hheaData.buffer, hheaData.byteOffset).getUint16(34));
@@ -1576,15 +1581,15 @@ function reconstructFont(decompressed, header, fontIndex, fontInfo, output, outV
     table.dstOffset = dstOffset;
     let tableData, checksum;
     if ((table.flags & WOFF2_FLAGS_TRANSFORM) !== 0) if (table.tag === TAG_GLYF && glyfTable && locaTable) {
-      let result = reconstructGlyf(decompressed, glyfTable, locaTable, fontInfo, output.length);
-      tableData = result.glyfData, glyfTable.dstLength = result.glyfData.byteLength, locaTable.dstOffset = dstOffset + pad4(result.glyfData.byteLength), locaTable.dstLength = result.locaData.byteLength, output.set(tableData, dstOffset), checksum = computeChecksum(output, dstOffset, tableData.byteLength), updateTableEntry(outView, entryOffset, checksum, dstOffset, tableData.byteLength), isTTC && (fontChecksum = fontChecksum + checksum >>> 0, fontChecksum = fontChecksum + computeTableEntryChecksum(checksum, dstOffset, tableData.byteLength) >>> 0), writtenTables.set(tKey, {
+      let result = reconstructGlyf(decompressed, glyfTable, locaTable, fontInfo, writer.maxBytes);
+      tableData = result.glyfData, glyfTable.dstLength = result.glyfData.byteLength, locaTable.dstOffset = dstOffset + pad4(result.glyfData.byteLength), locaTable.dstLength = result.locaData.byteLength, ensureOutput(pad4(dstOffset + tableData.length)), output.set(tableData, dstOffset), checksum = computeChecksum(output, dstOffset, tableData.byteLength), updateTableEntry(outView, entryOffset, checksum, dstOffset, tableData.byteLength), isTTC && (fontChecksum = fontChecksum + checksum >>> 0, fontChecksum = fontChecksum + computeTableEntryChecksum(checksum, dstOffset, tableData.byteLength) >>> 0), writtenTables.set(tKey, {
         dstOffset,
         dstLength: tableData.byteLength,
         checksum
       }), dstOffset += pad4(tableData.byteLength);
       let locaEntryOffset = fontInfo.tableEntryByTag.get(TAG_LOCA);
       if (locaEntryOffset !== void 0) {
-        output.set(result.locaData, dstOffset);
+        ensureOutput(pad4(dstOffset + result.locaData.length)), output.set(result.locaData, dstOffset);
         let locaChecksum = computeChecksum(output, dstOffset, result.locaData.byteLength);
         updateTableEntry(outView, locaEntryOffset, locaChecksum, dstOffset, result.locaData.byteLength), isTTC && (fontChecksum = fontChecksum + locaChecksum >>> 0, fontChecksum = fontChecksum + computeTableEntryChecksum(locaChecksum, dstOffset, result.locaData.byteLength) >>> 0), writtenTables.set(locaTable.key, {
           dstOffset,
@@ -1600,7 +1605,7 @@ function reconstructFont(decompressed, header, fontIndex, fontInfo, output, outV
     }
     else
       tableData = decompressed.subarray(table.srcOffset, table.srcOffset + table.srcLength), table.tag === TAG_HEAD && tableData.byteLength >= 12 && (tableData = new Uint8Array(tableData), new DataView(tableData.buffer, tableData.byteOffset).setUint32(8, 0));
-    output.set(tableData, dstOffset), checksum = computeChecksum(output, dstOffset, tableData.byteLength), table.dstLength = tableData.byteLength, updateTableEntry(outView, entryOffset, checksum, dstOffset, tableData.byteLength), isTTC && (fontChecksum = fontChecksum + checksum >>> 0, fontChecksum = fontChecksum + computeTableEntryChecksum(checksum, dstOffset, tableData.byteLength) >>> 0), writtenTables.set(tKey, {
+    ensureOutput(pad4(dstOffset + tableData.length)), output.set(tableData, dstOffset), checksum = computeChecksum(output, dstOffset, tableData.byteLength), table.dstLength = tableData.byteLength, updateTableEntry(outView, entryOffset, checksum, dstOffset, tableData.byteLength), isTTC && (fontChecksum = fontChecksum + checksum >>> 0, fontChecksum = fontChecksum + computeTableEntryChecksum(checksum, dstOffset, tableData.byteLength) >>> 0), writtenTables.set(tKey, {
       dstOffset,
       dstLength: tableData.byteLength,
       checksum
@@ -1683,7 +1688,7 @@ function reconstructGlyf(data2, glyfTable, _locaTable, fontInfo, maxBytes) {
     let overlapBitmapLength = numGlyphs + 7 >> 3;
     overlapBitmap = data2.subarray(offset + instructionStreamSize, offset + instructionStreamSize + overlapBitmapLength);
   }
-  let bboxBitmap = fsReadBytes(bboxStream, numGlyphs + 31 >> 5 << 2), glyfOutput = new Uint8Array(Math.min(maxBytes, glyfTable.origLength * 2)), glyfOffset = 0, locaValues = new Uint32Array(numGlyphs + 1);
+  let bboxBitmap = fsReadBytes(bboxStream, numGlyphs + 31 >> 5 << 2), glyfOutput = new Uint8Array(Math.min(maxBytes, Math.max(256, glyfTable.transformLength))), glyfOffset = 0, locaValues = new Uint32Array(numGlyphs + 1);
   fontInfo.xMins = new Int16Array(numGlyphs);
   let contourEndsScratch = new Uint16Array(128), flagsScratch = new Uint8Array(512), xScratch = new Uint8Array(512), yScratch = new Uint8Array(512);
   for (let glyphId = 0; glyphId < numGlyphs; glyphId++) {

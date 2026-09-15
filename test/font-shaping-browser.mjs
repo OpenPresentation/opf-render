@@ -10,7 +10,7 @@ import {loadOfficeFontRegistry} from '../dist/fonts-node.js';
 import {createFontRegistry} from '../dist/fonts.js';
 import {create} from 'fontkit';
 import wawoff2 from 'wawoff2';
-import {makeCollection,makeWoff} from './font-container-fixtures.mjs';
+import {makeCollection,makeWoff,withGlyfLengthHint} from './font-container-fixtures.mjs';
 
 const output = new URL('../artifacts/font-shaping/browser/',import.meta.url);
 await mkdir(output,{recursive:true});
@@ -33,6 +33,8 @@ for(const face of faces) {
 }
 const collectionFaces=faces.filter(face=>face.family==='Roboto'&&!face.italic&&[400,700].includes(face.weight));
 const collection=makeCollection(collectionFaces.map(decoded)),collectionWoff2=Buffer.from(await wawoff2.compress(collection));
+const hintReference=containers.find(fixture=>fixture.family==='Roboto'&&fixture.weight===400&&!fixture.italic&&fixture.format==='woff2');
+for(const hint of [1,1000000])containers.push({...hintReference,format:`woff2-glyf-hint-${hint}`,data:withGlyfLengthHint(Buffer.from(hintReference.data,'base64'),hint).toString('base64')});
 for(const face of collectionFaces)for(const [format,data]of [['collection',collection],['woff2-collection',collectionWoff2]])
   containers.push({format,family:face.family,weight:face.weight,italic:face.italic,reference:decoded(face).toString('base64'),data:data.toString('base64'),postscriptName:create(decoded(face)).postscriptName});
 for(const fixture of containers) {
