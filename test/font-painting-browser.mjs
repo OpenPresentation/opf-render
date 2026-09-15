@@ -4,6 +4,7 @@ import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 import {build} from 'esbuild';
 import {chromium} from 'playwright';
+import sharp from 'sharp';
 import * as hb from 'harfbuzzjs';
 import {prepareNodeFonts} from '../dist/fonts-node.js';
 import {loadHarfBuzzShaper} from '../dist/font-shaping.js';
@@ -24,7 +25,8 @@ const bundle=await build({stdin:{contents:"import {loadHarfBuzzShaper} from '@op
 const wasm=await readFile(new URL(import.meta.resolve('@openpresentation/opf-render/harfbuzz.wasm')));
 const policy="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; font-src 'self' data:; img-src blob: data:; style-src 'unsafe-inline'";
 const report={node:process.version,platform:process.platform,policy,requests:[],errors:[],slides:[],cases:[]};
-const browser=await chromium.launch({channel:process.platform==='win32'?'msedge':undefined});report.browser=browser.version();
+const channel=process.env.OPF_FONT_PAINT_BROWSER_CHANNEL;report.channel=channel??'bundled Chromium';
+const browser=await chromium.launch({channel});report.browser=browser.version();
 try {
   const page=await browser.newPage({viewport:{width:1280,height:760}});
   page.on('pageerror',error=>report.errors.push(error.message));
@@ -60,7 +62,19 @@ try {
     });
     assert.equal(text.selected,text.expected);assert.equal(text.role,'group');assert.ok(text.logical);
     await writeFile(new URL(`slide-${index+1}.png`,output),before);
-    report.slides.push({index,sha256:hash(before),...text});
+    const pixels=await sharp(before).ensureAlpha().raw().toBuffer();
+    const whiteInk=(x0,y0,width,height)=>{
+      let count=0;for(let y=y0;y<y0+height;y++)for(let x=x0;x<x0+width;x++) {
+        const i=(y*1280+x)*4;if(pixels[i]>150&&pixels[i+1]>150&&pixels[i+2]>150)count++;
+      }return count;
+    };
+    const furniture={headerInk:whiteInk(80,15,300,28),footerInk:whiteInk(80,670,320,28)};
+    report.slides.push({index,sha256:hash(before),...text,...furniture});
+    if(!furniture.headerInk||!furniture.footerInk) {
+      await writeFile(new URL(`missing-furniture-${index+1}.svg`,output),svg);
+      report.missingFurniture=await page.evaluate(()=>[...document.querySelectorAll('[data-opf-source-text]')].map(node=>({path:node.dataset.opfPath,html:node.outerHTML,style:{display:getComputedStyle(node).display,visibility:getComputedStyle(node).visibility,opacity:getComputedStyle(node).opacity}})));
+    }
+    assert.ok(furniture.headerInk>0&&furniture.footerInk>0,`Slide ${index+1}: repeated furniture has visible ink`);
   }
   report.accessibility=await page.locator('svg').ariaSnapshot();
   await page.evaluate(async()=>{document.querySelector('main').replaceChildren();deckFonts.dispose();delete globalThis.deckFonts;await document.fonts.ready;});
@@ -105,14 +119,27 @@ try {
         try {image.src=url;await image.decode();actual.getContext('2d').drawImage(image,0,0);}finally{URL.revokeObjectURL(url);}
         const expected=document.createElement('canvas');expected.width=1280;expected.height=720;
         const ctx=expected.getContext('2d');ctx.fillStyle='#123456';
-        ctx.translate(line.x+fragment.x,line.baseline+fragment.baselineShift);ctx.scale(fragment.fontSize/reference.unitsPerEm,-fragment.fontSize/reference.unitsPerEm);
+        const scale=fragment.fontSize/reference.unitsPerEm;
+        const sequential=document.createElement('canvas');sequential.width=1280;sequential.height=720;
+        const sequentialContext=sequential.getContext('2d');sequentialContext.fillStyle='#123456';
+        sequentialContext.translate(line.x+fragment.x,line.baseline+fragment.baselineShift);sequentialContext.scale(scale,-scale);
         let x=0,y=0;
-        for(const glyph of reference.glyphs) {ctx.save();ctx.translate(x+glyph.xOffset,y+glyph.yOffset);ctx.fill(new Path2D(glyph.path));ctx.restore();x+=glyph.xAdvance;y+=glyph.yAdvance;}
+        for(const glyph of reference.glyphs) {
+          // Independent source-font positions are composed before either API
+          // converts the matrix to its paint precision. No SVG DOM is used.
+          ctx.setTransform(scale,0,0,-scale,line.x+fragment.x+(x+glyph.xOffset)*scale,line.baseline+fragment.baselineShift-(y+glyph.yOffset)*scale);
+          ctx.fill(new Path2D(glyph.path));
+          // Retain the earlier sequential transform reference as a diagnostic.
+          sequentialContext.save();sequentialContext.translate(x+glyph.xOffset,y+glyph.yOffset);sequentialContext.fill(new Path2D(glyph.path));sequentialContext.restore();
+          x+=glyph.xAdvance;y+=glyph.yAdvance;
+        }
         const a=actual.getContext('2d').getImageData(0,0,1280,720).data,b=expected.getContext('2d').getImageData(0,0,1280,720).data;
-        let maxAlphaDifference=0,differingPixels=0,ink=0;
-        for(let i=3;i<a.length;i+=4){if(a[i])ink++;const delta=Math.abs(a[i]-b[i]);if(delta)differingPixels++;maxAlphaDifference=Math.max(maxAlphaDifference,delta);}
+        const old=sequential.getContext('2d').getImageData(0,0,1280,720).data;
+        let maxAlphaDifference=0,maxChannelDifference=0,differingPixels=0,sequentialAlphaDifference=0,ink=0;
+        for(let i=0;i<a.length;i++)maxChannelDifference=Math.max(maxChannelDifference,Math.abs(a[i]-b[i]));
+        for(let i=3;i<a.length;i+=4){if(a[i])ink++;const delta=Math.abs(a[i]-b[i]);if(delta)differingPixels++;maxAlphaDifference=Math.max(maxAlphaDifference,delta);sequentialAlphaDifference=Math.max(sequentialAlphaDifference,Math.abs(a[i]-old[i]));}
         const paths=[...target.querySelectorAll('path[data-opf-glyph-id]')];
-        rows.push({text:reference.text,ink,maxAlphaDifference,differingPixels,glyphs:paths.map(node=>Number(node.dataset.opfGlyphId)),expectedGlyphs:reference.glyphs.map(g=>g.id),sourceUnchanged:JSON.stringify(deck)===before,
+        rows.push({text:reference.text,ink,maxAlphaDifference,maxChannelDifference,differingPixels,sequentialAlphaDifference,glyphs:paths.map(node=>Number(node.dataset.opfGlyphId)),expectedGlyphs:reference.glyphs.map(g=>g.id),sourceUnchanged:JSON.stringify(deck)===before,
           logicalText:[...target.querySelectorAll('text')].map(node=>node.textContent).join(''),width:fit.richLines[0].width,expectedWidth:x/reference.unitsPerEm*fragment.fontSize});
       }}finally{document.querySelector('main').replaceChildren();registry.dispose();await document.fonts.ready;}
       if(document.fonts.size!==baseline)throw new Error('Shaped painting leaked browser font faces');
@@ -120,8 +147,6 @@ try {
     },input);
     report.cases.push(...rows.map(row=>({id:fixture.id,sourceSha256:hash(fixture.data),...row})));
   }
-}catch(error){report.failure=error.stack;throw error;}
-finally{await browser.close();prepared.registry.dispose();await writeFile(new URL('report.json',output),JSON.stringify(report,null,2)+'\n');}
 assert.deepEqual(report.errors,[]);
 assert.deepEqual(report.requests,['https://opf-glyph-paint.test/','https://opf-glyph-paint.test/bundle.js','https://opf-glyph-paint.test/harfbuzz.wasm']);
 assert.equal(report.cases.length,663);
@@ -129,5 +154,9 @@ for(const row of report.cases) {
   if(row.rejected){assert.equal(row.rejected,'missing-glyph');continue;}
   assert.ok(row.ink>0);assert.deepEqual(row.glyphs,row.expectedGlyphs);assert.ok(row.sourceUnchanged);assert.equal(row.logicalText,row.text);assert.equal(row.width,row.expectedWidth);
   assert.equal(row.maxAlphaDifference,0,`${row.id}/${row.text}: SVG and independently positioned glyph ink`);
+  assert.equal(row.maxChannelDifference,0,`${row.id}/${row.text}: all RGBA channels agree`);
 }
+report.status='passed';
+}catch(error){report.status='failed';report.failure=error.stack;throw error;}
+finally{await browser.close();prepared.registry.dispose();await writeFile(new URL('report.json',output),JSON.stringify(report,null,2)+'\n');}
 console.log(`Shaped SVG browser: ${report.slides.length} selected-text/native-font-independent slides and ${report.cases.length} original-face glyph-run cases.`);

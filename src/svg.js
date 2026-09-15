@@ -1213,7 +1213,9 @@ function renderPaintedText(attributes, content, segments, options) {
     const scale = segment.size / run.unitsPerEm;
     let x = 0, y = 0;
     const glyphs = run.glyphs.map(glyph => {
-      const position = `translate(${x + glyph.xOffset} ${y + glyph.yOffset})`;
+      // Compose in source precision before SVG parses the transform. Nested
+      // transforms can round the scale/origin before applying glyph offsets.
+      const position = `matrix(${scale} 0 0 ${-scale} ${segment.x + (x + glyph.xOffset) * scale} ${segment.y - (y + glyph.yOffset) * scale})`;
       x += glyph.xAdvance; y += glyph.yAdvance;
       return tag('path', {d:glyph.path,transform:position,
         ...(options.trace ? {'data-opf-glyph-id':glyph.id,
@@ -1225,11 +1227,12 @@ function renderPaintedText(attributes, content, segments, options) {
       if (!metric || !Number.isFinite(metric.offset) || !Number.isFinite(metric.thickness) || metric.thickness <= 0)
         throw new OPFRenderError('invalid-text-painting', 'Decorated text requires metrics from the same selected font.');
       glyphs.push(tag('rect', {x:0,y:metric.offset-metric.thickness/2,width:x,height:metric.thickness,
+        transform:`matrix(${scale} 0 0 ${-scale} ${segment.x} ${segment.y})`,
         'data-opf-text-decoration':decoration}));
     }
     // Font-unit coordinates and scale retain full precision. The general SVG
     // number formatter is intentionally not used to quantize this transform.
-    return tag('g', {transform:`translate(${segment.x} ${segment.y}) scale(${scale} ${-scale})`,
+    return tag('g', {
       fill:segment.fill,'aria-hidden':'true','pointer-events':'none','data-opf-glyph-paint':run.engine}, glyphs.join(''));
   });
   return tag('g', {'data-opf-shaped-text':'1'}, painted.join('') + tag('text', {

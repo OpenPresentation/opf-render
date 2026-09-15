@@ -89,11 +89,19 @@ logical text does not prove native DOM Range geometry matches the visible
 glyph paths. No package release or production-site adoption is implied.
 
 The first [browser painting checkpoint](evidence/shaped-paint-draft-20260915/README.md)
-preserves all 663 attempted cases and its failing pixel gate: 54 of the 650
-supported cases differ from the independent Canvas reference, with maximum
-alpha difference 4/255. The required difference remains zero. Run
-`npm run test:painting-browser` to reproduce this separate draft check; it is
-not yet part of the installed-package or CI matrices.
+preserves its 54 failing SVG/Canvas cases. A focused transform probe identified
+premature precision loss when composing nested transforms. The renderer now
+computes one complete matrix per glyph before SVG parses it, and the
+independent source-font Canvas reference does the same before calling
+`setTransform`. The sequential Canvas reference remains in the report as a
+diagnostic; no position, advance, source text or tolerance is adjusted.
+
+The updated local browser check passes all 650 supported cases in every RGBA
+channel with a required difference of zero. Thirteen coverage rejections and
+five full-slide selection/native-font-independence controls remain explicit;
+the slides also require visible repeated header/footer ink. Run
+`npm run test:painting-browser`. These focused checks do not establish editor
+caret, general accessibility or native export acceptance.
 
 ## Font containers and source preservation
 
