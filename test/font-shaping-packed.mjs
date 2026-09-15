@@ -17,7 +17,7 @@ const corePack=JSON.parse(npm(['pack','--ignore-scripts','--json','--pack-destin
 const consumer=path.join(temporary,'consumer');await mkdir(path.join(consumer,'test'),{recursive:true});
 const manifest=JSON.parse(await readFile(path.join(root,'package.json'),'utf8'));
 await writeFile(path.join(consumer,'package.json'),JSON.stringify({private:true,type:'module',devDependencies:{
-  esbuild:manifest.devDependencies.esbuild,playwright:manifest.devDependencies.playwright,typescript:'5.9.3',
+  esbuild:manifest.devDependencies.esbuild,playwright:manifest.devDependencies.playwright,typescript:'5.9.3',wawoff2:manifest.devDependencies.wawoff2,
 }}));
 npm(['install','--ignore-scripts','--no-fund','--no-audit',path.join(temporary,packed.filename),path.join(temporary,corePack.filename)],consumer);
 const installed=path.join(consumer,'node_modules/@openpresentation/opf-render');
@@ -28,8 +28,9 @@ for(const file of packed.files){
   assert.equal(hash(bytes),hash(await readFile(path.join(root,file.path))));
   files[file.path]=hash(bytes);
 }
-for(const entry of ['dist/font-shaping.js','dist/font-shaping-browser.js','dist/font-shaping-service.js','dist/font-shaping.d.ts','dist/harfbuzz-browser.js','dist/harfbuzz.wasm','dist/harfbuzzjs-LICENSE','dist/HarfBuzz-LICENSE'])assert.ok(files[entry]);
+for(const entry of ['dist/font-shaping.js','dist/font-shaping-browser.js','dist/font-shaping-service.js','dist/font-shaping.d.ts','dist/harfbuzz-browser.js','dist/harfbuzz.wasm','dist/harfbuzzjs-LICENSE','dist/HarfBuzz-LICENSE','dist/font-preparation.js','dist/font-woff2.js','dist/WOFF2-LICENSE','dist/WOFF2-LICENSE_THIRD_PARTY','dist/Brotli-LICENSE','dist/Brotli-LICENSE_THIRD_PARTY'])assert.ok(files[entry]);
 const modules={'font-shaping.js':'font-shaping','fonts.js':'fonts','fonts-node.js':'fonts-node'};
+await writeFile(path.join(consumer,'test/font-container-fixtures.mjs'),await readFile(path.join(root,'test/font-container-fixtures.mjs')));
 for(const name of ['font-shaping.mjs','font-shaping-formats.mjs','font-shaping-browser.mjs']){
   let source=await readFile(path.join(root,'test',name),'utf8');
   for(const [file,entry]of Object.entries(modules))source=source.replaceAll(`'../dist/${file}'`,`'@openpresentation/opf-render/${entry}'`);
@@ -39,7 +40,8 @@ for(const name of ['font-shaping.mjs','font-shaping-formats.mjs','font-shaping-b
 await writeFile(path.join(consumer,'types.mts'),`import {loadHarfBuzzShaper} from '@openpresentation/opf-render/font-shaping';
 import {loadOfficeFontRegistry} from '@openpresentation/opf-render/fonts-node';
 const service=await loadHarfBuzzShaper({language:'en',features:['liga=0']});
-const registry=await loadOfficeFontRegistry({fontShaper:service});
+const registry=await loadOfficeFontRegistry({fontShaper:service,maxPreparedFontBytes:64*1024*1024});
+const signatureRemoved:boolean=registry.fontPreparations[0].removedSignature;
 const run=registry.shapeText?.('source',{fontFamily:'Roboto',fontWeight:400});
 const offset:number|undefined=run?.glyphs[0]?.sourceStart;
 registry.dispose();

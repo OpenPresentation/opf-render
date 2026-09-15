@@ -1,4 +1,5 @@
 import { OPFFontError } from './fonts.js';
+import { prepareFontData } from './font-preparation.js';
 
 function configuration(hb, options) {
   const {language = 'und', script, direction, features = []} = options;
@@ -25,15 +26,15 @@ export function createHarfBuzzService(hb, options) {
   return Object.freeze({
     engine,
     cacheKey: `${engine}:${settings.key}`,
+    prepareFontData,
     createFace({data, faceIndex = 0, unitsPerEm}) {
       if (!(data instanceof Uint8Array) || data.byteLength < 12 || !Number.isInteger(unitsPerEm) || unitsPerEm <= 0 || !Number.isInteger(faceIndex) || faceIndex < 0)
         throw new OPFFontError('invalid-shaping-font', 'Supply parsed font bytes, a valid selected face index, and units per em.');
       const signature = new DataView(data.buffer, data.byteOffset, data.byteLength).getUint32(0);
       // Do not silently fall back to the old shaper for an unsupported input.
-      // Fontkit remains the default until compressed formats and full layout
-      // acceptance have been completed for this backend.
+      // The registry prepares compressed fonts before creating a shaping face.
       if (![0x00010000, 0x4f54544f, 0x74727565, 0x74746366].includes(signature))
-        throw new OPFFontError('shaping-font-format', 'The opt-in HarfBuzz backend currently requires TTF, OTF, or a selected collection face. Compressed font preparation is not yet available.');
+        throw new OPFFontError('shaping-font-format', 'Prepare font containers before creating a HarfBuzz face.');
       let blob = new hb.Blob(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength));
       let face = new hb.Face(blob, faceIndex);
       if (face.upem !== unitsPerEm)

@@ -34,11 +34,11 @@ export async function loadBrowserFontRegistry(entries, options = {}) {
   const embedded = registry.embeddedFonts;
   try {
     await Promise.all(
-      faces.map(async (entry, index) => {
-        const descriptor = embedded[index];
+      embedded.map(async (descriptor) => {
+        const data = Uint8Array.from(atob(descriptor.dataUrl.split(',')[1]), character => character.charCodeAt(0));
         const face = new FontFaceRef(
           descriptor.family,
-          entry.data.slice().buffer,
+          data.buffer,
           {
             weight: String(descriptor.weight),
             style: descriptor.italic ? "italic" : "normal",

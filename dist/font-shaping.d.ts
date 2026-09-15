@@ -16,10 +16,12 @@ export interface ShapedText {
 export interface FontShaper {
   readonly engine: string;
   readonly cacheKey: string;
+  /** Decode local containers synchronously without rewriting caller-owned bytes. */
+  prepareFontData?(data: Uint8Array, maxBytes?: number): {data: Uint8Array; removedSignature: boolean};
   createFace(input: {data: Uint8Array; faceIndex?: number; unitsPerEm: number}): {
     shape(text: string): ShapedText;
     dispose(): void;
   };
 }
-/** Opt-in horizontal run shaping. Paragraph bidi/itemization and WOFF preparation remain pending. */
+/** Opt-in horizontal run shaping with local WOFF/WOFF2 preparation. Paragraph bidi/itemization remains pending. */
 export declare function loadHarfBuzzShaper(options?: ShapingOptions): Promise<FontShaper>;

@@ -7,6 +7,8 @@ export interface FontResolution { requestedFamily:string; sourceFamily:string; r
 export interface FontRegistryOptions {
   /** Prepared opt-in backend; omit to retain current Fontkit measurement. */
   fontShaper?: FontShaper;
+  /** Limit selected-face extraction and opt-in font decoding (default 64 MiB). */
+  maxPreparedFontBytes?: number;
   aliases?: Record<string,string>; fallbackFamily?: string; strictGlyphs?: boolean;
   substitutionPolicy?: "none" | "metric" | "visual";
   themeFonts?: Partial<Record<"majorLatin"|"minorLatin"|"majorEastAsia"|"minorEastAsia"|"majorComplexScript"|"minorComplexScript",string>>;
@@ -21,7 +23,15 @@ export interface FontRegistry {
   clearSubstitutions(): void;
   resolveFont(style: TextStyle): FontResolution;
   readonly embeddedFonts: EmbeddedFont[];
+  readonly fontPreparations: FontPreparation[];
   readonly substitutions: FontResolution[];
+}
+export interface FontPreparation {
+  family: string; postscriptName: string;
+  sourceFormat: string; measurementFormat: string; embeddedFormat: string;
+  selectedCollectionFace: boolean;
+  /** A DSIG signature was removed from reconstructed measurement/selected-face bytes. */
+  removedSignature: boolean;
 }
 export declare class OPFFontError extends Error { code:string; details:Record<string,unknown>; constructor(code:string,message:string,details?:Record<string,unknown>) }
 export declare function createFontRegistry(entries: FontFaceInput[], options?: FontRegistryOptions): FontRegistry;

@@ -1,10 +1,9 @@
 import { create } from "fontkit";
 import { FONT_COMPATIBILITY } from "./font-compatibility.js";
+import { OPFFontError } from './font-error.js';
+import { fontFormat, extractSfnt, checkFontByteLimit } from './font-sfnt.js';
 export { FONT_COMPATIBILITY, EXPERIMENTAL_FONT_CANDIDATES } from "./font-compatibility.js";
-
-export class OPFFontError extends Error {
-  constructor(code, message, details = {}) { super(message); this.name = "OPFFontError"; this.code = code; this.details = details; }
-}
+export { OPFFontError } from './font-error.js';
 const key = (family, weight, italic) => `${family.toLowerCase()}:${weight}:${!!italic}`;
 function base64(data) {
   let binary = "";
@@ -22,14 +21,27 @@ export function createFontRegistry(entries, options = {}) {
   if (fontShaper && (typeof fontShaper.createFace !== 'function' || typeof fontShaper.cacheKey !== 'string'))
     throw new OPFFontError('invalid-font-shaper', 'Supply an initialized font shaping service.');
   const shapingCacheKey = fontShaper?.cacheKey;
+  const maxPreparedFontBytes = checkFontByteLimit(options.maxPreparedFontBytes);
   const faces = entries.map(entry => {
     if (!(entry.data instanceof Uint8Array)) throw new OPFFontError("invalid-font-data", "Font data must be a Uint8Array.");
+    if ((fontShaper?.prepareFontData || fontFormat(entry.data) === 'collection') && entry.data.length > maxPreparedFontBytes)
+      throw new OPFFontError('font-size-limit','Font source exceeds the configured preparation byte limit.');
     // Buffer.slice() aliases memory; own bytes even when the caller supplies a
     // Node Buffer and later reuses its storage.
-    const data = Uint8Array.from(entry.data);
+    const sourceData = Uint8Array.from(entry.data), sourceFormat = fontFormat(sourceData) ?? 'unknown';
+    const prepared = fontShaper?.prepareFontData?.(sourceData, maxPreparedFontBytes);
+    let data = prepared?.data ?? sourceData, removedSignature = prepared?.removedSignature ?? false;
     let font;
     try { font = create(data, entry.postscriptName); } catch (error) { throw new OPFFontError("invalid-font-data", error.message); }
     if (!font?.layout || !font.unitsPerEm) throw new OPFFontError("font-collection", "Select one font from a collection with postscriptName.");
+    const collection = fontFormat(data) === 'collection';
+    if (collection) {
+      const faceIndex = create(data).fonts.findIndex(candidate => candidate.postscriptName === font.postscriptName);
+      if (faceIndex < 0) throw new OPFFontError('font-collection', 'The selected collection face could not be located.');
+      const selected = extractSfnt(data, faceIndex, maxPreparedFontBytes);
+      data = selected.data; removedSignature ||= selected.removedSignature;
+      font = create(data);
+    }
     const family = validFamily(entry.family ?? font.familyName);
     // OpenType groups Medium/SemiBold/ExtraBold under a preferred family, while
     // retaining separate legacy families for four-style native font selectors.
@@ -42,12 +54,14 @@ export function createFontRegistry(entries, options = {}) {
     const weight = entry.weight ?? 400;
     const italic = entry.italic ?? !!font.italicAngle;
     if (!Number.isInteger(weight) || weight < 1 || weight > 1000) throw new OPFFontError("invalid-font-weight", "Font weight must be between 1 and 1000.");
-    const signature = String.fromCharCode(...data.subarray(0,4));
-    const format = signature === "OTTO" ? "otf" : signature === "wOFF" ? "woff" : signature === "wOF2" ? "woff2" : "ttf";
-    const faceIndex = signature === 'ttcf' && fontShaper
-      ? create(data).fonts.findIndex(candidate => candidate.postscriptName === font.postscriptName) : 0;
-    if (faceIndex < 0) throw new OPFFontError('font-collection', 'The selected collection face could not be located.');
-    return {family,familyGroup,fontFace,weight,italic,font,data,format,faceIndex,license:entry.license,cache:new Map(),cachedGlyphs:0};
+    // Standalone web fonts retain their original wrapper, metadata and private
+    // data in exported CSS. Collections embed the actual selected standalone face.
+    const embeddedData = collection ? data : sourceData;
+    const format = fontFormat(embeddedData) ?? 'ttf';
+    const preparation = {family,postscriptName:font.postscriptName,sourceFormat,
+      measurementFormat:fontFormat(data) ?? 'unknown',embeddedFormat:format,
+      selectedCollectionFace:collection,removedSignature};
+    return {family,familyGroup,fontFace,weight,italic,font,data,embeddedData,format,preparation,license:entry.license,cache:new Map(),cachedGlyphs:0};
   });
   const duplicates = new Set();
   for (const face of faces) {
@@ -69,7 +83,7 @@ export function createFontRegistry(entries, options = {}) {
   // Construct native resources only after metadata and selection policy validate.
   try {
     if (fontShaper) for (const face of faces)
-      face.shaper = fontShaper.createFace({data:face.data, faceIndex:face.faceIndex, unitsPerEm:face.font.unitsPerEm});
+      face.shaper = fontShaper.createFace({data:face.data, faceIndex:0, unitsPerEm:face.font.unitsPerEm});
   } catch (error) {
     for (const face of faces) face.shaper?.dispose();
     throw error;
@@ -187,6 +201,7 @@ export function createFontRegistry(entries, options = {}) {
     resolveFont(style) { return resolve(style).resolution; },
     clearSubstitutions() { substitutions.clear(); },
     get substitutions() { return [...substitutions.values()]; },
-    get embeddedFonts() { return faces.map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.license ? {license:face.license} : {}),dataUrl:`data:font/${face.format};base64,${base64(face.data)}`})); },
+    get embeddedFonts() { return faces.map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.license ? {license:face.license} : {}),dataUrl:`data:font/${face.format};base64,${base64(face.embeddedData)}`})); },
+    get fontPreparations() { return faces.map(face=>({...face.preparation})); },
   };
 }

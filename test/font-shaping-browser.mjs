@@ -7,6 +7,10 @@ import {build} from 'esbuild';
 import {chromium} from 'playwright';
 import {loadHarfBuzzShaper} from '../dist/font-shaping.js';
 import {loadOfficeFontRegistry} from '../dist/fonts-node.js';
+import {createFontRegistry} from '../dist/fonts.js';
+import {create} from 'fontkit';
+import wawoff2 from 'wawoff2';
+import {makeCollection,makeWoff} from './font-container-fixtures.mjs';
 
 const output = new URL('../artifacts/font-shaping/browser/',import.meta.url);
 await mkdir(output,{recursive:true});
@@ -20,6 +24,22 @@ const faces = fonts.embeddedFonts.map(face=>({
     catch(error) {assert.equal(error.code,'missing-glyph');return {text,rejected:error.code};}
   }),
 }));
+const containers=[];
+const decoded=face=>Buffer.from(face.dataUrl.split(',')[1],'base64');
+for(const face of faces) {
+  const data=decoded(face);
+  for(const [format,bytes] of [['woff',makeWoff(data,true)],['woff2',Buffer.from(await wawoff2.compress(data))]])
+    containers.push({format,family:face.family,weight:face.weight,italic:face.italic,reference:data.toString('base64'),data:bytes.toString('base64')});
+}
+const collectionFaces=faces.filter(face=>face.family==='Roboto'&&!face.italic&&[400,700].includes(face.weight));
+const collection=makeCollection(collectionFaces.map(decoded)),collectionWoff2=Buffer.from(await wawoff2.compress(collection));
+for(const face of collectionFaces)for(const [format,data]of [['collection',collection],['woff2-collection',collectionWoff2]])
+  containers.push({format,family:face.family,weight:face.weight,italic:face.italic,reference:decoded(face).toString('base64'),data:data.toString('base64'),postscriptName:create(decoded(face)).postscriptName});
+for(const fixture of containers) {
+  const registry=createFontRegistry([{data:Buffer.from(fixture.reference,'base64'),family:'Candidate',weight:fixture.weight,italic:fixture.italic}],{fontShaper:shaper});
+  fixture.expected=registry.shapeText('office AVATAR  123',{fontFamily:'Candidate',fontWeight:fixture.weight,italic:fixture.italic});
+  registry.dispose();
+}
 const bundle = await build({
   stdin:{contents:"import {loadHarfBuzzShaper} from '@openpresentation/opf-render/font-shaping-browser'; import {loadBrowserFontRegistry} from '@openpresentation/opf-render/fonts-browser'; globalThis.fontTest={loadHarfBuzzShaper,loadBrowserFontRegistry};",resolveDir:fileURLToPath(new URL('../',import.meta.url))},
   bundle:true,platform:'browser',format:'esm',target:'es2022',write:false,metafile:true,
@@ -72,10 +92,45 @@ try {
     if(document.fonts.size!==before) throw new Error('Registry must release its own browser faces');
     return results;
   },faces));
+  const containerObservations=await page.evaluate(async fixtures=>{
+    const shaper=await fontTest.loadHarfBuzzShaper(),results=[],before=document.fonts.size;
+    const bytes=value=>Uint8Array.from(atob(value),c=>c.charCodeAt(0));
+    for(const fixture of fixtures) {
+      const entries=[{family:'Reference',data:bytes(fixture.reference)},{family:'Candidate',data:bytes(fixture.data),postscriptName:fixture.postscriptName}]
+        .map(entry=>({...entry,weight:fixture.weight,italic:fixture.italic}));
+      const registry=await fontTest.loadBrowserFontRegistry(entries,{fontShaper:shaper});
+      const style={fontFamily:'Candidate',fontWeight:fixture.weight,italic:fixture.italic};
+      const run=registry.shapeText(fixture.expected.text,style);
+      const snapshots=[];
+      for(const family of ['Reference','Candidate']) {
+        const canvas=document.createElement('canvas');canvas.width=850;canvas.height=90;
+        const context=canvas.getContext('2d');
+        context.textRendering='geometricPrecision';
+        context.fontKerning='normal';
+        context.font=`${fixture.italic?'italic':'normal'} ${fixture.weight} 32px ${family}`;
+        context.fillText(run.text,20,60);
+        const rgba=context.getImageData(0,0,canvas.width,canvas.height).data;
+        const sha256=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',rgba)),b=>b.toString(16).padStart(2,'0')).join('');
+        const ink=rgba.some((value,index)=>index%4===3&&value!==0);
+        snapshots.push({sha256,ink,advance:context.measureText(run.text).width});
+      }
+      results.push({format:fixture.format,family:fixture.family,weight:fixture.weight,italic:fixture.italic,postscriptName:fixture.postscriptName,run,snapshots,preparation:registry.fontPreparations[1]});
+      registry.dispose();
+      if(document.fonts.size!==before)throw new Error('Container registry leaked a FontFace');
+    }
+    return results;
+  },containers);
+  await writeFile(new URL('containers.json',output),JSON.stringify(containerObservations,null,2)+'\n');
+  for(const [index,result]of containerObservations.entries()) {
+    assert.deepEqual(result.run,containers[index].expected);
+    assert.ok(result.snapshots.every(snapshot=>snapshot.ink),'An empty canvas cannot prove font equivalence');
+    assert.deepEqual(result.snapshots[1],result.snapshots[0],`${result.format}/${result.family}/${result.weight} paints the original selected face`);
+    assert.ok(Math.abs(result.snapshots[1].advance-result.run.width*32)<.1,`${result.format}/${result.family}/${result.weight}/${result.italic}: canvas ${result.snapshots[1].advance} vs HarfBuzz ${result.run.width*32}`);
+  }
   const report={node:process.version,browser:browser.version(),engine:shaper.engine,contentSecurityPolicy,requests,errors,
     payload:{bundle:bytes.length,bundleGzip:gzipSync(bytes).length,wasm:wasm.length,wasmGzip:gzipSync(wasm).length},
-    faces:faces.map(({family,weight,italic,sha256})=>({family,weight,italic,sha256})),observations,
-    boundary:'Actual offline module/FontFace load, Node/browser glyph identity and unadjusted SVG advances. SVG getBBox is not raster ink; full-slide, mixed-script/bidi, compressed-font and native acceptance remain pending.'};
+    faces:faces.map(({family,weight,italic,sha256})=>({family,weight,italic,sha256})),observations,containerObservations,
+    boundary:'Actual offline module/FontFace load, Node/browser glyph identity, unadjusted SVG advances, compressed/collection canvas pixels compared with original selected faces. Full-slide, variable/CFF matrices, mixed-script/bidi and native acceptance remain pending.'};
   await writeFile(new URL('report.json',output),JSON.stringify(report,null,2)+'\n');
   let index=0;
   for(const face of faces)for(const item of face.cases){
@@ -103,5 +158,5 @@ try {
   });
   assert.equal(failure.code,'font-shaper-unavailable');
   await writeFile(new URL('initialization-failure.json',output),JSON.stringify(failure,null,2)+'\n');
-  console.log(`Offline HarfBuzz browser: ${observations.length} cases, 33 exact faces, identical Node glyphs, SVG advances within 0.1px, owned cleanup and CSP without unsafe-eval passed.`);
+  console.log(`Offline HarfBuzz browser: ${observations.length} cases, 33 exact faces, ${containerObservations.length} compressed/selected-face pixel comparisons, identical Node glyphs, advances within 0.1px, owned cleanup and CSP without unsafe-eval passed.`);
 } finally {fonts.dispose();await browser.close();}

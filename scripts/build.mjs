@@ -2,6 +2,7 @@ import { copyFile, mkdir, rm, readFile } from "node:fs/promises";
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
+import { buildFontCodecs } from './build-font-codecs.mjs';
 
 const root = new URL("../", import.meta.url);
 const dist = new URL("dist/", root);
@@ -15,6 +16,9 @@ for (const name of ["svg.js","svg.d.ts","raster.js","raster-images.js","fonts-br
 
 for (const name of ['font-shaping.js','font-shaping.d.ts','font-shaping-browser.js','font-shaping-service.js'])
   await copyFile(new URL(`src/${name}`,root),new URL(name,dist));
+for (const name of ['font-error.js','font-sfnt.js','font-woff.js','font-preparation.js'])
+  await copyFile(new URL(`src/${name}`,root),new URL(name,dist));
+await buildFontCodecs(root, dist);
 // Keep this opt-in runtime out of the existing SVG/font entrypoint bundles.
 // Upstream's adjacent WASM lookup remains intact. Its Node-only branch is
 // eliminated here; browser hosts never need filesystem or module polyfills.

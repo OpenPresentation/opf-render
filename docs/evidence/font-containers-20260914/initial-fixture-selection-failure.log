@@ -1,0 +1,15 @@
+file:///Users/michael/Source/opf-render/dist/fonts.js:126
+    if (!matching.length) throw new OPFFontError("font-style-unavailable", `No ${style.italic ? "italic" : "upright"} face for '${family}'.`, {path:style.path});
+                                ^
+
+OPFFontError: No italic face for 'Fixture'.
+    at resolve (file:///Users/michael/Source/opf-render/dist/fonts.js:126:33)
+    at resolveFace (file:///Users/michael/Source/opf-render/dist/fonts.js:134:32)
+    at metrics (file:///Users/michael/Source/opf-render/dist/fonts.js:144:16)
+    at Object.shapeText (file:///Users/michael/Source/opf-render/dist/fonts.js:192:70)
+    at file:///Users/michael/Source/opf-render/test/font-shaping-formats.mjs:23:20 {
+  code: 'font-style-unavailable',
+  details: { path: undefined }
+}
+
+Node.js v24.21.0
