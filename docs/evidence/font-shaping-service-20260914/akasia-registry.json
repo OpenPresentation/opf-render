@@ -1,0 +1,254 @@
+{
+  "node": "v24.21.0",
+  "engine": "harfbuzz:14.4.0",
+  "cases": 8568,
+  "inputs": {
+    "matrix": "df4efa46ab202ae5c1a14c62b1819d6b89a1162c3637a33d51fdcef92ef609c2",
+    "reference": "6834ebdfeffd9e8bab75396d789533b760a8dacb6e378041e5940872500aa8ed"
+  },
+  "faces": [
+    {
+      "id": "Probe0",
+      "file": "Akasia-Black.ttf",
+      "sha256": "4c7f86ad9a129a3e1d469a3b18ef39c21c9040f1a945992b452452b061b12a91",
+      "weight": 900,
+      "italic": false,
+      "unitsPerEm": 2048
+    },
+    {
+      "id": "Probe1",
+      "file": "Akasia-BlackItalic.ttf",
+      "sha256": "8d75ecd19b3bcc968af9c1bd22e44fdcbf2839a08ace0906e17360bc869f4a79",
+      "weight": 900,
+      "italic": true,
+      "unitsPerEm": 2048
+    },
+    {
+      "id": "Probe2",
+      "file": "Akasia-Bold.ttf",
+      "sha256": "e342fdc06e29575eb53aac85b85442e2fcffb6cc16d82d0a692651029ba54baf",
+      "weight": 700,
+      "italic": false,
+      "unitsPerEm": 2048
+    },
+    {
+      "id": "Probe3",
+      "file": "Akasia-BoldItalic.ttf",
+      "sha256": "528a249515ef1490da8b839ce2d5adb879c5ed55ac704bed910a55716239baff",
+      "weight": 700,
+      "italic": true,
+      "unitsPerEm": 2048
+    },
+    {
+      "id": "Probe4",
+      "file": "Akasia-ExtraBold.ttf",
+      "sha256": "c60d3081cfcc0536e44e132298c8c87e0c8df09d398873e84800ff1435247718",
+      "weight": 800,
+      "italic": false,
+      "unitsPerEm": 2048
+    },
+    {
+      "id": "Probe5",
+      "file": "Akasia-ExtraBoldItalic.ttf",
+      "sha256": "1dbfbeba162bfd53482cdae5d55e458c7924c3d26651c6d3f1360e8bdef871b0",
+      "weight": 800,
+      "italic": true,
+      "unitsPerEm": 2048
+    },
+    {
+      "id": "Probe6",
+      "file": "Akasia-Italic.ttf",
+      "sha256": "03568e7af56c9ba37993c36bc0f6cb63ba94d8a801a1746595108e4b29583c67",
+      "weight": 400,
+      "italic": true,
+      "unitsPerEm": 2048
+    },
+    {
+      "id": "Probe7",
+      "file": "Akasia-Light.ttf",
+      "sha256": "d72c354d9bc96818b33159d8b97b8445db92f6cdcc88392d34ed2ec959f36f3f",
+      "weight": 300,
+      "italic": false,
+      "unitsPerEm": 2048
+    },
+    {
+      "id": "Probe8",
+      "file": "Akasia-LightItalic.ttf",
+      "sha256": "4b45886a81577cbf5e52cd40c7260aa9ce4ff500190f8e35b8c1901dd1170808",
+      "weight": 300,
+      "italic": true,
+      "unitsPerEm": 2048
+    },
+    {
+      "id": "Probe9",
+      "file": "Akasia-Regular.ttf",
+      "sha256": "b81ddc5a801bf6417c6df870ee1f5857a97807e35df7476f7ae0f7d251aa85cd",
+      "weight": 400,
+      "italic": false,
+      "unitsPerEm": 2048
+    },
+    {
+      "id": "Probe10",
+      "file": "Akasia-SemiBold.ttf",
+      "sha256": "12de77b853fa2658b70a05e50307e6eac594a756949136fd1f935bc39b91e1d6",
+      "weight": 600,
+      "italic": false,
+      "unitsPerEm": 2048
+    },
+    {
+      "id": "Probe11",
+      "file": "Akasia-SemiBoldItalic.ttf",
+      "sha256": "6244344998c257c3df3db11ee785403922da33417b2dbbad72f97fb3d6e1189c",
+      "weight": 600,
+      "italic": true,
+      "unitsPerEm": 2048
+    }
+  ],
+  "fits": [
+    {
+      "id": "underestimated-greek",
+      "source": "\u03c9\u0301\u03c9\u0301\u03c9\u0301\u03c9\u0301\u03c9\u0301\u03c9\u0301\u03c9\u0301\u03c9\u0301\u03c9\u0301\u03c9\u0301",
+      "fontSize": 32,
+      "lines": [
+        "\u03c9\u0301\u03c9\u0301\u03c9\u0301\u03c9\u0301\u03c9\u0301\u03c9\u0301\u03c9\u0301\u03c9\u0301",
+        "\u03c9\u0301\u03c9\u0301"
+      ],
+      "sourceLines": [
+        {
+          "start": 0,
+          "end": 16,
+          "nextStart": 16,
+          "boundary": "soft",
+          "width": 228.75,
+          "segments": [
+            {
+              "kind": "text",
+              "start": 0,
+              "end": 16,
+              "x": 0,
+              "width": 228.75
+            }
+          ]
+        },
+        {
+          "start": 16,
+          "end": 20,
+          "nextStart": 20,
+          "boundary": "end",
+          "width": 57.1875,
+          "segments": [
+            {
+              "kind": "text",
+              "start": 16,
+              "end": 20,
+              "x": 0,
+              "width": 57.1875
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "overestimated-greek",
+      "source": "\u0399\u0301\u0399\u0301\u0399\u0301\u0399\u0301\u0399\u0301\u0399\u0301\u0399\u0301\u0399\u0301\u0399\u0301\u0399\u0301",
+      "fontSize": 32,
+      "lines": [
+        "\u0399\u0301\u0399\u0301\u0399\u0301\u0399\u0301\u0399\u0301\u0399\u0301\u0399\u0301\u0399\u0301\u0399\u0301\u0399\u0301"
+      ],
+      "sourceLines": [
+        {
+          "start": 0,
+          "end": 20,
+          "nextStart": 20,
+          "boundary": "end",
+          "width": 102.96875,
+          "segments": [
+            {
+              "kind": "text",
+              "start": 0,
+              "end": 20,
+              "x": 0,
+              "width": 102.96875
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "source-boundaries",
+      "source": "  o\u0302\u0301\t\u03c9\u0301 \u03c9\u0301\r\n\rU\u031b  \n",
+      "fontSize": 32,
+      "lines": [
+        "  o\u0302\u0301\t\u03c9\u0301 \u03c9\u0301",
+        "",
+        "U\u031b  ",
+        ""
+      ],
+      "sourceLines": [
+        {
+          "start": 0,
+          "end": 11,
+          "nextStart": 13,
+          "boundary": "hard",
+          "width": 115.6875,
+          "segments": [
+            {
+              "kind": "text",
+              "start": 0,
+              "end": 5,
+              "x": 0,
+              "width": 32.109375
+            },
+            {
+              "kind": "tab",
+              "start": 5,
+              "end": 6,
+              "x": 32.109375,
+              "width": 19.890625
+            },
+            {
+              "kind": "text",
+              "start": 6,
+              "end": 11,
+              "x": 52,
+              "width": 63.6875
+            }
+          ]
+        },
+        {
+          "start": 13,
+          "end": 13,
+          "nextStart": 14,
+          "boundary": "hard",
+          "width": 0,
+          "segments": []
+        },
+        {
+          "start": 14,
+          "end": 18,
+          "nextStart": 19,
+          "boundary": "hard",
+          "width": 40.359375,
+          "segments": [
+            {
+              "kind": "text",
+              "start": 14,
+              "end": 18,
+              "x": 0,
+              "width": 40.359375
+            }
+          ]
+        },
+        {
+          "start": 19,
+          "end": 19,
+          "nextStart": 19,
+          "boundary": "end",
+          "width": 0,
+          "segments": []
+        }
+      ]
+    }
+  ],
+  "scope": "Actual production registry and core fitText match the earlier 8568-case probe; original source ranges and fixed 32px floor retained. Not default/backend promotion or native acceptance."
+}

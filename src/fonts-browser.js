@@ -29,6 +29,7 @@ export async function loadBrowserFontRegistry(entries, options = {}) {
   );
   const registry = createFontRegistry(faces, options),
     loaded = [];
+  const disposeRegistry = registry.dispose.bind(registry);
   // Normalize family names using the registry's parsed font metadata.
   const embedded = registry.embeddedFonts;
   try {
@@ -51,11 +52,13 @@ export async function loadBrowserFontRegistry(entries, options = {}) {
     await documentRef.fonts.ready;
   } catch (error) {
     for (const face of loaded) documentRef.fonts.delete(face);
+    disposeRegistry();
     throw new OPFFontError("font-load-failed", error.message);
   }
   return Object.assign(registry, {
     dispose() {
       for (const face of loaded) documentRef.fonts.delete(face);
+      disposeRegistry();
     },
   });
 }

@@ -49,15 +49,25 @@
     "./svg": {
       "types": "./dist/svg.d.ts",
       "default": "./dist/svg.js"
-    }
+    },
+    "./font-shaping": {
+      "types": "./dist/font-shaping.d.ts",
+      "browser": "./dist/font-shaping-browser.js",
+      "default": "./dist/font-shaping.js"
+    },
+    "./font-shaping-browser": {
+      "types": "./dist/font-shaping.d.ts",
+      "default": "./dist/font-shaping-browser.js"
+    },
+    "./harfbuzz.wasm": "./dist/harfbuzz.wasm"
   },
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "scripts": {
     "build": "node scripts/build.mjs",
-    "typecheck": "node --check src/index.js && node --check scripts/build.mjs && node --check scripts/validate-package.mjs && node --check test/smoke.mjs && node --check test/golden.mjs && node --check src/fonts.js && node --check src/fonts-node.js && node --check src/font-compatibility.js && node --check test/office-fonts.mjs && node --check src/fonts-browser.js && node --check test/fonts-browser.mjs && node --check src/svg.js && node --check src/raster.js && node --check src/raster-images.js && node --check test/webp.mjs && node --check test/jpeg-orientation.mjs && node --check scripts/build-browser-check.mjs && node --check test/jpeg-browser.js && node --check test/rich-table.mjs && node --check test/styled-table.mjs && node --check test/chart-colors.mjs && node --check test/image-placeholders.mjs && node --check test/image-placeholders-browser.mjs && node --check test/accepted-text.mjs && node --check test/accepted-text-fixtures.mjs && node --check test/accepted-text-browser.mjs && node --check test/rich-spacing-browser.mjs && node --check test/rich-flow-browser.mjs && node --check test/rich-flow-review-sheets.mjs && node --check test/furniture.mjs",
+    "typecheck": "node --check src/index.js && node --check scripts/build.mjs && node --check scripts/validate-package.mjs && node --check test/smoke.mjs && node --check test/golden.mjs && node --check src/fonts.js && node --check src/fonts-node.js && node --check src/font-compatibility.js && node --check test/office-fonts.mjs && node --check src/fonts-browser.js && node --check test/fonts-browser.mjs && node --check src/svg.js && node --check src/raster.js && node --check src/raster-images.js && node --check test/webp.mjs && node --check test/jpeg-orientation.mjs && node --check scripts/build-browser-check.mjs && node --check test/jpeg-browser.js && node --check test/rich-table.mjs && node --check test/styled-table.mjs && node --check test/chart-colors.mjs && node --check test/image-placeholders.mjs && node --check test/image-placeholders-browser.mjs && node --check test/accepted-text.mjs && node --check test/accepted-text-fixtures.mjs && node --check test/accepted-text-browser.mjs && node --check test/rich-spacing-browser.mjs && node --check test/rich-flow-browser.mjs && node --check test/rich-flow-review-sheets.mjs && node --check test/furniture.mjs && node --check src/font-shaping.js && node --check src/font-shaping-service.js && node --check src/font-shaping-browser.js && node --check test/font-shaping.mjs && node --check test/font-shaping-formats.mjs && node --check test/font-shaping-browser.mjs && node --check test/font-shaping-akasia.mjs && node --check test/font-shaping-packed.mjs",
     "validate": "node scripts/validate-package.mjs",
-    "test": "npm run build && node test/furniture.mjs && node test/font-outlines.mjs && node test/accepted-text.mjs && node test/image-placeholders.mjs && node test/chart-colors.mjs && node test/smoke.mjs && node test/webp.mjs && node test/jpeg-orientation.mjs && node test/fonts.mjs && node test/office-fonts.mjs && node test/timeline.mjs && node test/quote-footer.mjs && node test/shared-quote.mjs && node test/rich-trace.mjs && node test/rich-table.mjs && node test/golden-gate.mjs && node test/golden.mjs && node test/fonts-browser.mjs && node test/design-preview.mjs && npm run build:browser-check && npm run test:styled-table",
+    "test": "npm run build && npm run test:shaping && node test/furniture.mjs && node test/font-outlines.mjs && node test/accepted-text.mjs && node test/image-placeholders.mjs && node test/chart-colors.mjs && node test/smoke.mjs && node test/webp.mjs && node test/jpeg-orientation.mjs && node test/fonts.mjs && node test/office-fonts.mjs && node test/timeline.mjs && node test/quote-footer.mjs && node test/shared-quote.mjs && node test/rich-trace.mjs && node test/rich-table.mjs && node test/golden-gate.mjs && node test/golden.mjs && node test/fonts-browser.mjs && node test/design-preview.mjs && npm run build:browser-check && npm run test:styled-table",
     "test:golden": "npm run build && node test/golden.mjs",
     "test:packed": "node test/packed-install.mjs",
     "test:browser": "npm run build:browser-check && node test/browser-check.mjs",
@@ -77,7 +87,10 @@
     "test:text-browser": "node test/accepted-text-browser.mjs",
     "test:rich-spacing-browser": "node test/rich-spacing-browser.mjs",
     "test:rich-flow-browser": "node test/rich-flow-browser.mjs",
-    "test:plain-whitespace-browser": "node test/plain-whitespace-browser.mjs"
+    "test:plain-whitespace-browser": "node test/plain-whitespace-browser.mjs",
+    "test:shaping": "node test/font-shaping.mjs && node test/font-shaping-formats.mjs",
+    "test:shaping-browser": "node test/font-shaping-browser.mjs",
+    "test:shaping-packed": "node test/font-shaping-packed.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/arimo": "0.4.3",
@@ -91,6 +104,7 @@
     "@openpresentation/opf": "^0.9.0",
     "@resvg/resvg-js": "^2.6.2",
     "fontkit": "^2.0.4",
+    "harfbuzzjs": "1.6.1",
     "pdf-lib": "^1.17.1",
     "sharp": "0.35.4"
   },

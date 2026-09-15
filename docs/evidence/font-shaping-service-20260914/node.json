@@ -1,0 +1,2750 @@
+{
+  "node": "v24.21.0",
+  "engine": "harfbuzz:14.4.0",
+  "faces": 33,
+  "cases": 264,
+  "files": [
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/carlito/400Regular/Carlito_400Regular.ttf",
+      "sha256": "ca019755404c45627a8566915df99068949dc32ee2bce48d6aeee7542d2a0a89"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/carlito/400Regular_Italic/Carlito_400Regular_Italic.ttf",
+      "sha256": "074cd1b89d53765d90d0ed3b4bfe49523efaaf4f3f430c006bc3233778b0ebb5"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/carlito/700Bold/Carlito_700Bold.ttf",
+      "sha256": "51edbfa32d8af939913ae1f4ad0a5173e32083499218c133384638090295f0b0"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/carlito/700Bold_Italic/Carlito_700Bold_Italic.ttf",
+      "sha256": "25f5672c1985d168d6bc2973864fc5a7e374bb95fe8d0f91cff47ae17fa67691"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/caladea/400Regular/Caladea_400Regular.ttf",
+      "sha256": "59faf27a90dee5c1b7813b12b26c725ea88adc1bfe37b0ac8e0b8b32a5732c2a"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/caladea/400Regular_Italic/Caladea_400Regular_Italic.ttf",
+      "sha256": "669e65b265d40899b59d7f3531ca136b7e0fda80a3d1b5d47bbe7825be81fbe3"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/caladea/700Bold/Caladea_700Bold.ttf",
+      "sha256": "11d1e1dc461d1e491b6a396d91934c3bb09d06a77cc3d21ad0b10346c39c3ec2"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/caladea/700Bold_Italic/Caladea_700Bold_Italic.ttf",
+      "sha256": "93d7c2003fe3fd8381cbd518af6cc2f4b510a37c7741c49a95893b6da8edbbc7"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/arimo/400Regular/Arimo_400Regular.ttf",
+      "sha256": "88cc899855d30f9c779b73c3319d0e077b098f927187aafce11ca029add707a6"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/arimo/400Regular_Italic/Arimo_400Regular_Italic.ttf",
+      "sha256": "6bd2c6a6fa87f4566cf0a92c5834884597acbd7be9719e550837865ac4167a42"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/arimo/700Bold/Arimo_700Bold.ttf",
+      "sha256": "ec96ac9fdd94766f66f6140c1375bf011577558f88d43f76b3b59307d2a6bca3"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/arimo/700Bold_Italic/Arimo_700Bold_Italic.ttf",
+      "sha256": "b42b19c10bf5d526f00068303a643282c3df55a79c6fa2eea80b4a078a4a705a"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/tinos/400Regular/Tinos_400Regular.ttf",
+      "sha256": "924ef269e73da94c1803ff68877f5d998dd16605c5ffad82ee181034f8a1fffe"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/tinos/400Regular_Italic/Tinos_400Regular_Italic.ttf",
+      "sha256": "4a52de5bcf70e37bd71949f8a85302b75795a1943aedffbbee4f2db7744e1c81"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/tinos/700Bold/Tinos_700Bold.ttf",
+      "sha256": "576a19b5dc026cafe6ae8fde4c849588dae6475cf5d912cebdf2827388c43ad9"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/tinos/700Bold_Italic/Tinos_700Bold_Italic.ttf",
+      "sha256": "10c90ef7896d758923c06a1485d7824cdb457466da0bf7d42f81c5228931281b"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/cousine/400Regular/Cousine_400Regular.ttf",
+      "sha256": "ca2264d6750d6c47df703be4486361a37ab943d42de6ea2bf794b7c7af767799"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/cousine/400Regular_Italic/Cousine_400Regular_Italic.ttf",
+      "sha256": "f1626b7287db36af8ba2ff88840c82f121f4cbda8971fe3f717f975e9fd782a8"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/cousine/700Bold/Cousine_700Bold.ttf",
+      "sha256": "f03c46c4bc5c0a3af4a1f4fbe5e3e16954581cced05cea20b3bffe12740d99d3"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/cousine/700Bold_Italic/Cousine_700Bold_Italic.ttf",
+      "sha256": "acb798f3629cda0041fbd6234237cf549a1b932792f2a71b0986eb3e1382ed37"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/gelasio/400Regular/Gelasio_400Regular.ttf",
+      "sha256": "44aae47442ad39e623788930f38f1e702febcf094c284c5058bf49f7da23de9a"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/gelasio/400Regular_Italic/Gelasio_400Regular_Italic.ttf",
+      "sha256": "2b24b3d41c06d030a31db6610454595775e572a2992d73171cab783407d202a8"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/gelasio/700Bold/Gelasio_700Bold.ttf",
+      "sha256": "fade86eca52203e2ccaf9aee494aa4b0335589879738c47e9d92a53630696d10"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/gelasio/700Bold_Italic/Gelasio_700Bold_Italic.ttf",
+      "sha256": "24f1cb5cf5f765acc5d744a54a6c5dfe34723e58842f5b1b696716497e032852"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/roboto/400Regular/Roboto_400Regular.ttf",
+      "sha256": "15256405ecb0d880678833a582760efad538ab2932318b52c8105b267d159459"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/roboto/500Medium/Roboto_500Medium.ttf",
+      "sha256": "79343dc641a2e8d48a703a4667b71fc8dc6565cc8ce47dfc34fc52c12aadbf38"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/roboto/600SemiBold/Roboto_600SemiBold.ttf",
+      "sha256": "32fe2086b0e54eca85a68eb74e3d89bb16a7ffe59085d6dc7d079f5b3c26d6ab"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/roboto/700Bold/Roboto_700Bold.ttf",
+      "sha256": "4aaf8c5b661a386998c2e70cf2b87e2440f5404e0b8fd81164f0413fb3435ec6"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/roboto/800ExtraBold/Roboto_800ExtraBold.ttf",
+      "sha256": "43d5ce98c58336045220fa1dac2bd22281b1aab3eca66785cb34eb3ad1dfe1a5"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/roboto/400Regular_Italic/Roboto_400Regular_Italic.ttf",
+      "sha256": "6a372c348dc20c246b92d60b9bda3c0a9ffedc129790ed3f31faf89daa99d793"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/roboto/700Bold_Italic/Roboto_700Bold_Italic.ttf",
+      "sha256": "c6a5e7c224d3bf6698e5d3c124f0f0220cad20d5d413920447a96f033a0292ee"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/roboto-mono/400Regular/RobotoMono_400Regular.ttf",
+      "sha256": "e4bf45837847d4abfa5a502b807a83393aa138727bdb9ea9c93fb17d53208d95"
+    },
+    {
+      "file": "/Users/michael/Source/opf-render/node_modules/@expo-google-fonts/roboto-mono/700Bold/RobotoMono_700Bold.ttf",
+      "sha256": "92649d819cc4c20480b23a47aaa111769924eb31c66b6ecdcf6f573662558c83"
+    }
+  ],
+  "results": [
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 259.140625,
+      "previousWidth": 259.140625
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 187.5,
+      "previousWidth": 187.5
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 41.234375,
+      "previousWidth": 41.234375
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 21.703125,
+      "previousWidth": 21.703125
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "AVATAR office affine",
+      "width": 257.1875,
+      "previousWidth": 257.1875
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "  Keep spaces  ",
+      "width": 185.34375,
+      "previousWidth": 185.34375
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u00c1gj",
+      "width": 42.625,
+      "previousWidth": 42.625
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "o\u0302\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u03c9\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u0399\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "   ",
+      "width": 21.703125,
+      "previousWidth": 21.703125
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 266.359375,
+      "previousWidth": 266.359375
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 190.484375,
+      "previousWidth": 190.484375
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 42.734375,
+      "previousWidth": 42.734375
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 21.703125,
+      "previousWidth": 21.703125
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "AVATAR office affine",
+      "width": 265.546875,
+      "previousWidth": 265.546875
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "  Keep spaces  ",
+      "width": 189,
+      "previousWidth": 189
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u00c1gj",
+      "width": 44.453125,
+      "previousWidth": 44.453125
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "o\u0302\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u03c9\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u0399\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Carlito",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "   ",
+      "width": 21.703125,
+      "previousWidth": 21.703125
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 263.296,
+      "previousWidth": 263.296
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 183.872,
+      "previousWidth": 183.872
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 42.016,
+      "previousWidth": 42.016
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "width": 15.36,
+      "previousWidth": 15.36
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 21.12,
+      "previousWidth": 21.12
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "AVATAR office affine",
+      "width": 256.928,
+      "previousWidth": 256.928
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "  Keep spaces  ",
+      "width": 179.552,
+      "previousWidth": 179.552
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u00c1gj",
+      "width": 41.664,
+      "previousWidth": 41.664
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "o\u0302\u0301",
+      "width": 15.456,
+      "previousWidth": 15.456
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u03c9\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u0399\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "   ",
+      "width": 21.12,
+      "previousWidth": 21.12
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 284.896,
+      "previousWidth": 284.896
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 201.76,
+      "previousWidth": 201.76
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 46.912,
+      "previousWidth": 46.912
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "width": 16.96,
+      "previousWidth": 16.96
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 21.12,
+      "previousWidth": 21.12
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "AVATAR office affine",
+      "width": 282.112,
+      "previousWidth": 282.112
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "  Keep spaces  ",
+      "width": 198.816,
+      "previousWidth": 198.816
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u00c1gj",
+      "width": 45.696,
+      "previousWidth": 45.696
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "o\u0302\u0301",
+      "width": 17.728,
+      "previousWidth": 17.728
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u03c9\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u0399\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Caladea",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "   ",
+      "width": 21.12,
+      "previousWidth": 21.12
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 289.921875,
+      "previousWidth": 289.921875
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 220.578125,
+      "previousWidth": 220.578125
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 46.25,
+      "previousWidth": 46.25
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "width": 17.796875,
+      "previousWidth": 17.796875
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "width": 24.984375,
+      "previousWidth": 24.984375
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "width": 12.28125,
+      "previousWidth": 8.890625
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 26.671875,
+      "previousWidth": 26.671875
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "AVATAR office affine",
+      "width": 292.296875,
+      "previousWidth": 292.296875
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "  Keep spaces  ",
+      "width": 220.578125,
+      "previousWidth": 220.578125
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u00c1gj",
+      "width": 46.25,
+      "previousWidth": 46.25
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "o\u0302\u0301",
+      "width": 17.796875,
+      "previousWidth": 17.796875
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u03c9\u0301",
+      "width": 24.921875,
+      "previousWidth": 24.921875
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u0399\u0301",
+      "width": 12.4375,
+      "previousWidth": 8.890625
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "   ",
+      "width": 26.671875,
+      "previousWidth": 26.671875
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 312.296875,
+      "previousWidth": 312.296875
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 231.234375,
+      "previousWidth": 231.234375
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 51.546875,
+      "previousWidth": 51.546875
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "width": 19.546875,
+      "previousWidth": 19.546875
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "width": 27.03125,
+      "previousWidth": 27.03125
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "width": 15.15625,
+      "previousWidth": 8.890625
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 26.671875,
+      "previousWidth": 26.671875
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "AVATAR office affine",
+      "width": 311.140625,
+      "previousWidth": 311.140625
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "  Keep spaces  ",
+      "width": 231.234375,
+      "previousWidth": 231.234375
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u00c1gj",
+      "width": 51.546875,
+      "previousWidth": 51.546875
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "o\u0302\u0301",
+      "width": 19.546875,
+      "previousWidth": 19.546875
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u03c9\u0301",
+      "width": 26.703125,
+      "previousWidth": 26.703125
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u0399\u0301",
+      "width": 15.140625,
+      "previousWidth": 8.890625
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Arimo",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "   ",
+      "width": 26.671875,
+      "previousWidth": 26.671875
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 283.03125,
+      "previousWidth": 283.03125
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 191.03125,
+      "previousWidth": 191.03125
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 48,
+      "previousWidth": 48
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "width": 16,
+      "previousWidth": 16
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "width": 21.0625,
+      "previousWidth": 21.0625
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "width": 13.15625,
+      "previousWidth": 10.65625
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 24,
+      "previousWidth": 24
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "AVATAR office affine",
+      "width": 267.953125,
+      "previousWidth": 267.953125
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "  Keep spaces  ",
+      "width": 191.0625,
+      "previousWidth": 191.0625
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u00c1gj",
+      "width": 44.4375,
+      "previousWidth": 44.4375
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "o\u0302\u0301",
+      "width": 16,
+      "previousWidth": 16
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u03c9\u0301",
+      "width": 22.328125,
+      "previousWidth": 22.59375
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u0399\u0301",
+      "width": 12.859375,
+      "previousWidth": 10.65625
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "   ",
+      "width": 24,
+      "previousWidth": 24
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 292.703125,
+      "previousWidth": 292.703125
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 198.203125,
+      "previousWidth": 198.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 49.765625,
+      "previousWidth": 49.765625
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "width": 16,
+      "previousWidth": 16
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "width": 23.390625,
+      "previousWidth": 23.390625
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "width": 16.703125,
+      "previousWidth": 12.453125
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 24,
+      "previousWidth": 24
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "AVATAR office affine",
+      "width": 285.640625,
+      "previousWidth": 285.640625
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "  Keep spaces  ",
+      "width": 191.0625,
+      "previousWidth": 191.0625
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u00c1gj",
+      "width": 46.234375,
+      "previousWidth": 46.234375
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "o\u0302\u0301",
+      "width": 16,
+      "previousWidth": 16
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u03c9\u0301",
+      "width": 23.140625,
+      "previousWidth": 23.140625
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u0399\u0301",
+      "width": 16.1875,
+      "previousWidth": 12.453125
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Tinos",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "   ",
+      "width": 24,
+      "previousWidth": 24
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 384.0625,
+      "previousWidth": 384.0625
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 288.046875,
+      "previousWidth": 288.046875
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 57.609375,
+      "previousWidth": 57.609375
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "width": 19.203125,
+      "previousWidth": 19.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "width": 19.203125,
+      "previousWidth": 19.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "width": 19.203125,
+      "previousWidth": 19.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 57.609375,
+      "previousWidth": 57.609375
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "AVATAR office affine",
+      "width": 384.0625,
+      "previousWidth": 384.0625
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "  Keep spaces  ",
+      "width": 288.046875,
+      "previousWidth": 288.046875
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u00c1gj",
+      "width": 57.609375,
+      "previousWidth": 57.609375
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "o\u0302\u0301",
+      "width": 19.203125,
+      "previousWidth": 19.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u03c9\u0301",
+      "width": 19.203125,
+      "previousWidth": 19.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u0399\u0301",
+      "width": 19.203125,
+      "previousWidth": 19.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "   ",
+      "width": 57.609375,
+      "previousWidth": 57.609375
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 384.0625,
+      "previousWidth": 384.0625
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 288.046875,
+      "previousWidth": 288.046875
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 57.609375,
+      "previousWidth": 57.609375
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "width": 19.203125,
+      "previousWidth": 19.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "width": 19.203125,
+      "previousWidth": 19.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "width": 19.203125,
+      "previousWidth": 19.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 57.609375,
+      "previousWidth": 57.609375
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "AVATAR office affine",
+      "width": 384.0625,
+      "previousWidth": 384.0625
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "  Keep spaces  ",
+      "width": 288.046875,
+      "previousWidth": 288.046875
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u00c1gj",
+      "width": 57.609375,
+      "previousWidth": 57.609375
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "o\u0302\u0301",
+      "width": 19.203125,
+      "previousWidth": 19.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u03c9\u0301",
+      "width": 19.203125,
+      "previousWidth": 19.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u0399\u0301",
+      "width": 19.203125,
+      "previousWidth": 19.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Cousine",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "   ",
+      "width": 57.609375,
+      "previousWidth": 57.609375
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 297.734375,
+      "previousWidth": 297.734375
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 202.09375,
+      "previousWidth": 202.09375
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 47.109375,
+      "previousWidth": 47.109375
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "width": 17.25,
+      "previousWidth": 17.25
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "width": 12.46875,
+      "previousWidth": 12.46875
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 23.15625,
+      "previousWidth": 23.15625
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "AVATAR office affine",
+      "width": 299.078125,
+      "previousWidth": 299.078125
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "  Keep spaces  ",
+      "width": 203.53125,
+      "previousWidth": 203.53125
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u00c1gj",
+      "width": 49.109375,
+      "previousWidth": 49.109375
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "o\u0302\u0301",
+      "width": 17.1875,
+      "previousWidth": 17.1875
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u03c9\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u0399\u0301",
+      "width": 12.46875,
+      "previousWidth": 12.46875
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "   ",
+      "width": 23.15625,
+      "previousWidth": 23.15625
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 342.296875,
+      "previousWidth": 342.296875
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 232.625,
+      "previousWidth": 232.625
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 53.796875,
+      "previousWidth": 53.796875
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "width": 20.34375,
+      "previousWidth": 20.34375
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "width": 14.265625,
+      "previousWidth": 14.265625
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 24.375,
+      "previousWidth": 24.375
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "AVATAR office affine",
+      "width": 343.6875,
+      "previousWidth": 343.6875
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "  Keep spaces  ",
+      "width": 234.015625,
+      "previousWidth": 234.015625
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u00c1gj",
+      "width": 56.734375,
+      "previousWidth": 56.734375
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "o\u0302\u0301",
+      "width": 20.34375,
+      "previousWidth": 20.34375
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u03c9\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u0399\u0301",
+      "width": 14.421875,
+      "previousWidth": 14.421875
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Gelasio",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "   ",
+      "width": 24.375,
+      "previousWidth": 24.375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 290.546875,
+      "previousWidth": 290.546875
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 213.390625,
+      "previousWidth": 213.390625
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 46.5,
+      "previousWidth": 46.5
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "width": 26.359375,
+      "previousWidth": 26.359375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "width": 10.265625,
+      "previousWidth": 8.703125
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 23.8125,
+      "previousWidth": 23.8125
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Medium",
+        "fontWeight": 500,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 295.40625,
+      "previousWidth": 295.40625
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Medium",
+        "fontWeight": 500,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 213.859375,
+      "previousWidth": 213.859375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Medium",
+        "fontWeight": 500,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 47.390625,
+      "previousWidth": 47.390625
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Medium",
+        "fontWeight": 500,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Medium",
+        "fontWeight": 500,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "width": 26.3125,
+      "previousWidth": 26.3125
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Medium",
+        "fontWeight": 500,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "width": 10.625,
+      "previousWidth": 9.0625
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Medium",
+        "fontWeight": 500,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Medium",
+        "fontWeight": 500,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 23.859375,
+      "previousWidth": 23.859375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto SemiBold",
+        "fontWeight": 600,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 297.484375,
+      "previousWidth": 297.484375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto SemiBold",
+        "fontWeight": 600,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 214.078125,
+      "previousWidth": 214.078125
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto SemiBold",
+        "fontWeight": 600,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 47.734375,
+      "previousWidth": 47.734375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto SemiBold",
+        "fontWeight": 600,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto SemiBold",
+        "fontWeight": 600,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "width": 26.296875,
+      "previousWidth": 26.296875
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto SemiBold",
+        "fontWeight": 600,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "width": 10.765625,
+      "previousWidth": 9.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto SemiBold",
+        "fontWeight": 600,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto SemiBold",
+        "fontWeight": 600,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 23.859375,
+      "previousWidth": 23.859375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 299.484375,
+      "previousWidth": 299.484375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 214.21875,
+      "previousWidth": 214.21875
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 48.109375,
+      "previousWidth": 48.109375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "width": 26.28125,
+      "previousWidth": 26.28125
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "width": 10.921875,
+      "previousWidth": 9.359375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 23.859375,
+      "previousWidth": 23.859375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto ExtraBold",
+        "fontWeight": 800,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 301.65625,
+      "previousWidth": 301.65625
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto ExtraBold",
+        "fontWeight": 800,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 214.515625,
+      "previousWidth": 214.515625
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto ExtraBold",
+        "fontWeight": 800,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 48.484375,
+      "previousWidth": 48.484375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto ExtraBold",
+        "fontWeight": 800,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto ExtraBold",
+        "fontWeight": 800,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "width": 26.25,
+      "previousWidth": 26.25
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto ExtraBold",
+        "fontWeight": 800,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "width": 11.078125,
+      "previousWidth": 9.515625
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto ExtraBold",
+        "fontWeight": 800,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto ExtraBold",
+        "fontWeight": 800,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 23.90625,
+      "previousWidth": 23.90625
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "AVATAR office affine",
+      "width": 281.984375,
+      "previousWidth": 281.984375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "  Keep spaces  ",
+      "width": 207.765625,
+      "previousWidth": 207.765625
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u00c1gj",
+      "width": 45.109375,
+      "previousWidth": 45.109375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "o\u0302\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u03c9\u0301",
+      "width": 25.5625,
+      "previousWidth": 25.5625
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "\u0399\u0301",
+      "width": 10,
+      "previousWidth": 8.4375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 400,
+        "italic": true
+      },
+      "text": "   ",
+      "width": 23.578125,
+      "previousWidth": 23.578125
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "AVATAR office affine",
+      "width": 290.65625,
+      "previousWidth": 290.65625
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "  Keep spaces  ",
+      "width": 208.59375,
+      "previousWidth": 208.59375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u00c1gj",
+      "width": 46.671875,
+      "previousWidth": 46.671875
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "o\u0302\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u03c9\u0301",
+      "width": 25.484375,
+      "previousWidth": 25.484375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "\u0399\u0301",
+      "width": 10.640625,
+      "previousWidth": 9.078125
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto",
+        "fontWeight": 700,
+        "italic": true
+      },
+      "text": "   ",
+      "width": 23.625,
+      "previousWidth": 23.625
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Mono",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 384.0625,
+      "previousWidth": 384.0625
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Mono",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 288.046875,
+      "previousWidth": 288.046875
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Mono",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 57.609375,
+      "previousWidth": 57.609375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Mono",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Mono",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "width": 19.203125,
+      "previousWidth": 19.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Mono",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "width": 19.203125,
+      "previousWidth": 19.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Mono",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Mono",
+        "fontWeight": 400,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 57.609375,
+      "previousWidth": 57.609375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Mono",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "AVATAR office affine",
+      "width": 384.0625,
+      "previousWidth": 384.0625
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Mono",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "  Keep spaces  ",
+      "width": 288.046875,
+      "previousWidth": 288.046875
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Mono",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u00c1gj",
+      "width": 57.609375,
+      "previousWidth": 57.609375
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Mono",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "o\u0302\u0301",
+      "rejected": "missing-glyph"
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Mono",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u03c9\u0301",
+      "width": 19.203125,
+      "previousWidth": 19.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Mono",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "\u0399\u0301",
+      "width": 19.203125,
+      "previousWidth": 19.203125
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Mono",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "",
+      "width": 0,
+      "previousWidth": 0
+    },
+    {
+      "style": {
+        "fontFamily": "Roboto Mono",
+        "fontWeight": 700,
+        "italic": false
+      },
+      "text": "   ",
+      "width": 57.609375,
+      "previousWidth": 57.609375
+    }
+  ],
+  "boundary": "Opt-in SFNT horizontal run service; no default, raster baseline, native, bidi or compressed-format acceptance."
+}

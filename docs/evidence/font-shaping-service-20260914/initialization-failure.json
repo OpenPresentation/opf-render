@@ -1,0 +1,4 @@
+{
+  "code": "font-shaper-unavailable",
+  "message": "Could not initialize HarfBuzz. Serve the packaged WASM beside the browser module and allow WebAssembly in the host CSP."
+}

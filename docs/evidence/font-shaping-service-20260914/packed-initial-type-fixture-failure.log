@@ -1,0 +1,60 @@
+
+> @openpresentation/opf-render@0.7.0 test:shaping-packed
+> node test/font-shaping-packed.mjs
+
+
+> @openpresentation/opf-render@0.7.0 prepack
+> npm run build
+
+
+> @openpresentation/opf-render@0.7.0 build
+> node scripts/build.mjs
+
+HarfBuzz registry: 264 cases across 33 pinned faces; exact original UTF-16 ranges, same-run advances/ink, physical selection, policies, cache bounds, features and owned disposal passed.
+Shaping format boundary: two real collection faces select exactly; existing WOFF behavior preserved and unsupported opt-in WOFF rejects explicitly. No browser collection or WOFF2 acceptance claimed.
+Offline HarfBuzz browser: 198 cases, 33 exact faces, identical Node glyphs, SVG advances within 0.1px, owned cleanup and CSP without unsafe-eval passed.
+node:internal/errors:986
+  const err = new Error(message);
+              ^
+
+Error: Command failed: /Users/michael/Library/Application Support/fnm/node-versions/v24.21.0/installation/bin/node /var/folders/zj/5tv5dvds3793_qhx2jyxs0000000gn/T/opf-shaping-installed-yNDbSt/consumer/node_modules/typescript/bin/tsc --noEmit --strict --target ES2022 --module NodeNext --moduleResolution NodeNext types.mts
+    at genericNodeError (node:internal/errors:986:15)
+    at wrappedFn (node:internal/errors:540:14)
+    at checkExecSyncError (node:child_process:942:11)
+    at execFileSync (node:child_process:978:15)
+    at file:///Users/michael/Source/opf-render/test/font-shaping-packed.mjs:47:42 {
+  status: 2,
+  signal: null,
+  output: [
+    null,
+    Buffer(229) [Uint8Array] [
+      116, 121, 112, 101, 115,  46, 109, 116, 115,  40,  53,  44,
+       52,  49,  41,  58,  32, 101, 114, 114, 111, 114,  32,  84,
+       83,  50,  51,  52,  53,  58,  32,  65, 114, 103, 117, 109,
+      101, 110, 116,  32, 111, 102,  32, 116, 121, 112, 101,  32,
+       39, 123,  32, 102, 111, 110, 116,  70,  97, 109, 105, 108,
+      121,  58,  32, 115, 116, 114, 105, 110, 103,  59,  32, 125,
+       39,  32, 105, 115,  32, 110, 111, 116,  32,  97, 115, 115,
+      105, 103, 110,  97,  98, 108, 101,  32, 116, 111,  32, 112,
+       97, 114,  97, 109,
+      ... 129 more items
+    ],
+    Buffer(0) [Uint8Array] []
+  ],
+  pid: 3045,
+  stdout: Buffer(229) [Uint8Array] [
+    116, 121, 112, 101, 115,  46, 109, 116, 115,  40,  53,  44,
+     52,  49,  41,  58,  32, 101, 114, 114, 111, 114,  32,  84,
+     83,  50,  51,  52,  53,  58,  32,  65, 114, 103, 117, 109,
+    101, 110, 116,  32, 111, 102,  32, 116, 121, 112, 101,  32,
+     39, 123,  32, 102, 111, 110, 116,  70,  97, 109, 105, 108,
+    121,  58,  32, 115, 116, 114, 105, 110, 103,  59,  32, 125,
+     39,  32, 105, 115,  32, 110, 111, 116,  32,  97, 115, 115,
+    105, 103, 110,  97,  98, 108, 101,  32, 116, 111,  32, 112,
+     97, 114,  97, 109,
+    ... 129 more items
+  ],
+  stderr: Buffer(0) [Uint8Array] []
+}
+
+Node.js v24.21.0

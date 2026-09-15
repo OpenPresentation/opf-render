@@ -1,5 +1,10 @@
 # OPF Render
 
+Unpublished font shaping adds an **opt-in** HarfBuzz service: original UTF-16
+glyph clusters, advances and outlines behind the synchronous font registry.
+See the [API, browser packaging and acceptance requirements](docs/font-shaping.md).
+Fontkit remains the default; this candidate has not been published.
+
 This checkout and the next release require Node 24 (`24.x`). Use `.nvmrc` for local development. Earlier published versions retain their original engine declarations. Browser entrypoints remain browser-safe; native application compatibility is verified separately.
 
 Unpublished integration work adds optional font-registry vector outlines and shared heading/scalar/rich line placement. Pass identical `textMeasurement` and `textRasterPadding` options to preview, pagination and export; padding defaults to one scaled reference pixel. SVG consumes accepted origins without remeasuring. See the [source contract and limits](https://github.com/OpenPresentation/opf/blob/codex/shared-metric-integration-20260910/docs/plans/text-placement.md). This is not part of the published 0.7.0 package or native raster certification.

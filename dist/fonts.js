@@ -18,9 +18,15 @@ function validFamily(family) {
 /** Local font files only. The caller explicitly chooses aliases and fallback. */
 export function createFontRegistry(entries, options = {}) {
   if (!Array.isArray(entries) || !entries.length) throw new OPFFontError("empty-font-registry", "Supply at least one font file.");
+  const fontShaper = options.fontShaper;
+  if (fontShaper && (typeof fontShaper.createFace !== 'function' || typeof fontShaper.cacheKey !== 'string'))
+    throw new OPFFontError('invalid-font-shaper', 'Supply an initialized font shaping service.');
+  const shapingCacheKey = fontShaper?.cacheKey;
   const faces = entries.map(entry => {
     if (!(entry.data instanceof Uint8Array)) throw new OPFFontError("invalid-font-data", "Font data must be a Uint8Array.");
-    const data = entry.data.slice();
+    // Buffer.slice() aliases memory; own bytes even when the caller supplies a
+    // Node Buffer and later reuses its storage.
+    const data = Uint8Array.from(entry.data);
     let font;
     try { font = create(data, entry.postscriptName); } catch (error) { throw new OPFFontError("invalid-font-data", error.message); }
     if (!font?.layout || !font.unitsPerEm) throw new OPFFontError("font-collection", "Select one font from a collection with postscriptName.");
@@ -38,7 +44,10 @@ export function createFontRegistry(entries, options = {}) {
     if (!Number.isInteger(weight) || weight < 1 || weight > 1000) throw new OPFFontError("invalid-font-weight", "Font weight must be between 1 and 1000.");
     const signature = String.fromCharCode(...data.subarray(0,4));
     const format = signature === "OTTO" ? "otf" : signature === "wOFF" ? "woff" : signature === "wOF2" ? "woff2" : "ttf";
-    return {family,familyGroup,fontFace,weight,italic,font,data,format,license:entry.license,cache:new Map()};
+    const faceIndex = signature === 'ttcf' && fontShaper
+      ? create(data).fonts.findIndex(candidate => candidate.postscriptName === font.postscriptName) : 0;
+    if (faceIndex < 0) throw new OPFFontError('font-collection', 'The selected collection face could not be located.');
+    return {family,familyGroup,fontFace,weight,italic,font,data,format,faceIndex,license:entry.license,cache:new Map(),cachedGlyphs:0};
   });
   const duplicates = new Set();
   for (const face of faces) {
@@ -57,8 +66,21 @@ export function createFontRegistry(entries, options = {}) {
   const policy = options.substitutionPolicy ?? "none";
   if (!["none","metric","visual"].includes(policy)) throw new OPFFontError("invalid-font-policy", "substitutionPolicy must be none, metric, or visual.");
   if (options.fallbackFamily) validFamily(options.fallbackFamily);
+  // Construct native resources only after metadata and selection policy validate.
+  try {
+    if (fontShaper) for (const face of faces)
+      face.shaper = fontShaper.createFace({data:face.data, faceIndex:face.faceIndex, unitsPerEm:face.font.unitsPerEm});
+  } catch (error) {
+    for (const face of faces) face.shaper?.dispose();
+    throw error;
+  }
+  let disposed = false;
+  const assertActive = () => {
+    if (disposed) throw new OPFFontError('font-registry-disposed', 'Create a new font registry after disposal.');
+  };
   const findFamily = family => faces.filter(face=>face.family.toLowerCase()===family.toLowerCase() || face.familyGroup.toLowerCase()===family.toLowerCase());
   const resolve = style => {
+    assertActive();
     const requested = validFamily(style?.fontFamily);
     const weight = style.fontWeight ?? 400;
     if (!Number.isFinite(weight) || weight < 1 || weight > 1000) throw new OPFFontError("invalid-font-weight", "Font weight must be between 1 and 1000.");
@@ -108,7 +130,8 @@ export function createFontRegistry(entries, options = {}) {
   const metrics = (text,size,style,includeOutline=false) => {
     if (typeof text!=='string'||!Number.isFinite(size)||size<=0) throw new OPFFontError('invalid-text-measurement','Text measurement requires a string and a positive finite font size.');
     const face=resolveFace(style);
-    let value=face.cache.get(text);
+    const cacheKey = fontShaper ? JSON.stringify([shapingCacheKey,text]) : text;
+    let value=face.cache.get(cacheKey);
     if (value===undefined) {
       if (options.strictGlyphs!==false) for(const character of text) {
         if (/\p{Default_Ignorable_Code_Point}/u.test(character)) continue;
@@ -116,16 +139,33 @@ export function createFontRegistry(entries, options = {}) {
       }
     }
     if(value===undefined||includeOutline&&!Object.hasOwn(value,'outline')) {
-      const run=face.font.layout(text);
-      value={width:run.positions.reduce((total,position)=>total+position.xAdvance,0)/face.font.unitsPerEm,...value};
-      if(includeOutline) {
-        const bounds=run.bbox,unit=face.font.unitsPerEm;
-        value.outline=[bounds.minX,bounds.minY,bounds.maxX,bounds.maxY].every(Number.isFinite)
-          ?{x:bounds.minX/unit,y:-bounds.maxY/unit,width:bounds.width/unit,height:bounds.height/unit}:null;
+      if (face.shaper) {
+        const run = face.shaper.shape(text);
+        const validOutline = run?.outline === null || run?.outline &&
+          [run.outline.x,run.outline.y,run.outline.width,run.outline.height].every(Number.isFinite) && run.outline.width >= 0 && run.outline.height >= 0;
+        if (!Number.isFinite(run?.width) || run.width < 0 || !validOutline)
+          throw new OPFFontError('invalid-shaped-metrics', 'The shaping service returned invalid font metrics.');
+        value = {width:run.width, outline:run.outline, run};
+      } else {
+        const run=face.font.layout(text);
+        value={width:run.positions.reduce((total,position)=>total+position.xAdvance,0)/face.font.unitsPerEm,...value};
+        if(includeOutline) {
+          const bounds=run.bbox,unit=face.font.unitsPerEm;
+          value.outline=[bounds.minX,bounds.minY,bounds.maxX,bounds.maxY].every(Number.isFinite)
+            ?{x:bounds.minX/unit,y:-bounds.maxY/unit,width:bounds.width/unit,height:bounds.height/unit}:null;
+        }
       }
-      if (text.length<=2048) {
-        if (face.cache.size>=512&&!face.cache.has(text)) face.cache.delete(face.cache.keys().next().value);
-        face.cache.set(text,value);
+      const glyphCount = value.run?.glyphs.length ?? 0;
+      if (text.length<=2048 && glyphCount<=8192) {
+        face.cachedGlyphs -= face.cache.get(cacheKey)?.run?.glyphs.length ?? 0;
+        face.cache.delete(cacheKey);
+        while (face.cache.size>=512 || face.cachedGlyphs+glyphCount>8192) {
+          const oldest = face.cache.keys().next().value;
+          face.cachedGlyphs -= face.cache.get(oldest)?.run?.glyphs.length ?? 0;
+          face.cache.delete(oldest);
+        }
+        face.cache.set(cacheKey,value);
+        face.cachedGlyphs += glyphCount;
       }
     }
     return value;
@@ -137,6 +177,13 @@ export function createFontRegistry(entries, options = {}) {
   };
   return {
     textMeasurement: {measure,resolveStyle,outlineBounds},
+    ...(fontShaper ? {shapeText(text,style) { return structuredClone(metrics(text,1,style,true).run); }} : {}),
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      for (const face of faces) { face.cache.clear(); face.cachedGlyphs=0; face.shaper?.dispose(); }
+      substitutions.clear();
+    },
     resolveFont(style) { return resolve(style).resolution; },
     clearSubstitutions() { substitutions.clear(); },
     get substitutions() { return [...substitutions.values()]; },
