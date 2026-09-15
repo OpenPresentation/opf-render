@@ -1,7 +1,7 @@
 import type { TextMeasurement, TextStyle } from "@openpresentation/opf/composition";
 import type { FontShaper, ShapedText } from './font-shaping.js';
 export interface FontFaceInput { data: Uint8Array; family?: string; weight?: number; italic?: boolean; postscriptName?: string; license?: string }
-export interface EmbeddedFont { family: string; weight: number; italic?: boolean; dataUrl: string; license?: string }
+export interface EmbeddedFont { family: string; weight: number; italic?: boolean; dataUrl: string; license?: string; /** Original bytes retained when browser compatibility requires a reconstructed face. */ sourceDataUrl?: string }
 export type FontCompatibility = "exact" | "metric" | "visual" | "generic";
 export interface FontResolution { requestedFamily:string; sourceFamily:string; resolvedFamily:string; requestedWeight:number; resolvedWeight:number; italic:boolean; compatibility:FontCompatibility; fontFace?:TextStyle['fontFace']; path?:string; source?:string; note?:string }
 export interface FontRegistryOptions {
@@ -32,6 +32,7 @@ export interface FontPreparation {
   selectedCollectionFace: boolean;
   /** A DSIG signature was removed from reconstructed measurement/selected-face bytes. */
   removedSignature: boolean;
+  embeddingReason?: 'woff2-hmtx-compatibility';
 }
 export declare class OPFFontError extends Error { code:string; details:Record<string,unknown>; constructor(code:string,message:string,details?:Record<string,unknown>) }
 export declare function createFontRegistry(entries: FontFaceInput[], options?: FontRegistryOptions): FontRegistry;

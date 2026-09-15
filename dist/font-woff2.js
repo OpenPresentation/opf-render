@@ -1242,6 +1242,32 @@ function brotliDecode(buffer, options) {
 }
 setDecoder(brotliDecode);
 
+// src/font-woff2-metrics.js
+var TAG = { glyf: 1735162214, loca: 1819239265, head: 1751474532, maxp: 1835104368, hhea: 1751672161, hmtx: 1752003704 };
+function prepareHmtxMetrics(data2, tables, info, transformFlag) {
+  let find = (tag) => tables.find((table) => table.tag === TAG[tag]), metrics = find("hmtx");
+  if (!metrics || !(metrics.flags & transformFlag)) return !1;
+  let glyf = find("glyf"), loca = find("loca");
+  if (!glyf || !loca || !!(glyf.flags & transformFlag) != !!(loca.flags & transformFlag))
+    throw new Error("Transformed hmtx requires a matching TrueType glyf/loca pair");
+  if (glyf.flags & transformFlag) return !1;
+  let view = (table, minimum) => {
+    if (!table || table.srcLength < minimum || table.srcOffset < 0 || table.srcOffset + table.srcLength > data2.length)
+      throw new Error("Invalid WOFF2 metric dependency bounds");
+    return new DataView(data2.buffer, data2.byteOffset + table.srcOffset, table.srcLength);
+  }, head = view(find("head"), 54), maxp = view(find("maxp"), 6);
+  view(find("hhea"), 36);
+  let indexFormat = head.getInt16(50), numGlyphs = maxp.getUint16(4);
+  if (![0, 1].includes(indexFormat)) throw new Error("Invalid TrueType location format");
+  let stride = indexFormat ? 4 : 2, locations = view(loca, (numGlyphs + 1) * stride), glyphs = view(glyf, 0), offset = (index) => indexFormat ? locations.getUint32(index * stride) : locations.getUint16(index * stride) * 2, xMins = new Int16Array(numGlyphs);
+  for (let index = 0; index < numGlyphs; index++) {
+    let start = offset(index), end = offset(index + 1);
+    if (end < start || end > glyf.srcLength || start !== end && end - start < 10) throw new Error("Invalid glyph bounds for WOFF2 metrics");
+    xMins[index] = start === end ? 0 : glyphs.getInt16(start + 2);
+  }
+  return Object.assign(info, { numGlyphs, indexFormat, xMins }), !0;
+}
+
 // <stdin>
 var Buffer$1 = class {
   constructor(data2, offset = 0, length) {
@@ -1410,10 +1436,10 @@ function woff2Decode(data2, maxBytes = 67108864) {
   let decompressed = brotliDecode(input.subarray(header.compressedOffset, header.compressedOffset + header.compressedLength), { maxOutputSize: header.uncompressedSize });
   if (!decompressed || decompressed.byteLength !== header.uncompressedSize) throw new Error(`Brotli decompression failed: expected ${header.uncompressedSize} bytes, got ${decompressed?.byteLength ?? 0}`);
   let writer = { data: new Uint8Array(Math.max(headerSize, Math.min(65536, maxBytes))), maxBytes };
-  writer.view = new DataView(writer.data.buffer);
+  header.requiresSfntEmbedding = !1, writer.view = new DataView(writer.data.buffer);
   let fontInfos = writeHeaders(header, writer.data, writer.view), writtenTables = /* @__PURE__ */ new Map(), nextTableOffset = headerSize, count = Math.max(1, header.ttcFonts.length);
   for (let index = 0; index < count; index++) nextTableOffset = reconstructFont(decompressed, header, index, fontInfos[index], writer, writtenTables, nextTableOffset);
-  return writer.data.slice(0, nextTableOffset);
+  return { data: writer.data.slice(0, nextTableOffset), requiresSfntEmbedding: header.requiresSfntEmbedding };
 }
 function readHeader(buf, totalLength) {
   if (buf.readU32() !== WOFF2_SIGNATURE) return null;
@@ -1569,6 +1595,7 @@ function reconstructFont(decompressed, header, fontIndex, fontInfo, writer, writ
     let hheaData = decompressed.subarray(hheaTable.srcOffset, hheaTable.srcOffset + hheaTable.srcLength);
     hheaData.byteLength >= 36 && (fontInfo.numHMetrics = new DataView(hheaData.buffer, hheaData.byteOffset).getUint16(34));
   }
+  prepareHmtxMetrics(decompressed, sortedTables, fontInfo, WOFF2_FLAGS_TRANSFORM) && (header.requiresSfntEmbedding = !0);
   let fontChecksum = header.ttcFonts.length > 0 ? header.ttcFonts[fontIndex].headerChecksum : 0, isTTC = header.ttcFonts.length > 0;
   for (let table of sortedTables) {
     let entryOffset = fontInfo.tableEntryByTag.get(table.tag);
@@ -1823,12 +1850,16 @@ function encodeTripletsToScratch(flagStream, glyphStream, nPoints, hasOverlapBit
   };
 }
 function reconstructHmtx(data2, table, numGlyphs, numHMetrics, xMins) {
-  let hmtxStream = makeByteStream(data2, table.srcOffset, table.srcLength), hmtxFlags = bsReadU8(hmtxStream), hasProportionalLsbs = (hmtxFlags & 1) === 0, hasMonospaceLsbs = (hmtxFlags & 2) === 0, advanceWidths = new Uint16Array(numHMetrics);
+  let hmtxStream = makeByteStream(data2, table.srcOffset, table.srcLength), hmtxFlags = bsReadU8(hmtxStream);
+  if (hmtxFlags === 0 || (hmtxFlags & -4) !== 0 || numHMetrics < 1 || numHMetrics > numGlyphs || xMins.length !== numGlyphs) throw new Error("Invalid transformed hmtx flags or glyph/metric counts");
+  let hasProportionalLsbs = (hmtxFlags & 1) === 0, hasMonospaceLsbs = (hmtxFlags & 2) === 0, advanceWidths = new Uint16Array(numHMetrics);
   for (let i = 0; i < numHMetrics; i++) advanceWidths[i] = bsReadU16(hmtxStream);
   let lsbs = new Int16Array(numGlyphs);
   for (let i = 0; i < numHMetrics; i++) hasProportionalLsbs ? lsbs[i] = bsReadS16(hmtxStream) : lsbs[i] = xMins[i];
   for (let i = numHMetrics; i < numGlyphs; i++) hasMonospaceLsbs ? lsbs[i] = bsReadS16(hmtxStream) : lsbs[i] = xMins[i];
-  let outputSize = numHMetrics * 4 + (numGlyphs - numHMetrics) * 2, output = new Uint8Array(outputSize), offset = 0;
+  let outputSize = numHMetrics * 4 + (numGlyphs - numHMetrics) * 2;
+  if (hmtxStream.pos !== hmtxStream.end || outputSize !== table.origLength) throw new Error("Invalid transformed hmtx length");
+  let output = new Uint8Array(outputSize), offset = 0;
   for (let i = 0; i < numGlyphs; i++)
     i < numHMetrics && (writeUint16BE(output, offset, advanceWidths[i]), offset += 2), writeInt16BE(output, offset, lsbs[i]), offset += 2;
   return output;

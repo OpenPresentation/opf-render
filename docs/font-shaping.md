@@ -56,7 +56,14 @@ WASM memory reclamation. Other registries remain usable.
 The prepared service decodes WOFF and WOFF2 synchronously before Fontkit parses
 the selected face and HarfBuzz shapes it. Standalone compressed inputs retain
 their complete original bytes in `embeddedFonts`, including wrapper metadata
-and private data. Reconstructed measurement bytes preserve OpenType tables,
+and private data. Usually these bytes are also used for painting. WOFF2 with
+transformed horizontal metrics and literal glyph/location tables needs a
+reconstructed standalone face for browser compatibility. In that case,
+`dataUrl` contains the reconstructed face and `sourceDataUrl` retains the
+original wrapper; `fontPreparations[].embeddingReason` reports
+`woff2-hmtx-compatibility`. SVG uses the compatible face in CSS and preserves
+the original source and license in `metadata[data-opf-font-sources="1"]`.
+This increases the exported size for that combination. Reconstructed measurement bytes preserve OpenType tables,
 with required checksum repair. WOFF2's glyf/loca/hmtx reconstruction may change
 table packing; byte identity of reconstructed SFNT is not promised. Transformed
 glyph-table `origLength` is an advisory value, not an allocation bound. Output
@@ -115,15 +122,24 @@ cause and a hosting/CSP explanation.
 - `npm run test:shaping-browser`: 198 cases over 33 exact faces, including
   those 33 coverage rejections. Node/browser glyph runs agree; unadjusted SVG
   advances differ by at most 0.01525px within the existing 0.1px gate. This
-  also compares 72 actual canvas renders against the original selected faces,
+  also compares 171 actual canvas renders against the original selected faces,
   including both collection faces and compressed instances of all 33 fonts.
   These checks use geometric precision, matching SVG configuration, and do not
-  establish full-slide containment. The test bundle includes Fontkit; consult its
+  establish full-slide containment. The test bundle includes Fontkit and the
+  actual SVG renderer; consult its
   recorded size rather than treating it as marginal application download cost.
 - `test/font-woff2-reconstruction.mjs`: tiny and oversized transformed glyph
   length hints accepted by the independent Google decoder retain the original
   glyph runs with bounded output growth. Browser and fresh-package tests include
   both controls; actual decoded-size limits continue to reject.
+- `test/font-woff2-hmtx.mjs`: all three horizontal-metrics transform flags
+  across 33 faces with literal glyph/location tables. Every reconstructed
+  advance and bearing equals the original font, including empty glyphs and
+  shared advances in monospaced fonts. Seventeen malformed dependency/count/
+  stream controls reject. Browser tests verify original wrapper/license
+  retention through actual SVG metadata and identical nonempty pixels.
+  The independent test-only FontTools check and the known Google decoder
+  limitation are recorded in [metrics evidence](evidence/woff2-hmtx-20260914/README.md).
 - `npm run test:shaping-packed`: fresh core/renderer tarballs, byte-identical
   shipped modules/WASM/notices, Node/offline-browser checks, public TypeScript
   NodeNext/Bundler consumers and dependency audit.
@@ -132,7 +148,8 @@ cause and a hosting/CSP explanation.
   all 8,568 prior glyph runs/metrics plus three `fitText` fixtures through the
   registry, preserving source ranges and the fixed 32px floor.
 
-Before default promotion: verify DFont resource containers, CFF/CFF2 and
+Before default promotion: verify transformed metrics with shared collection
+glyph tables, DFont resource containers, CFF/CFF2 and
 variable faces/instances, language/script itemization,
 paragraph bidi, supplementary characters, fallback, broader shaping settings,
 memory/performance, complete slide/ink review, and shared editing/undo/PPTX

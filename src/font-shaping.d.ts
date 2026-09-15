@@ -17,7 +17,7 @@ export interface FontShaper {
   readonly engine: string;
   readonly cacheKey: string;
   /** Decode local containers synchronously without rewriting caller-owned bytes. */
-  prepareFontData?(data: Uint8Array, maxBytes?: number): {data: Uint8Array; removedSignature: boolean};
+  prepareFontData?(data: Uint8Array, maxBytes?: number): {data: Uint8Array; removedSignature: boolean; embeddingReason?: 'woff2-hmtx-compatibility'};
   createFace(input: {data: Uint8Array; faceIndex?: number; unitsPerEm: number}): {
     shape(text: string): ShapedText;
     dispose(): void;

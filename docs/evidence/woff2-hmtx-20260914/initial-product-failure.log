@@ -1,0 +1,18 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Carlito/400/1: reconstructed hmtx length
+
+5064 !== 10128
+
+    at file:///Users/michael/Source/opf-render/test/font-woff2-hmtx.mjs:23:12 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 5064,
+  expected: 10128,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

@@ -1,0 +1,42 @@
+{
+  "node": "v24.21.0",
+  "priorRenderer": "a8e13eb82de9779593876aa882adc2eafef6a956",
+  "runtime": {
+    "scripts/build-font-codecs.mjs": "a0e2c31642f39316814d2d8a287cf2bd580930c5a3f97bfd286fe28c44cc5a01",
+    "src/font-woff2-metrics.js": "d62f288be6b89b35585bcd18252188b74d91784e1c36b177576792afcda5881e",
+    "src/font-preparation.js": "171b26e97e0b5ba05c7bc5d8eee167ba25ae0fad35d423980702423d199577f7",
+    "src/font-shaping.d.ts": "aed95c43db14001f55e2753fe10bbb5d23a1ed1182ed4f446367265677b67637",
+    "src/fonts.js": "7a0d7d7afdb4e3d6b3e12ba331f87472d5e50119346c9b06ec1b90ba22aff091",
+    "src/fonts.d.ts": "375c5cf996b232bdec065b07a27ef69f905df2470659bd97f45332404a12876e",
+    "src/svg.js": "a1d218c09c1b72339799a51195577b3a85cb77c0a7e401bedad95256cad1f382",
+    "dist/font-woff2.js": "cb79017da969c0c258ed7b9ce9ab23d28bf69f33ad6d931db84402cd53908626",
+    "dist/font-preparation.js": "171b26e97e0b5ba05c7bc5d8eee167ba25ae0fad35d423980702423d199577f7",
+    "dist/font-shaping.d.ts": "aed95c43db14001f55e2753fe10bbb5d23a1ed1182ed4f446367265677b67637",
+    "dist/fonts.js": "7a0d7d7afdb4e3d6b3e12ba331f87472d5e50119346c9b06ec1b90ba22aff091",
+    "dist/fonts.d.ts": "375c5cf996b232bdec065b07a27ef69f905df2470659bd97f45332404a12876e",
+    "dist/svg.js": "a1d218c09c1b72339799a51195577b3a85cb77c0a7e401bedad95256cad1f382",
+    "test/font-woff2-hmtx-fixtures.mjs": "148a0b093e798103e1c7354c390c111a92b332e63152b89663bb575a7fd62307",
+    "test/font-woff2-hmtx.mjs": "ae65f0a2338d9b4e0710e1048afa7d1eb4e73aad18b15e4b38d00e7432ff82fd",
+    "test/font-woff2-hmtx-fonttools.py": "72768c20cbf93db5465c654ab0d815cfb361d8ac6fe87a5752e887de20e5c409",
+    "test/font-shaping-browser.mjs": "73ec9d3f4e5aabdeb4b4c479f5a75b5a13f0f6964467b11a027ae80272ff4957",
+    "test/font-shaping-packed.mjs": "58dcc5c0191a21751f2f6b130b79e6e57c0a3bbe3154bec851af97e1491979f5",
+    "package.json": "747681a92e672b77c7363c068737680d1109e57840c3511c0ecce582d2ed8c04"
+  },
+  "reports": {
+    "hmtx.json.gz": "6e62fbb41f1ea5dd17bc912ab3afb2f4e197a7d85ab451588b2eb2ccbff8ae6a",
+    "fonttools.json.gz": "441ec9c5863c2f9bb93d4f7d9d0c3bd39010b485345a1993cb66c40e5e760394",
+    "installed.json.gz": "cdb9559cb52c052d020bcc9f4ee8f4ecfe22f4a59c3e368c10888932e9f85235",
+    "initial-product-failure.log": "641962fc1cb25c573b469a839384faef2f00484f4b932f2461a588aa3d944b76",
+    "initial-reference-limit.log": "65881895cf5942a49d86fbbc7aa83dee797047dfbc37cf0901803ec896208b91",
+    "node.log": "b03673965b7ee5f7172cc8a6ca8d1cc7e8e05f827979f45ecbc17faecd0eabc9",
+    "packed.log": "ffc34e3dcf6fa6ef8b7c8a74c9c65c5ab26d4847070eace512336863dcec58ee",
+    "renderer-full.log": "e4384921ee37d83b16ed967666d71ee5a6197fac6fca993502b16daef990ba16",
+    "typecheck.log.gz": "c6d3ec37f3a19d595aed751c29d98aa88adba2d061e9df4339e309b773bec499"
+  },
+  "decodedReports": {
+    "hmtx.json.gz": "40d71d37e2f0d0801407f67d720877c2234fa2d5e761f19af8157fe5830311a8",
+    "fonttools.json.gz": "1d6bba251ad73555885565f705f167e6ee44193a604b103f584a0adfb8878e24",
+    "installed.json.gz": "d0c1d66c16c5af7b6f19b5816ccc8827fda6612ad1d217b35d26c7751350f483",
+    "typecheck.log.gz": "d6934231967f80babe1ceb98337f73cde4198a30684bc1f54ee321966bc7fb01"
+  }
+}

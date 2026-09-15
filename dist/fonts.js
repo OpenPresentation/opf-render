@@ -54,14 +54,17 @@ export function createFontRegistry(entries, options = {}) {
     const weight = entry.weight ?? 400;
     const italic = entry.italic ?? !!font.italicAngle;
     if (!Number.isInteger(weight) || weight < 1 || weight > 1000) throw new OPFFontError("invalid-font-weight", "Font weight must be between 1 and 1000.");
-    // Standalone web fonts retain their original wrapper, metadata and private
-    // data in exported CSS. Collections embed the actual selected standalone face.
-    const embeddedData = collection ? data : sourceData;
+    // Preserve standalone wrappers. When browser decoding needs a reconstructed
+    // face, retain the original separately for SVG metadata. Collections embed
+    // the actual selected standalone face.
+    const embeddingReason=prepared?.embeddingReason;
+    const embeddedData = collection || embeddingReason ? data : sourceData;
     const format = fontFormat(embeddedData) ?? 'ttf';
     const preparation = {family,postscriptName:font.postscriptName,sourceFormat,
       measurementFormat:fontFormat(data) ?? 'unknown',embeddedFormat:format,
-      selectedCollectionFace:collection,removedSignature};
-    return {family,familyGroup,fontFace,weight,italic,font,data,embeddedData,format,preparation,license:entry.license,cache:new Map(),cachedGlyphs:0};
+      selectedCollectionFace:collection,removedSignature,...(embeddingReason?{embeddingReason}:{})};
+    return {family,familyGroup,fontFace,weight,italic,font,data,embeddedData,format,preparation,
+      ...(embeddingReason?{sourceData,sourceFormat}:{}),license:entry.license,cache:new Map(),cachedGlyphs:0};
   });
   const duplicates = new Set();
   for (const face of faces) {
@@ -201,7 +204,7 @@ export function createFontRegistry(entries, options = {}) {
     resolveFont(style) { return resolve(style).resolution; },
     clearSubstitutions() { substitutions.clear(); },
     get substitutions() { return [...substitutions.values()]; },
-    get embeddedFonts() { return faces.map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.license ? {license:face.license} : {}),dataUrl:`data:font/${face.format};base64,${base64(face.embeddedData)}`})); },
+    get embeddedFonts() { return faces.map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.license ? {license:face.license} : {}),dataUrl:`data:font/${face.format};base64,${base64(face.embeddedData)}`,...(face.sourceData?{sourceDataUrl:`data:font/${face.sourceFormat};base64,${base64(face.sourceData)}`}:{})})); },
     get fontPreparations() { return faces.map(face=>({...face.preparation})); },
   };
 }

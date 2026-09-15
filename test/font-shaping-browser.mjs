@@ -11,6 +11,7 @@ import {createFontRegistry} from '../dist/fonts.js';
 import {create} from 'fontkit';
 import wawoff2 from 'wawoff2';
 import {makeCollection,makeWoff,withGlyfLengthHint} from './font-container-fixtures.mjs';
+import {makeWoff2Hmtx} from './font-woff2-hmtx-fixtures.mjs';
 
 const output = new URL('../artifacts/font-shaping/browser/',import.meta.url);
 await mkdir(output,{recursive:true});
@@ -30,6 +31,8 @@ for(const face of faces) {
   const data=decoded(face);
   for(const [format,bytes] of [['woff',makeWoff(data,true)],['woff2',Buffer.from(await wawoff2.compress(data))]])
     containers.push({format,family:face.family,weight:face.weight,italic:face.italic,reference:data.toString('base64'),data:bytes.toString('base64')});
+  for(const flags of [1,2,3])containers.push({format:`woff2-hmtx-${flags}`,family:face.family,weight:face.weight,italic:face.italic,
+    reference:data.toString('base64'),data:makeWoff2Hmtx(data,flags).data.toString('base64'),sourceMetadata:true});
 }
 const collectionFaces=faces.filter(face=>face.family==='Roboto'&&!face.italic&&[400,700].includes(face.weight));
 const collection=makeCollection(collectionFaces.map(decoded)),collectionWoff2=Buffer.from(await wawoff2.compress(collection));
@@ -43,7 +46,7 @@ for(const fixture of containers) {
   registry.dispose();
 }
 const bundle = await build({
-  stdin:{contents:"import {loadHarfBuzzShaper} from '@openpresentation/opf-render/font-shaping-browser'; import {loadBrowserFontRegistry} from '@openpresentation/opf-render/fonts-browser'; globalThis.fontTest={loadHarfBuzzShaper,loadBrowserFontRegistry};",resolveDir:fileURLToPath(new URL('../',import.meta.url))},
+  stdin:{contents:"import {loadHarfBuzzShaper} from '@openpresentation/opf-render/font-shaping-browser'; import {loadBrowserFontRegistry} from '@openpresentation/opf-render/fonts-browser'; import {renderSvg} from '@openpresentation/opf-render/svg'; globalThis.fontTest={loadHarfBuzzShaper,loadBrowserFontRegistry,renderSvg};",resolveDir:fileURLToPath(new URL('../',import.meta.url))},
   bundle:true,platform:'browser',format:'esm',target:'es2022',write:false,metafile:true,
 });
 assert.ok(!Object.keys(bundle.metafile.inputs).some(path=>path.endsWith('/raster.js')||path.includes('sharp')));
@@ -96,11 +99,27 @@ try {
   },faces));
   const containerObservations=await page.evaluate(async fixtures=>{
     const shaper=await fontTest.loadHarfBuzzShaper(),results=[],before=document.fonts.size;
+    let rawHmtxProbe;
     const bytes=value=>Uint8Array.from(atob(value),c=>c.charCodeAt(0));
     for(const fixture of fixtures) {
       const entries=[{family:'Reference',data:bytes(fixture.reference)},{family:'Candidate',data:bytes(fixture.data),postscriptName:fixture.postscriptName}]
-        .map(entry=>({...entry,weight:fixture.weight,italic:fixture.italic}));
+        .map(entry=>({...entry,weight:fixture.weight,italic:fixture.italic,license:'Keep "author" & <license>\nverbatim'}));
       const registry=await fontTest.loadBrowserFontRegistry(entries,{fontShaper:shaper});
+      let retainedMetadata=false;
+      if(fixture.sourceMetadata) {
+        if(rawHmtxProbe===undefined) {
+          try {await new FontFace('RawHmtxProbe',bytes(fixture.data)).load();rawHmtxProbe='accepted';}
+          catch(error){rawHmtxProbe=error.message;}
+        }
+        const descriptor=registry.embeddedFonts[1];
+        if(!descriptor.dataUrl.startsWith('data:font/ttf;')||descriptor.sourceDataUrl!==`data:font/woff2;base64,${fixture.data}`)throw new Error('Prepare a compatible face and retain original font bytes');
+        const svg=fontTest.renderSvg({slides:[{title:'Retain source fonts'}]},{embeddedFonts:registry.embeddedFonts});
+        const parsed=new DOMParser().parseFromString(svg,'image/svg+xml');
+        if(parsed.querySelector('parsererror'))throw new Error('Font metadata broke SVG XML');
+        const metadata=JSON.parse(parsed.querySelector('metadata[data-opf-font-sources="1"]').textContent);
+        if(metadata.length!==1||metadata[0].sourceDataUrl!==descriptor.sourceDataUrl||metadata[0].license!==entries[1].license)throw new Error('SVG must preserve the original font source and exact license annotation');
+        retainedMetadata=true;
+      }
       const style={fontFamily:'Candidate',fontWeight:fixture.weight,italic:fixture.italic};
       const run=registry.shapeText(fixture.expected.text,style);
       const snapshots=[];
@@ -116,7 +135,7 @@ try {
         const ink=rgba.some((value,index)=>index%4===3&&value!==0);
         snapshots.push({sha256,ink,advance:context.measureText(run.text).width});
       }
-      results.push({format:fixture.format,family:fixture.family,weight:fixture.weight,italic:fixture.italic,postscriptName:fixture.postscriptName,run,snapshots,preparation:registry.fontPreparations[1]});
+      results.push({format:fixture.format,family:fixture.family,weight:fixture.weight,italic:fixture.italic,postscriptName:fixture.postscriptName,run,snapshots,preparation:registry.fontPreparations[1],...(fixture.sourceMetadata?{retainedMetadata,rawHmtxProbe}:{})});
       registry.dispose();
       if(document.fonts.size!==before)throw new Error('Container registry leaked a FontFace');
     }

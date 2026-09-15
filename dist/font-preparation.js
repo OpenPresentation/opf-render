@@ -12,9 +12,10 @@ export function prepareFontData(data, maxBytes) {
     const format = fontFormat(data);
     if (format === 'woff') return decodeWoff(data, maxBytes);
     if (format === 'woff2') {
-      const decoded = woff2Decode(data, maxBytes);
+      const {data:decoded,requiresSfntEmbedding} = woff2Decode(data, maxBytes);
       // A collection needs the caller's explicit face selection before repacking.
-      return fontFormat(decoded) === 'collection' ? {data:decoded,removedSignature:false} : extractSfnt(decoded, 0, maxBytes);
+      const result=fontFormat(decoded) === 'collection' ? {data:decoded,removedSignature:false} : extractSfnt(decoded, 0, maxBytes);
+      return {...result,...(requiresSfntEmbedding?{embeddingReason:'woff2-hmtx-compatibility'}:{})};
     }
     return {data,removedSignature:false};
   } catch (error) {

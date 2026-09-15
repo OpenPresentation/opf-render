@@ -33,13 +33,14 @@ export async function buildFontCodecs(root, dist) {
   // a hard configured limit, without requiring resizable ArrayBuffer support.
   adapted=adapted.slice(0,allocationStart)+`
   const writer={data:new Uint8Array(Math.max(headerSize, Math.min(65536, maxBytes))),maxBytes};
+  header.requiresSfntEmbedding=false;
   writer.view=new DataView(writer.data.buffer);
   const fontInfos=writeHeaders(header,writer.data,writer.view);
   const writtenTables=new Map();
   let nextTableOffset=headerSize;
   const count=Math.max(1,header.ttcFonts.length);
   for(let index=0;index<count;index++)nextTableOffset=reconstructFont(decompressed,header,index,fontInfos[index],writer,writtenTables,nextTableOffset);
-  return writer.data.slice(0,nextTableOffset);
+  return {data:writer.data.slice(0,nextTableOffset),requiresSfntEmbedding:header.requiresSfntEmbedding};
 }
 `+adapted.slice(allocationEnd);
   replace('function reconstructFont(decompressed, header, fontIndex, fontInfo, output, outView, writtenTables, dstOffset) {', `function reconstructFont(decompressed, header, fontIndex, fontInfo, writer, writtenTables, dstOffset) {
@@ -54,6 +55,9 @@ export async function buildFontCodecs(root, dist) {
   const outputWrites=adapted.match(/output\.set\((tableData|result\.locaData), dstOffset\);/g);
   if(outputWrites?.length!==3)throw new Error('WOFF2 output write sites changed');
   adapted=adapted.replace(/output\.set\((tableData|result\.locaData), dstOffset\);/g, 'ensureOutput(pad4(dstOffset + $1.length)); output.set($1, dstOffset);');
+  replace('let fontChecksum = header.ttcFonts.length > 0 ? header.ttcFonts[fontIndex].headerChecksum : 0;', `
+  if(prepareHmtxMetrics(decompressed,sortedTables,fontInfo,WOFF2_FLAGS_TRANSFORM))header.requiresSfntEmbedding=true;
+  let fontChecksum = header.ttcFonts.length > 0 ? header.ttcFonts[fontIndex].headerChecksum : 0;`);
   // Bound reconstruction buffers too. SFNT simple-glyph endpoint indices are
   // uint16; accepting more points would both allocate excessively and wrap IDs.
   replace('reconstructGlyf(decompressed, glyfTable, locaTable, fontInfo)', 'reconstructGlyf(decompressed, glyfTable, locaTable, fontInfo, writer.maxBytes)');
@@ -66,7 +70,11 @@ export async function buildFontCodecs(root, dist) {
   replace('const xformVersion = flagByte >> 6 & 3;', `const xformVersion = flagByte >> 6 & 3;
     if ((tag === TAG_GLYF || tag === TAG_LOCA) ? ![0,3].includes(xformVersion) : tag === TAG_HMTX ? ![0,1].includes(xformVersion) : xformVersion !== 0) return null;`);
   replace('const nContours = bsReadS16(nContourStream);', "const nContours = bsReadS16(nContourStream);\n    if (nContours < -1) throw new Error('Invalid glyph contour count');");
-  await build({stdin:{contents:`import {brotliDecode} from 'brotli-lib/decode';\n${adapted}`,resolveDir:fileURLToPath(root)},
+  replace('const hmtxFlags = bsReadU8(hmtxStream);', `const hmtxFlags = bsReadU8(hmtxStream);
+  if(hmtxFlags===0||(hmtxFlags&~3)!==0||numHMetrics<1||numHMetrics>numGlyphs||xMins.length!==numGlyphs)throw new Error('Invalid transformed hmtx flags or glyph/metric counts');`);
+  replace('const outputSize = numHMetrics * 4 + (numGlyphs - numHMetrics) * 2;', `const outputSize = numHMetrics * 4 + (numGlyphs - numHMetrics) * 2;
+  if(hmtxStream.pos!==hmtxStream.end||outputSize!==table.origLength)throw new Error('Invalid transformed hmtx length');`);
+  await build({stdin:{contents:`import {brotliDecode} from 'brotli-lib/decode';\nimport {prepareHmtxMetrics} from './src/font-woff2-metrics.js';\n${adapted}`,resolveDir:fileURLToPath(root)},
     bundle:true,platform:'browser',format:'esm',target:'es2022',minifySyntax:true,
     banner:{js:`// Generated from woff-lib 0.0.3 (${hash}); bounded synchronous adapter in scripts/build-font-codecs.mjs. See bundled WOFF2 and Brotli licenses.`},
     outfile:fileURLToPath(new URL('font-woff2.js', dist))});
