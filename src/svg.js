@@ -1208,7 +1208,7 @@ function renderRichTextBox(value, box, bound, config) {
 /** Visible ink uses accepted glyph positions; logical text and source mappings are retained. */
 function renderPaintedText(attributes, content, segments, options) {
   if (!options.textPainting) return tag('text', attributes, content);
-  const painted = segments.filter(segment => segment.text.length).map(segment => {
+  const painted = segments.map(segment => {
     const run = options.textPainting.shape(segment.text, segment.style);
     const scale = segment.size / run.unitsPerEm;
     let x = 0, y = 0;
@@ -1232,8 +1232,16 @@ function renderPaintedText(attributes, content, segments, options) {
     }
     // Font-unit coordinates and scale retain full precision. The general SVG
     // number formatter is intentionally not used to quantize this transform.
+    const geometry=run.caretGeometry;
+    const caretMap=options.trace&&geometry?{
+      version:1,start:segment.start,end:segment.start+segment.text.length,
+      top:segment.y-geometry.ascent*scale,bottom:segment.y-geometry.descent*scale,
+      stops:geometry.stops.map(stop=>({...stop,offset:segment.start+stop.offset,x:segment.x+stop.x*scale})),
+    }:undefined;
     return tag('g', {
-      fill:segment.fill,'aria-hidden':'true','pointer-events':'none','data-opf-glyph-paint':run.engine}, glyphs.join(''));
+      fill:segment.fill,'aria-hidden':'true','pointer-events':'none','data-opf-glyph-paint':run.engine,
+      ...(caretMap?{'data-opf-caret-map':JSON.stringify(caretMap)}:{}),
+    }, glyphs.join(''));
   });
   return tag('g', {'data-opf-shaped-text':'1'}, painted.join('') + tag('text', {
     ...attributes,'fill-opacity':0,'data-opf-logical-text':'1','pointer-events':'all',

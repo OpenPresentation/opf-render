@@ -28,7 +28,7 @@ for(const file of packed.files){
   assert.equal(hash(bytes),hash(await readFile(path.join(root,file.path))));
   files[file.path]=hash(bytes);
 }
-for(const entry of ['dist/font-shaping.js','dist/font-shaping-browser.js','dist/font-shaping-service.js','dist/font-shaping.d.ts','dist/harfbuzz-browser.js','dist/harfbuzz.wasm','dist/harfbuzzjs-LICENSE','dist/HarfBuzz-LICENSE','dist/font-preparation.js','dist/font-variations.js','dist/font-normalization.js','dist/font-dfont.js','dist/font-woff2.js','dist/WOFF2-LICENSE','dist/WOFF2-LICENSE_THIRD_PARTY','dist/Brotli-LICENSE','dist/Brotli-LICENSE_THIRD_PARTY'])assert.ok(files[entry]);
+for(const entry of ['dist/font-carets.js','dist/font-direction.js','dist/font-direction-data.js','dist/Unicode-LICENSE','dist/font-shaping.js','dist/font-shaping-browser.js','dist/font-shaping-service.js','dist/font-shaping.d.ts','dist/harfbuzz-browser.js','dist/harfbuzz.wasm','dist/harfbuzzjs-LICENSE','dist/HarfBuzz-LICENSE','dist/font-preparation.js','dist/font-variations.js','dist/font-normalization.js','dist/font-dfont.js','dist/font-woff2.js','dist/WOFF2-LICENSE','dist/WOFF2-LICENSE_THIRD_PARTY','dist/Brotli-LICENSE','dist/Brotli-LICENSE_THIRD_PARTY'])assert.ok(files[entry]);
 const modules={'font-shaping.js':'font-shaping','fonts.js':'fonts','fonts-node.js':'fonts-node','svg.js':'svg'};
 await writeFile(path.join(consumer,'test/font-container-fixtures.mjs'),await readFile(path.join(root,'test/font-container-fixtures.mjs')));
 await writeFile(path.join(consumer,'test/font-woff2-hmtx-fixtures.mjs'),await readFile(path.join(root,'test/font-woff2-hmtx-fixtures.mjs')));
@@ -36,10 +36,10 @@ await writeFile(path.join(consumer,'test/font-woff2-collections-fixtures.mjs'),a
 await writeFile(path.join(consumer,'test/font-dfont-fixtures.mjs'),await readFile(path.join(root,'test/font-dfont-fixtures.mjs')));
 await cp(path.join(root,'test/fixtures/font-formats'),path.join(consumer,'test/fixtures/font-formats'),{recursive:true});
 for(const name of ['font-variations-fixtures.mjs','font-variations-browser.mjs','font-painting-fixtures.mjs'])await writeFile(path.join(consumer,'test',name),await readFile(path.join(root,'test',name)));
-for(const name of ['font-dfont.mjs','font-shaping.mjs','font-shaping-formats.mjs','font-woff2-reconstruction.mjs','font-woff2-hmtx.mjs','font-woff2-collections.mjs','font-shaping-browser.mjs','font-variations.mjs','font-normalization.mjs','font-painting.mjs']){
+for(const name of ['font-dfont.mjs','font-shaping.mjs','font-shaping-formats.mjs','font-woff2-reconstruction.mjs','font-woff2-hmtx.mjs','font-woff2-collections.mjs','font-shaping-browser.mjs','font-variations.mjs','font-normalization.mjs','font-painting.mjs','font-carets.mjs']){
   let source=await readFile(path.join(root,'test',name),'utf8');
   for(const [file,entry]of Object.entries(modules))source=source.replaceAll(`'../dist/${file}'`,`'@openpresentation/opf-render/${entry}'`);
-  for(const file of ['font-normalization.js','font-variations.js','font-sfnt.js'])source=source.replaceAll(`'../dist/${file}'`,JSON.stringify(pathToFileURL(path.join(installed,'dist',file)).href));
+  for(const file of ['font-normalization.js','font-variations.js','font-sfnt.js','font-direction.js','font-direction-data.js'])source=source.replaceAll(`'../dist/${file}'`,JSON.stringify(pathToFileURL(path.join(installed,'dist',file)).href));
   await writeFile(path.join(consumer,'test',name),source);
   process.stdout.write(execFileSync(process.execPath,[path.join('test',name)],{cwd:consumer,encoding:'utf8',maxBuffer:8*1024*1024}));
 }
@@ -66,6 +66,7 @@ const run=registry.shapeText?.('source',{fontFamily:'Roboto',fontWeight:400});
 const offset:number|undefined=run?.glyphs[0]?.sourceStart;
 const painter:TextPainting|undefined=registry.textPainting;
 const paintOptions:RenderSvgOptions={textMeasurement:registry.textMeasurement,textPainting:painter};
+const caretOffset:number|undefined=painter?.shape('source',{fontFamily:'Roboto',fontWeight:400})?.caretGeometry?.stops[0]?.offset;
 const glyphPath:string|undefined=painter?.shape('source',{fontFamily:'Roboto',fontWeight:400})?.glyphs[0]?.path;
 registry.dispose();
 `);
@@ -75,7 +76,8 @@ const browser=JSON.parse(await readFile(path.join(consumer,'artifacts/font-shapi
 const variableNode=JSON.parse(await readFile(path.join(consumer,'artifacts/font-shaping/variations.json')));
 const normalization=JSON.parse(await readFile(path.join(consumer,'artifacts/font-shaping/normalization.json')));
 const paintingNode=JSON.parse(await readFile(path.join(consumer,'artifacts/font-shaping/painting/node.json')));
-const report={node:process.version,consumer,renderer:packed.integrity,core:corePack.integrity,files,browser,variableNode,normalization,paintingNode,
+const carets=JSON.parse(await readFile(path.join(consumer,'artifacts/font-shaping/carets/node.json')));
+const report={carets,node:process.version,consumer,renderer:packed.integrity,core:corePack.integrity,files,browser,variableNode,normalization,paintingNode,
   types:['TypeScript 5.9.3 NodeNext','TypeScript 5.9.3 Bundler'],knownVulnerabilities:0,
   scope:'Fresh candidate tarballs, shipped-file hashes, Node and offline browser shaping, explicit failures and TypeScript. Not registry publication or native acceptance.'};
 let paintingError;

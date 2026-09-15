@@ -14,7 +14,7 @@ await copyFile(new URL("src/index.d.ts", root), new URL("index.d.ts", dist));
 
 for (const name of ["svg.js","svg.d.ts","raster.js","raster-images.js","fonts-browser.js","fonts-browser.d.ts","font-compatibility.js","font-manifest.js","fonts.js","fonts.d.ts","fonts-node.js","fonts-node.d.ts"]) await copyFile(new URL(`src/${name}`,root),new URL(name,dist));
 
-for (const name of ['font-shaping.js','font-shaping.d.ts','font-shaping-browser.js','font-shaping-service.js'])
+for (const name of ['font-shaping.js','font-shaping.d.ts','font-shaping-browser.js','font-shaping-service.js','font-carets.js','font-direction.js','font-direction-data.js'])
   await copyFile(new URL(`src/${name}`,root),new URL(name,dist));
 for (const name of ['font-error.js','font-sfnt.js','font-dfont.js','font-variations.js','font-normalization.js','font-woff.js','font-preparation.js'])
   await copyFile(new URL(`src/${name}`,root),new URL(name,dist));
@@ -43,3 +43,4 @@ await build({
 await copyFile(require.resolve('harfbuzzjs/dist/harfbuzz.wasm'),new URL('harfbuzz.wasm',dist));
 await copyFile(new URL('../LICENSE',pathToFileURL(hbEntry)),new URL('harfbuzzjs-LICENSE',dist));
 await copyFile(new URL('src/licenses/HarfBuzz.txt',root),new URL('HarfBuzz-LICENSE',dist));
+await copyFile(new URL('src/licenses/Unicode.txt',root),new URL('Unicode-LICENSE',dist));

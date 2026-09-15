@@ -1,6 +1,8 @@
 import { OPFFontError } from './fonts.js';
 import { prepareFontData } from './font-preparation.js';
 import { variationSettings } from './font-variations.js';
+import { shapingDirection } from './font-direction.js';
+import { caretGeometry } from './font-carets.js';
 
 function configuration(hb, options) {
   const {language = 'und', script, direction, features = []} = options;
@@ -47,6 +49,11 @@ export function createHarfBuzzService(hb, options) {
         if(!axes[tag]||value<axes[tag].min||value>axes[tag].max)throw new OPFFontError('invalid-font-variations',`Unsupported variation value for '${tag}'.`);
       if(values)font.setVariations(Object.entries(values).map(([tag,value])=>new hb.Variation(tag,value)));
       return {
+        caretGeometry(run) {
+          if (!font) throw new OPFFontError('font-registry-disposed', 'Create a new font registry after disposal.');
+          const direction=shapingDirection(run.text,settings);
+          return caretGeometry(run,direction,font.hExtents(),glyph=>font.getLigatureCarets(direction==='rtl'?hb.Direction.RTL:hb.Direction.LTR,glyph));
+        },
         glyphPath(glyphId) {
           if (!font) throw new OPFFontError('font-registry-disposed', 'Create a new font registry after disposal.');
           return font.glyphToPath(glyphId);

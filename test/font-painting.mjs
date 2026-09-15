@@ -27,7 +27,7 @@ function check(registry,text,style,source,reference) {
     records.push({...source,text,rejected:'missing-glyph'});return;
   }
   const painted=registry.textPainting.shape(text,style);
-  const {decorations,...withoutPaths}=painted;
+  const {decorations,caretGeometry,...withoutPaths}=painted;
   withoutPaths.glyphs=painted.glyphs.map(({path,...glyph})=>glyph);
   assert.deepEqual(withoutPaths,shaped,'Painting retains the measured run and original source offsets');
   assert.equal(painted.width,registry.textMeasurement.measure(text,1,style));

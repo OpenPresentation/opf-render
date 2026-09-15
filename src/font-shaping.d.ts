@@ -17,6 +17,14 @@ export interface PaintedText extends ShapedText {
   glyphs: (ShapedGlyph & {path: string})[];
   /** Positions and thicknesses in font units; offsets are positive above the baseline. */
   decorations?: Record<'underline'|'strikethrough', {offset:number; thickness:number}>;
+  /** Same-run font-unit positions. Interpolated ligature stops are explicitly labeled. */
+  caretGeometry?: ShapedCaretGeometry;
+}
+export interface ShapedCaretGeometry {
+  direction: 'ltr' | 'rtl';
+  ascent: number;
+  descent: number;
+  stops: {offset:number; x:number; basis:'cluster'|'font'|'interpolated'}[];
 }
 export interface FontShaper {
   readonly engine: string;
@@ -28,6 +36,7 @@ export interface FontShaper {
     /** Optional vector painter for the same selected face, in font units with y up. Empty means no ink. */
     glyphPath?(glyphId: number): string;
     decorationMetrics?(): NonNullable<PaintedText['decorations']>;
+    caretGeometry?(run: ShapedText): ShapedCaretGeometry;
     dispose(): void;
   };
 }

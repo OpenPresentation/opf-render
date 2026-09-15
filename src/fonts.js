@@ -247,6 +247,7 @@ export function createFontRegistry(entries, options = {}) {
       if (run.glyphs.reduce((sum,glyph) => sum + glyph.xAdvance,0) / run.unitsPerEm !== run.width)
         throw new OPFFontError('invalid-shaped-paint', 'Painted glyph advances must equal the measured run width.');
       if (face.shaper.decorationMetrics) run.decorations = face.shaper.decorationMetrics();
+      if (face.shaper.caretGeometry) run.caretGeometry = face.shaper.caretGeometry(run);
       return run;
     }}) : undefined;
   return {

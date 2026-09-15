@@ -1,0 +1,14 @@
+{
+  "Scripts.txt": {
+    "url": "https://www.unicode.org/Public/17.0.0/ucd/Scripts.txt",
+    "sha256": "9f5e50d3abaee7d6ce09480f325c706f485ae3240912527e651954d2d6b035bf"
+  },
+  "PropertyValueAliases.txt": {
+    "url": "https://www.unicode.org/Public/17.0.0/ucd/PropertyValueAliases.txt",
+    "sha256": "64e9a5f76f7a1e8b5a47d6a1f9a26522a251208f5276bdfa1559dac7cf2e827a"
+  },
+  "hb-common.cc": {
+    "url": "https://raw.githubusercontent.com/harfbuzz/harfbuzz/14.4.0/src/hb-common.cc",
+    "sha256": "6c3916962f3dbebfdb40e27d5dcd4eed25f0a8421d6df6151008dfa8a39d04c0"
+  }
+}
