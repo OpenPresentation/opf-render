@@ -24,6 +24,11 @@ for(const record of records){
         reference._variationProcessor.normalizedCoords=expected.normalized;
       }
       refFont.setVariations(Object.entries(coordinates).map(([tag,value])=>new hb.Variation(tag,value)));
+      if(record.outline==='CFF2'){
+        // Independent HarfBuzz glyph advances, followed by Fontkit's own GPOS.
+        // Do not derive expected widths from the implementation's delta policy.
+        reference._variationProcessor.getAdvanceAdjustment=gid=>refFont.glyphHAdvance(gid)-raw.hmtx.metrics.get(Math.min(gid,raw.hmtx.metrics.length-1)).advance;
+      }
       for(const backend of ['fontkit','harfbuzz']){
         const registry=createFontRegistry([{data:container.data,family:'Fixture',italic:record.italic,license:record.license,...(container.postscriptName?{postscriptName:container.postscriptName}:{}),...(item.variations!==undefined?{variations:item.variations}:{})}],backend==='harfbuzz'?{fontShaper:shaper}:{});
         const style={fontFamily:'Fixture',italic:record.italic},preparation=registry.fontPreparations[0],descriptor=registry.embeddedFonts[0];

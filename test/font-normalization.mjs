@@ -9,7 +9,7 @@ import {buildSfnt} from '../dist/font-sfnt.js';
 import {fontTables} from './font-container-fixtures.mjs';
 import {fontFixtures,instanceCases} from './font-variations-fixtures.mjs';
 const records=(await fontFixtures()).filter(r=>Object.keys(r.axes).length),reference=JSON.parse(await readFile(new URL('./fixtures/font-formats/normalization-reference.json',import.meta.url)));
-const report={node:process.version,fontTools:reference.fontTools,freeType:reference.freeType,instances:0,glyphInstances:0,endpointControls:0,mappingControls:0,axisTagControls:0};
+const report={node:process.version,fontTools:reference.fontTools,freeType:reference.freeType,instances:0,glyphInstances:0,positionRuns:0,fractionalPositionRuns:0,endpointControls:0,mappingControls:0,axisTagControls:0};
 const axis=(min,def,max)=>({axisTag:'wght',minValue:min,defaultValue:def,maxValue:max});
 // Normative 16.16 input rounding followed by (fixed + 2) >> 2: converting
 // directly from floating point to 2.14 gives the wrong result at these ties.
@@ -41,6 +41,16 @@ for(const record of records){
     const base=raw.hmtx.metrics.get(Math.min(gid,raw.hmtx.metrics.length-1)).advance;
     const delta=selected._variationProcessor.getAdvanceAdjustment(gid,raw.HVAR),rounded=Math.sign(delta)*Math.round(Math.abs(delta));
     assert.equal(Math.max(0,base+rounded),font.glyphHAdvance(gid),`${record.file}/${item.id}/${gid}`);report.glyphInstances++;
+    assert.equal(selected.getGlyph(gid).advanceWidth,font.glyphHAdvance(gid),'Selected CFF2 glyph metrics must use the canonical advance before shaping');
+   }
+   const positionedReference=raw.getVariation(item.coordinates);
+   positionedReference._variationProcessor.normalizedCoords=expected.normalized;
+   positionedReference._variationProcessor.getAdvanceAdjustment=gid=>font.glyphHAdvance(gid)-raw.hmtx.metrics.get(Math.min(gid,raw.hmtx.metrics.length-1)).advance;
+   for(const text of ['  AVATAR office  ','o\u0302\u0301']){
+    const actual=selected.layout(text),independent=positionedReference.layout(text);
+    assert.deepEqual(actual.glyphs.map(g=>g.id),independent.glyphs.map(g=>g.id));
+    assert.deepEqual(actual.positions,independent.positions,'Preserve kerning and mark positions after installing canonical glyph advances');report.positionRuns++;
+    if(actual.positions.some(p=>Object.values(p).some(v=>typeof v==='number'&&!Number.isInteger(v))))report.fractionalPositionRuns++;
    }
   }
  }
@@ -67,4 +77,5 @@ for(const record of records){
  const selected=selectFontVariations(create(data),data,{variations:values}).font;
  assert.deepEqual(selected.variationCoords,Object.values(original.coordinates));assert.deepEqual(selected._variationProcessor.normalizedCoords,original.normalized);report.axisTagControls++;
 }
+assert.ok(report.fractionalPositionRuns>0,'Require real fractional positioning coverage, not only integral default instances');
 await mkdir('artifacts/font-shaping',{recursive:true});await writeFile('artifacts/font-shaping/normalization.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report));

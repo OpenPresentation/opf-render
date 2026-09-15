@@ -87,6 +87,20 @@ export function selectFontVariations(font,data,{variations,postscriptName}={}){
   // Fontkit trims axis tags and leaves normalized coordinates as floats.
   // Install exact axis-order coordinates before it creates glyph/layout caches.
   selectedFont.variationCoords=axes.map(axis=>values[axis.axisTag]);
-  selectedFont._variationProcessor.normalizedCoords=normalizeVariationCoordinates(axes,values,maps);
+  const processor=selectedFont._variationProcessor;
+  processor.normalizedCoords=normalizeVariationCoordinates(axes,values,maps);
+  if(selectedFont.directory.tables.CFF2&&selectedFont.HVAR){
+    // Match HarfBuzz's CFF2 horizontal-metric policy before Fontkit runs GPOS.
+    // Keep interpolation/outline/positioning deltas fractional; only HVAR's
+    // contribution to the unsigned hmtx advance is rounded and clamped.
+    const horizontal=selectedFont.HVAR,getAdjustment=processor.getAdvanceAdjustment.bind(processor);
+    processor.getAdvanceAdjustment=(glyphId,table)=>{
+      const delta=getAdjustment(glyphId,table);
+      if(table!==horizontal)return delta;
+      const metrics=selectedFont.hmtx.metrics;
+      const base=metrics.get(Math.min(glyphId,metrics.length-1)).advance;
+      return Math.max(0,base+Math.sign(delta)*Math.round(Math.abs(delta)))-base;
+    };
+  }
   return {font:selectedFont,variations:values,...(namedInstance?{namedInstance}:{})};
 }
