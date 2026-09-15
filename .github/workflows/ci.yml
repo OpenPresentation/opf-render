@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OpenPresentation/opf
-          ref: e4980f8b52dfad641d1db6c86ac3b0e8799c0bef
+          ref: 07cfa58da2c50649e7b7dc58f82418df1fc12b4e
           path: core-candidate
           persist-credentials: false
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -91,21 +91,21 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OpenPresentation/opf
-          ref: e4980f8b52dfad641d1db6c86ac3b0e8799c0bef
+          ref: 07cfa58da2c50649e7b7dc58f82418df1fc12b4e
           path: opf
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OpenPresentation/opf-pptx
-          ref: 1363a653c8b0e80c50d970bc30db3587bcf6f14e
+          ref: 9865759d6d53a26d35e48be524676b1dce92e2ba
           path: opf-pptx
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OpenPresentation/opf-editor
-          ref: 8d6e313b83bf5f17414013cde1b410cf629c753d
+          ref: efa9791552e6729457cc4419daa5542e885cff3a
           path: opf-editor
           fetch-depth: 0
           persist-credentials: false
@@ -170,6 +170,8 @@ jobs:
       - name: Verify prepared glyph paths against independent RGBA pixels
         id: shaped-painting
         run: npm run test:painting-browser
+      - name: Verify source-run boundaries preserve browser glyphs and copy text
+        run: npm run test:source-groups-browser
       - name: Verify fresh shaping packages including fixed variable instances
         id: shaping-packed
         if: ${{ success() || steps.shaped-painting.conclusion == 'failure' }}

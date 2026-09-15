@@ -539,7 +539,7 @@ function renderResolvedSlide(resolved, slideIndex, options) {
   if (options.textPainting && (typeof options.textPainting.shape !== 'function' ||
       !options.textMeasurement?.measure || options.textPainting.textMeasurement !== options.textMeasurement))
     throw new OPFRenderError('invalid-text-painting', 'SVG painting and layout must share the same prepared font registry.');
-  options = { ...options, _diagnosticPaths: new Set() };
+  options = { ...options, _diagnosticPaths: new Set(), _paintIds:{next:0,prefix:`opf-text-${slideIndex}`} };
   const bound = resolved.slides[slideIndex];
   const { width, height } = bound.design.dimensions;
   const title = bound.slide.title ?? resolved.presentation.name ?? `Slide ${slideIndex + 1}`;
@@ -1206,28 +1206,66 @@ function renderRichTextBox(value, box, bound, config) {
 }
 
 /** Visible ink uses accepted glyph positions; logical text and source mappings are retained. */
+function paintFillKey(fill){return String(fill).toLowerCase().replace(/^#([0-9a-f])([0-9a-f])([0-9a-f])$/,(_,r,g,b)=>`#${r}${r}${g}${g}${b}${b}`).replace(/^(#[0-9a-f]{6})$/,'$1ff');}
+
 function renderPaintedText(attributes, content, segments, options) {
   if (!options.textPainting) return tag('text', attributes, content);
   const painted = segments.map(segment => {
     // Tabs already have accepted layout advances; they are not font glyphs.
     const run = options.textPainting.shape(segment.advanceOnly?'':segment.text, segment.style);
     const scale = segment.size / run.unitsPerEm;
+    const boundaries=[...new Intl.Segmenter(undefined,{granularity:'grapheme'}).segment(segment.text)].map(part=>part.index);
+    boundaries.push(segment.text.length);
+    const boundary=offset=>boundaries.find(value=>value>=offset)??segment.text.length;
+    const spans=(segment.paints??[{start:0,end:segment.text.length,fill:segment.fill,underline:segment.underline,strikethrough:segment.strikethrough}])
+      .map(paint=>({...paint,start:boundary(paint.start),end:boundary(paint.end)})).filter(paint=>paint.end>paint.start);
+    const paints=[];
+    for(const span of spans){
+      const previous=paints.at(-1);
+      if(previous&&previous.end===span.start&&paintFillKey(previous.fill)===paintFillKey(span.fill)&&!!previous.underline===!!span.underline&&!!previous.strikethrough===!!span.strikethrough)previous.end=span.end;
+      else paints.push({...span});
+    }
+    const caret=offset=>{
+      const point=run.caretGeometry?.stops.find(stop=>stop.offset===offset);
+      if(!point||!Number.isFinite(point.x))throw new OPFRenderError('invalid-text-painting','Painting a style boundary inside a shaped cluster requires same-run caret geometry.');
+      return point.x;
+    };
     let x = 0, y = 0;
     const glyphs = run.glyphs.map(glyph => {
       // Compose in source precision before SVG parses the transform. Nested
       // transforms can round the scale/origin before applying glyph offsets.
       const position = `matrix(${scale} 0 0 ${-scale} ${segment.x + (x + glyph.xOffset) * scale} ${segment.y - (y + glyph.yOffset) * scale})`;
       x += glyph.xAdvance; y += glyph.yAdvance;
-      return tag('path', {d:glyph.path,transform:position,
+      const glyphAttributes={d:glyph.path,transform:position,
         ...(options.trace ? {'data-opf-glyph-id':glyph.id,
           'data-opf-glyph-source-start':segment.start + glyph.sourceStart,
-          'data-opf-glyph-source-end':segment.start + glyph.sourceEnd} : {})});
+          'data-opf-glyph-source-end':segment.start + glyph.sourceEnd} : {})};
+      const colors=paints.filter(paint=>paint.start<glyph.sourceEnd&&paint.end>glyph.sourceStart);
+      if(colors.length<2||colors.every(paint=>paintFillKey(paint.fill)===paintFillKey(colors[0].fill)))return tag('path',{...glyphAttributes,fill:colors[0]?.fill??segment.fill});
+      // Whole glyphs keep their overhangs. Only a cluster crossing a color
+      // boundary is sliced, using positions from this complete shaped run.
+      const ink=run.outline;
+      if(!ink)return tag('path',{...glyphAttributes,fill:colors[0].fill});
+      const left=segment.x+ink.x*segment.size-1,right=segment.x+(ink.x+ink.width)*segment.size+1;
+      const top=segment.y+ink.y*segment.size-1,bottom=top+ink.height*segment.size+2;
+      return colors.map(paint=>{
+        const a=caret(Math.max(glyph.sourceStart,paint.start)),b=caret(Math.min(glyph.sourceEnd,paint.end));
+        let lo=segment.x+Math.min(a,b)*scale,hi=segment.x+Math.max(a,b)*scale;
+        const rtl=run.caretGeometry.direction==='rtl';
+        if(paint.start<=glyph.sourceStart){if(rtl)hi=right;else lo=left;}
+        if(paint.end>=glyph.sourceEnd){if(rtl)lo=left;else hi=right;}
+        const id=`${options._paintIds.prefix}-${options._paintIds.next++}`;
+        return tag('defs',{},tag('clipPath',{id,clipPathUnits:'userSpaceOnUse'},tag('rect',{x:lo,y:top,width:Math.max(0,hi-lo),height:bottom-top})))+
+          tag('g',{'clip-path':`url(#${id})`},tag('path',{...glyphAttributes,fill:paint.fill}));
+      }).join('');
     });
-    for (const decoration of ['underline','strikethrough']) if (segment[decoration]) {
+    for (const paint of paints)for (const decoration of ['underline','strikethrough']) if (paint[decoration]) {
       const metric = run.decorations?.[decoration];
       if (!metric || !Number.isFinite(metric.offset) || !Number.isFinite(metric.thickness) || metric.thickness <= 0)
         throw new OPFRenderError('invalid-text-painting', 'Decorated text requires metrics from the same selected font.');
-      glyphs.push(tag('rect', {x:0,y:metric.offset-metric.thickness/2,width:segment.advanceOnly?segment.width/scale:x,height:metric.thickness,
+      const complete=paint.start===0&&paint.end===segment.text.length;
+      const start=complete?0:caret(paint.start),end=complete?(segment.advanceOnly?segment.width/scale:x):caret(paint.end);
+      glyphs.push(tag('rect', {x:Math.min(start,end),y:metric.offset-metric.thickness/2,width:Math.abs(end-start),height:metric.thickness,fill:paint.fill,
         transform:`matrix(${scale} 0 0 ${-scale} ${segment.x} ${segment.y})`,
         'data-opf-text-decoration':decoration}));
     }
@@ -1262,22 +1300,37 @@ function renderRichLines(value,fit,box,bound,config) {
   const flow=!config.options.textMeasurement?.measure&&!fit.placement;
   const content=fit.richLines.map((line,lineIndex)=>{
     const fragments=line.fragments.map(fragment=>{
-    const run=fragment.run,offset=alignment==='right'?box.width-line.width:alignment==='center'?(box.width-line.width)/2:0;
+    const sources=fragment.sources??[fragment],run=sources[0].run;
+    const sourceStart=runOffsets[sources[0].runIndex]+sources[0].start;
+    const offset=alignment==='right'?box.width-line.width:alignment==='center'?(box.width-line.width)/2:0;
     const placed=fit.placement?.lines[lineIndex];
     // Accepted outline placement owns the horizontal advance. Geometric precision
     // avoids hinted browser advances; textLength also removes fractional-size
     // quantization drift. Height and baseline retain the selected font size.
     const position=flow?{'baseline-shift':fragment.baselineShift?stableNumber(-fragment.baselineShift):undefined}:{x:stableNumber((placed?.x??box.x+offset)+fragment.x),y:stableNumber((placed?.baseline??box.y+line.baseline)+fragment.baselineShift)};
-    const fill=/^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(run.color??'')?run.color:config.fill;
+    const color=run=>/^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(run.color??'')?run.color:config.fill;
+    const decoration=run=>[run.underline?'underline':'',run.strikethrough?'line-through':''].filter(Boolean).join(' ')||undefined;
+    const fill=color(run);
+    const link=(run,content)=>run.link&&/^(https?:|mailto:)/i.test(run.link)?tag('a',{href:run.link,target:'_blank',rel:'noopener noreferrer'},content):content;
+    const logical=[];
+    for(const source of sources){
+      const previous=logical.at(-1);
+      if(previous&&paintFillKey(color(previous.run))===paintFillKey(color(source.run))&&decoration(previous.run)===decoration(source.run)&&previous.run.link===source.run.link)previous.text+=source.text;
+      else logical.push({text:source.text,run:source.run});
+    }
+    const content=logical.length>1?logical.map(source=>link(source.run,tag('tspan',{
+      fill:color(source.run),'text-decoration':decoration(source.run),
+    },escapeText(source.text)))).join(''):escapeText(fragment.text);
+    let paintOffset=0;
+    const paints=fragment.sources?sources.map(source=>{const start=paintOffset;paintOffset+=source.text.length;return {start,end:paintOffset,fill:color(source.run),underline:source.run.underline,strikethrough:source.run.strikethrough};}):undefined;
     const fixedAdvance=placed||fragment.kind==='tab';
-    const attributes={...(config.options.trace?{'data-opf-text-start':runOffsets[fragment.runIndex]+fragment.start,'data-opf-text-end':runOffsets[fragment.runIndex]+fragment.end}:{}),...position,'xml:space':'preserve','text-rendering':flow?undefined:'geometricPrecision',textLength:fixedAdvance&&fragment.width>0?stableNumber(fragment.width):undefined,lengthAdjust:fixedAdvance&&fragment.width>0?'spacingAndGlyphs':undefined,'font-family':fontStack(fragment.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(fragment.fontSize),'font-weight':fragment.style.fontWeight,'font-style':fragment.style.italic?'italic':flow?'normal':undefined,'text-decoration':[run.underline?'underline':'',run.strikethrough?'line-through':''].filter(Boolean).join(' ')||undefined,fill};
-    const rendered=flow?tag('tspan',attributes,escapeText(fragment.text)):renderPaintedText(attributes,escapeText(fragment.text),[
+    const attributes={...(config.options.trace?{'data-opf-text-start':sourceStart,'data-opf-text-end':sourceStart+fragment.text.length,...(fragment.sources?{'data-opf-run-spans':JSON.stringify(sources.map(({runIndex,start,end})=>({runIndex,start,end})))}:{})}:{}),...position,'xml:space':'preserve','text-rendering':flow?undefined:'geometricPrecision',textLength:fixedAdvance&&fragment.width>0?stableNumber(fragment.width):undefined,lengthAdjust:fixedAdvance&&fragment.width>0?'spacingAndGlyphs':undefined,'font-family':fontStack(fragment.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(fragment.fontSize),'font-weight':fragment.style.fontWeight,'font-style':fragment.style.italic?'italic':flow?'normal':undefined,'text-decoration':logical.length>1?undefined:decoration(run),fill};
+    const rendered=flow?tag('tspan',attributes,content):renderPaintedText(attributes,content,[
       {text:fragment.text,x:(placed?.x??box.x+offset)+fragment.x,y:(placed?.baseline??box.y+line.baseline)+fragment.baselineShift,
-        size:fragment.fontSize,style:fragment.style,start:runOffsets[fragment.runIndex]+fragment.start,fill,
+        size:fragment.fontSize,style:fragment.style,start:sourceStart,fill,paints,
         underline:run.underline,strikethrough:run.strikethrough,advanceOnly:fragment.kind==='tab',width:fragment.width},
     ],config.options);
-    if(run.link&&/^(https?:|mailto:)/i.test(run.link))return tag('a',{href:run.link,target:'_blank',rel:'noopener noreferrer'},rendered);
-    return rendered;
+    return logical.length>1?rendered:link(run,rendered);
     });
     if(!flow)return fragments.join('\n');
     const x=alignment==='right'?box.x+box.width:alignment==='center'?box.x+box.width/2:box.x;
