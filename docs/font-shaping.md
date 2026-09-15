@@ -111,15 +111,23 @@ local format/instance/backend cases have matching nonempty browser pixels, but
 cases and five HarfBuzz variable-TTF cases. The largest observed differences
 are 0.134625px and 0.132061px respectively. See the retained
 [checkpoint and failure evidence](evidence/variable-instances-draft-20260914/README.md).
-Fresh installed variable tests, additional malformed/extended `fvar` controls,
-browser payload measurement and native instance export remain outstanding.
+Fresh packages reproduce the Mac failures; their Node matrix, public TypeScript
+API and original 439 browser comparisons pass. A later Linux run passes prepared
+HarfBuzz advances but fails ten Fontkit cases, exposing a platform-dependent
+TrueType advance difference. Metadata controls cover relocated and optional
+records, named PostScript selection and explicit malformed inputs; the pinned
+HarfBuzz backend still rejects hypothetical extended records. See the
+[portability and installed evidence](evidence/variable-metrics-portability-20260914/README.md).
+A verified metric/paint contract and native instance export remain outstanding.
 
 `maxPreparedFontBytes` in registry options defaults to 64 MiB. It bounds source,
 decoded data and selected-face output during prepared-service decoding, and
 WOFF/WOFF2 decoding and TTC/DFont extraction with either backend. Compressed
 fonts now use the bounded decoder in the default backend as well, because
 Fontkit instance processing requires standalone bytes. This adds the codec to
-the default browser dependency graph; its payload impact remains to be measured.
+the default browser dependency graph. Controlled minified bundle measurements
+show +74,415 gzip bytes for the font-loader entry and +413 for SVG compared with
+the preceding verified DFont package. This is not a production page-load result.
 The byte limit is not a general memory budget for Fontkit. Invalid bounds, checksum failures and
 over-expanding streams reject explicitly. Brotli output is limited before
 reconstruction; zlib is streamed with declared-length checks. Essential font
