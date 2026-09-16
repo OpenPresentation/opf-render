@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {resolvePresentation, renderSvg} from '../dist/index.js';
+const deck={slides:[{layout:'title-subtitle',title:'Short title',subtitle:'A short subtitle'}]};
+const bound=resolvePresentation(deck).slides[0];
+const title=bound.geometry.items.find(item=>item.field==='title');
+const subtitle=bound.geometry.items.find(item=>item.field==='subtitle');
+assert.equal(title.box.x, subtitle.box.x);
+assert.equal(title.box.width, subtitle.box.width);
+assert.ok(title.box.width > 1000);
+const svg=renderSvg(deck,{trace:true});
+assert.ok(svg.includes('data-opf-path="slides.0.title"'));
+assert.ok(svg.includes('data-opf-path="slides.0.subtitle"'));
+assert.ok(svg.includes(`data-opf-box-width="${title.box.width}"`));
+console.log('Placeholder geometry: renderer paints composeSlide heading boxes with equal padded widths.');

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Consume core heading defaults from `composeSlide` without an independent layout pass. Title/subtitle widths, cover centering and content title-band placement follow the installed core. This does not change the 0.1px accepted-text gate or native raster claims.
+
 ## 0.8.0
 
 - Require core 0.10.0 and render accepted metric, timeline, content-card and vector-aware text geometry. Preserve selected readability floors and scalar source whitespace; keep estimated rich text flowing with native SVG advances.
