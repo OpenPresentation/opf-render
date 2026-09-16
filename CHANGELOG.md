@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.8.1
+
+- Require core 0.10.1 so rendering uses the corrected metric, quote, timeline and text-bullet contracts. Public rendering APIs are unchanged.
+- Include shared header/footer furniture from accepted layout geometry (`furniture-flow-v2`). Native PowerPoint raster fidelity, the 0.1px Linux width residual and prepared shaping remain deferred.
+
 ## 0.8.0
 
 - Require core 0.10.0 and render accepted metric, timeline, content-card and vector-aware text geometry. Preserve selected readability floors and scalar source whitespace; keep estimated rich text flowing with native SVG advances.
