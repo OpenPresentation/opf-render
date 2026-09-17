@@ -316,6 +316,8 @@ function resolveColorRef(value, bound, fallback) {
   if (typeof value !== "string") return fallback;
   const trimmed = value.trim();
   if (trimmed.startsWith("#")) {
+    if (/^#[0-9a-fA-F]{3}$/.test(trimmed)) return normalizeColor(trimmed, fallback);
+    if (/^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$/.test(trimmed)) return trimmed;
     return normalizeColor(trimmed, fallback);
   }
   if (trimmed.startsWith("var:")) {
