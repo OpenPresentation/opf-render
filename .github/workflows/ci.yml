@@ -25,12 +25,12 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
           path: opf-render
-      # Keep coordinated consumers pinned to the released core. Verify the
-      # registry dependency graph before replacing it with local source links.
+      # Rich-tab integration requires the merged core110 layout contract. Verify
+      # the released dependency graph before replacing it with source links.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OpenPresentation/opf
-          ref: b8a1faf24203635bd36b09ea19f44bcd53781f16
+          ref: 4f7a4bd494f1a873319eff897423d301d1cfc9d6
           path: opf
           fetch-depth: 0
           persist-credentials: false
