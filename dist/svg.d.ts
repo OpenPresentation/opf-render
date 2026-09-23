@@ -1,4 +1,4 @@
-import type { EmbeddedFont } from "./fonts.js";
+import type { EmbeddedFont, ScriptFonts } from "./fonts.js";
 import type { SlideComposition, LayoutDiagnostic, TextMeasurement } from "@openpresentation/opf/composition";
 export declare const packageName = "@openpresentation/opf-render";
 
@@ -92,6 +92,10 @@ export interface ResolvedPresentation {
 
 export interface ResolvedSlide {
   geometry: SlideComposition;
+  /** Script font plan for this slide (FF-19): slots, language tags and direction. */
+  scriptFonts: ScriptFonts;
+  /** The script-aware measurement composition used; undefined for estimated layout. */
+  textMeasurement?: TextMeasurement;
   index: number;
   path: string;
   slide: unknown;

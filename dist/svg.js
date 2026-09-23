@@ -4,6 +4,10 @@ import {
   resolveColorRef as resolveCoreColorRef,
   validatePresentation
 } from "@openpresentation/opf";
+// Optional core exports are read from the namespace so an older published core
+// still loads; resolveScriptFonts ships with core FF-18.
+import * as opfCore from "@openpresentation/opf";
+import { createScriptFonts } from "./script-fonts.js";
 
 export const packageName = "@openpresentation/opf-render";
 
@@ -422,6 +426,33 @@ function resolveDesign(presentation, slide, context, index) {
   };
 }
 
+/**
+ * Script font slots, language tags and direction for one slide from core
+ * `resolveScriptFonts` (FF-18). The latin slot is always the renderer's design
+ * font; a script slot that core fills from the latin family follows it too.
+ * Without core support every slot repeats the latin family.
+ */
+function scriptProfile(presentation, index, design) {
+  let resolved;
+  if (typeof opfCore.resolveScriptFonts === "function") {
+    try { resolved = opfCore.resolveScriptFonts(presentation, { slideIndex: index }); } catch { resolved = undefined; }
+  }
+  const slots = role => {
+    const latin = design.fonts[role];
+    const slot = key => !resolved || resolved.sources?.[key] === "latin" || resolved.sources?.[key] === "schemeFamily" ? latin : resolved[role]?.[key] ?? latin;
+    return { latin, eastAsian: slot("eastAsian"), complexScript: slot("complexScript") };
+  };
+  return {
+    heading: slots("heading"),
+    body: slots("body"),
+    ...(resolved?.supplement ? { supplement: resolved.supplement } : {}),
+    script: resolved?.script ?? "Zzzz",
+    ...(resolved ? { bcp47: resolved.bcp47, lang: resolved.lang, languageSource: resolved.languageSource, direction: resolved.direction } : {}),
+    rtl: resolved?.rtl === true,
+    serif: design.fontScheme?.type === "serif"
+  };
+}
+
 function inferLayoutId(slide) {
   if (slide.layout) return slide.layout;
   if (slide.blocks?.length) return "blank";
@@ -544,9 +575,15 @@ function bindSlide(presentation, slide, layout, index, context) {
   const blocks = blockContent(slide, slidePath);
 
   const design = resolveDesign(presentation, slide, context, index);
-  for (const role of ["heading","body","code"]) design.fonts[role] = resolveTextStyle({fontFamily:design.fonts[role],fontWeight:role === "heading" ? 700 : 400},context.options.textMeasurement).fontFamily;
-  const geometry = composeSlide(slide, { ...design.dimensions, layout, presentation, slideIndex: index, fonts: design.fonts, contentAlignment:design.contentAlignment, titleAlignment:design.titleAlignment, textRasterPadding:context.options.textRasterPadding, contentBox:design.contentBox, textMeasurement: context.options.textMeasurement });
+  // Script fonts (FF-19): each text run is measured and drawn with its script
+  // slot's face; the latin slot stays the design font scheme's family.
+  const scriptFonts = createScriptFonts(scriptProfile(presentation, index, design), context.options.textMeasurement);
+  const textMeasurement = scriptFonts.textMeasurement ?? context.options.textMeasurement;
+  for (const role of ["heading","body","code"]) design.fonts[role] = resolveTextStyle({fontFamily:design.fonts[role],fontWeight:role === "heading" ? 700 : 400},textMeasurement).fontFamily;
+  const geometry = composeSlide(slide, { ...design.dimensions, layout, presentation, slideIndex: index, fonts: design.fonts, contentAlignment:design.contentAlignment, titleAlignment:design.titleAlignment, textRasterPadding:context.options.textRasterPadding, contentBox:design.contentBox, textMeasurement });
   return {
+    scriptFonts,
+    textMeasurement,
     geometry,
     assets: presentation.assets ?? {},
     index,
@@ -597,8 +634,12 @@ export function renderSvgDeck(input, options = {}) {
 }
 
 function renderResolvedSlide(resolved, slideIndex, options) {
-  options = { ...options, _diagnosticPaths: new Set() };
   const bound = resolved.slides[slideIndex];
+  // Paint with the same script-aware measurement composition used.
+  options = { ...options, ...(bound.textMeasurement ? { textMeasurement: bound.textMeasurement } : {}), _diagnosticPaths: new Set() };
+  const script = bound.scriptFonts?.profile;
+  // Only a language the document names sets lang; the renderer default does not.
+  const lang = script?.languageSource === "document" || script?.languageSource === "option" ? script.bcp47 : undefined;
   const { width, height } = bound.design.dimensions;
   const title = bound.slide.title ?? resolved.presentation.name ?? `Slide ${slideIndex + 1}`;
   const children = [
@@ -619,6 +660,8 @@ function renderResolvedSlide(resolved, slideIndex, options) {
       viewBox: `0 0 ${width} ${height}`,
       width,
       height,
+      lang,
+      "xml:lang": lang,
       ...traceAttrs(options, bound.path)
     },
     `\n${children.join("\n")}\n`
@@ -888,12 +931,13 @@ function renderCode(item, box, bound, options) {
       'xml:space':'preserve',style:'white-space:pre','text-rendering':'geometricPrecision',fill:part.role==='body'?'#E5E7EB':'#93C5FD',
       ...traceAttrs(options,part.path),...(options.trace?{'data-opf-code-role':part.role,'data-opf-generated':part.generated?'true':undefined,
         'data-opf-text-start':line.start,'data-opf-text-end':line.end,'data-opf-text-next-start':line.nextStart,'data-opf-line-boundary':line.boundary}:{}),
-    },line.segments.map(segment=>tag('tspan',{
+    },line.segments.map(segment=>segmentSpan({
       x:stableNumber(part.box.x+segment.x),
       // SVG's CSS tab-size does not place literal tabs at their measured stops.
       ...(segment.kind==='tab'?{textLength:stableNumber(segment.width),lengthAdjust:'spacingAndGlyphs'}:{}),
       ...(options.trace?{'data-opf-segment':segment.kind,'data-opf-text-start':segment.start,'data-opf-text-end':segment.end}:{}),
-    },escapeText(part.text.slice(segment.start,segment.end)))).join('')));
+      // Code stays left to right; script runs still take their slot fonts.
+    },segment,part.text.slice(segment.start,segment.end),part.style,bound,'monospace',{rtl:false})).join('')));
     children.push(tag('g',{...traceAttrs(options,part.path),...(options.trace?{'data-opf-code-role':part.role,'data-opf-generated':part.generated?'true':undefined,
       'data-opf-box-x':part.box.x,'data-opf-box-y':part.box.y,'data-opf-box-width':part.box.width,'data-opf-box-height':part.box.height}:{}),
       ...(part.fit.overflow?{'data-opf-overflow':'true'}:{})},lines.join('\n')));
@@ -918,10 +962,10 @@ function renderMetric(item, box, bound, options) {
         'xml:space':'preserve',style:'white-space:pre','text-rendering':'geometricPrecision',fill:part.role==='value'?bound.design.colors.primary:bound.design.colors.text,
         ...traceAttrs(options,part.path),...(options.trace?{'data-opf-metric-role':part.role,'data-opf-text-start':line.start,
           'data-opf-text-end':line.end,'data-opf-text-next-start':line.nextStart,'data-opf-line-boundary':line.boundary}:{}),
-      },line.segments.map(segment=>tag('tspan',{x:stableNumber(origin.x+segment.x),
+      },line.segments.map(segment=>segmentSpan({x:stableNumber(origin.x+segment.x),
         ...(segment.kind==='tab'?{textLength:stableNumber(segment.width),lengthAdjust:'spacingAndGlyphs'}:{}),
         ...(options.trace?{'data-opf-segment':segment.kind,'data-opf-text-start':segment.start,'data-opf-text-end':segment.end}:{}),
-      },escapeText(part.text.slice(segment.start,segment.end)))).join(''));
+      },segment,part.text.slice(segment.start,segment.end),part.style,bound,bound.design.fontScheme.type)).join(''));
     });
     children.push(tag('g',{...traceAttrs(options,part.path),...(options.trace?{'data-opf-metric-role':part.role,
       'data-opf-box-x':part.box.x,'data-opf-box-y':part.box.y,'data-opf-box-width':part.box.width,'data-opf-box-height':part.box.height}:{}),
@@ -1237,7 +1281,65 @@ function renderBranding(bound,presentation,width,height,options) {
 
 function fontStack(family, type) {
   const fallback = type === "serif" ? "serif" : type === "monospace" ? "monospace" : "sans-serif";
-  return `${family}, ${fallback}`;
+  return `${[family].flat().join(", ")}, ${fallback}`;
+}
+
+// Unicode directional isolates (FF-19): in a right-to-left-language deck, a line
+// that contains right-to-left letters is laid out as one right-to-left isolate,
+// the base direction of a PPTX rtl paragraph. Lines without right-to-left
+// letters keep left-to-right order. Absolute alignment and measured advances
+// are unchanged.
+const RIGHT_TO_LEFT_ISOLATE = "\u2067", POP_DIRECTIONAL_ISOLATE = "\u2069";
+const RTL_LETTER = /[\p{Script=Arab}\p{Script=Hebr}\p{Script=Syrc}\p{Script=Thaa}\p{Script=Nkoo}\p{Script=Adlm}\p{Script=Rohg}\p{Script=Mand}\p{Script=Samr}]/u;
+function rtlLine(bound, text) {
+  return bound.scriptFonts?.rtl === true && RTL_LETTER.test(text);
+}
+
+/**
+ * SVG content for `text` drawn in `style` (FF-19). Text in the style's own
+ * family is emitted unchanged. A single run in another family returns that
+ * family for the enclosing element. Several runs become tspans naming their
+ * script slot's family. With `placement` ({x, width, fontSize}) the runs are
+ * positioned at their measured advances, each with its own textLength, because
+ * a textLength spanning differently fonted tspans does not rasterize reliably;
+ * the caller then drops its own textLength and anchors at the start.
+ */
+function scriptLine(text, style, bound, type, { rtl, placement, trace } = {}) {
+  const value = String(text ?? "");
+  const scripts = bound.scriptFonts;
+  rtl = (rtl ?? rtlLine(bound, value)) && value !== "";
+  const isolate = content => rtl ? `${RIGHT_TO_LEFT_ISOLATE}${content}${POP_DIRECTIONAL_ISOLATE}` : content;
+  const runs = value && scripts ? scripts.plan(value, style) : [{ text: value, own: true }];
+  if (runs.length === 1) {
+    const [run] = runs;
+    return { content: isolate(escapeText(value)), family: run.own ? undefined : fontStack(run.stack ?? run.family, type) };
+  }
+  const widths = placement && placement.width > 0 ? scripts.runWidths(runs, placement.fontSize, style) : undefined;
+  if (!widths) {
+    return { content: isolate(runs.map(run => run.own ? escapeText(run.text)
+      : tag("tspan", { "font-family": fontStack(run.stack ?? run.family, type) }, escapeText(run.text))).join("")) };
+  }
+  const total = widths.reduce((sum, width) => sum + width, 0), factor = total > 0 ? placement.width / total : 1;
+  let advance = 0, offset = 0;
+  const content = runs.map((run, index) => {
+    const width = widths[index] * factor, left = rtl ? placement.width - advance - width : advance;
+    advance += width;
+    const start = offset;
+    offset += run.text.length;
+    return tag("tspan", {
+      x: stableNumber(placement.x + left),
+      textLength: width > 0 ? stableNumber(width) : undefined, lengthAdjust: width > 0 ? "spacingAndGlyphs" : undefined,
+      "font-family": run.own ? undefined : fontStack(run.family, type),
+      ...(trace ? trace(start, offset) : {})
+    }, isolate(escapeText(run.text)));
+  }).join("");
+  return { content, positioned: true };
+}
+
+/** One positioned code/metric segment tspan; its script runs flow inside it (no textLength). */
+function segmentSpan(attrs, segment, text, style, bound, type, options) {
+  const scripted = segment.kind === "tab" ? { content: escapeText(text) } : scriptLine(text, style, bound, type, options);
+  return tag("tspan", { ...attrs, "font-family": scripted.family }, scripted.content);
 }
 
 function renderEmbeddedFonts(fonts = []) {
@@ -1272,30 +1374,39 @@ function renderRichLines(value,fit,box,bound,config) {
     const offset=alignment==='right'?box.width-line.width:alignment==='center'?(box.width-line.width)/2:0;
     const placed=fit.placement?.lines[lineIndex];
     const originX=placed?.x??box.x+offset,baseline=placed?.baseline??box.y+line.baseline;
-    const renderFragment=(fragment,asFlow)=>{
+    const rtl=rtlLine(bound,line.fragments.map(fragment=>fragment.text).join(''));
+    const renderFragment=(fragment,asFlow,edges={})=>{
     const run=fragment.run;
     // Accepted outline placement owns the horizontal advance. Geometric precision
     // avoids hinted browser advances; textLength also removes fractional-size
     // quantization drift. Height and baseline retain the selected font size.
-    const position=asFlow?{'baseline-shift':fragment.baselineShift?stableNumber(-fragment.baselineShift):undefined}:{x:stableNumber(originX+fragment.x),y:stableNumber(baseline+fragment.baselineShift)};
+    // A right-to-left line places its fragments from the right edge (FF-19).
+    // Estimated (natural-flow) lines keep logical order; the browser reorders them.
+    const fragmentX=rtl&&!naturalFlow?line.width-fragment.x-fragment.width:fragment.x;
+    const position=asFlow?{'baseline-shift':fragment.baselineShift?stableNumber(-fragment.baselineShift):undefined}:{x:stableNumber(originX+fragmentX),y:stableNumber(baseline+fragment.baselineShift)};
     const runFill = run.color == null
       ? config.fill
       : resolveColorRef(run.color, bound, config.fill);
-    const fixedAdvance=(fragment.kind==='tab'||placed)&&fragment.width>0;
-    const rendered=tag(asFlow?'tspan':'text',{...(config.options.trace?{'data-opf-text-start':runOffsets[fragment.runIndex]+fragment.start,'data-opf-text-end':runOffsets[fragment.runIndex]+fragment.end,'data-opf-segment':fragment.kind}:{}),...position,'xml:space':'preserve','text-rendering':asFlow?undefined:'geometricPrecision',textLength:fixedAdvance?stableNumber(fragment.width):undefined,lengthAdjust:fixedAdvance?'spacingAndGlyphs':undefined,'font-family':fontStack(fragment.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(fragment.fontSize),'font-weight':fragment.style.fontWeight,'font-style':fragment.style.italic?'italic':asFlow?'normal':undefined,'text-decoration':[run.underline?'underline':'',run.strikethrough?'line-through':''].filter(Boolean).join(' ')||undefined,fill:runFill},escapeText(fragment.text));
+    let fixedAdvance=(fragment.kind==='tab'||placed)&&fragment.width>0;
+    const scripted=fragment.kind==='tab'?{content:escapeText(fragment.text)}:scriptLine(fragment.text,fragment.style,bound,bound.design.fontScheme.type,{rtl:rtl&&!asFlow,
+      placement:fixedAdvance&&!asFlow?{x:originX+fragmentX,width:fragment.width,fontSize:fragment.fontSize}:undefined});
+    if(scripted.positioned)fixedAdvance=false;
+    const content=`${edges.first?RIGHT_TO_LEFT_ISOLATE:''}${scripted.content}${edges.last?POP_DIRECTIONAL_ISOLATE:''}`;
+    const rendered=tag(asFlow?'tspan':'text',{...(config.options.trace?{'data-opf-text-start':runOffsets[fragment.runIndex]+fragment.start,'data-opf-text-end':runOffsets[fragment.runIndex]+fragment.end,'data-opf-segment':fragment.kind}:{}),...position,'xml:space':'preserve','text-rendering':asFlow?undefined:'geometricPrecision',textLength:fixedAdvance?stableNumber(fragment.width):undefined,lengthAdjust:fixedAdvance?'spacingAndGlyphs':undefined,'font-family':scripted.family??fontStack(fragment.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(fragment.fontSize),'font-weight':fragment.style.fontWeight,'font-style':fragment.style.italic?'italic':asFlow?'normal':undefined,'text-decoration':[run.underline?'underline':'',run.strikethrough?'line-through':''].filter(Boolean).join(' ')||undefined,fill:runFill},content);
     if(run.link&&/^(https?:|mailto:)/i.test(run.link))return tag('a',{href:run.link,target:'_blank',rel:'noopener noreferrer'},rendered);
     return rendered;
     };
     if(naturalFlow&&lineHasTab) {
       const chunks=[];let textChunk=[];
-      const flush=()=>{if(!textChunk.length)return;const first=textChunk[0];chunks.push(tag('text',{x:stableNumber(originX+first.x),y:stableNumber(baseline),'xml:space':'preserve'},textChunk.map(fragment=>renderFragment(fragment,true)).join('')));textChunk=[];};
+      const flush=()=>{if(!textChunk.length)return;const first=textChunk[0];chunks.push(tag('text',{x:stableNumber(originX+first.x),y:stableNumber(baseline),'xml:space':'preserve'},textChunk.map((fragment,index)=>renderFragment(fragment,true,{first:rtl&&!index,last:rtl&&index===textChunk.length-1})).join('')));textChunk=[];};
       for(const fragment of line.fragments) {
         if(fragment.kind==='tab'){flush();chunks.push(renderFragment(fragment,false));}
         else textChunk.push(fragment);
       }
       flush();return chunks.join('\n');
     }
-    const fragments=line.fragments.map(fragment=>renderFragment(fragment,flow));
+    // A flowing right-to-left line is one isolate across its fragments.
+    const fragments=line.fragments.map((fragment,index)=>renderFragment(fragment,flow,flow?{first:rtl&&!index,last:rtl&&index===line.fragments.length-1}:{}));
     if(!flow)return fragments.join('\n');
     const x=alignment==='right'?box.x+box.width:alignment==='center'?box.x+box.width/2:box.x;
     const first=line.fragments[0];
@@ -1335,21 +1446,34 @@ function renderTextBox(text, box, bound, config) {
   const alignment=fit.placement?.alignment??config.align??bound.design.contentAlignment;
   const anchor = alignment === "center" ? "middle" : alignment === "right" ? "end" : "start";
   const x = alignment === "center" ? box.x + box.width / 2 : alignment === "right" ? box.x + box.width : box.x;
+  const type = config.fontFamily === bound.design.fonts.code ? "monospace" : bound.design.fontScheme.type;
   const lines = fit.lines.map((line, index) => {
     const sourceLine=fit.sourceLines?.[index],placed=fit.placement?.lines[index],factor=alignment==='right'?1:alignment==='center'?.5:0;
     const origin=placed?.x??x-(sourceLine?.width??0)*factor;
     const tabs=sourceLine?.segments.some(segment=>segment.kind==='tab');
-    const content=tabs?sourceLine.segments.map(segment=>tag('tspan',{
-      x:stableNumber(origin+segment.x),textLength:segment.kind==='tab'||placed?stableNumber(segment.width):undefined,
-      lengthAdjust:segment.kind==='tab'||placed?'spacingAndGlyphs':undefined,
-      ...(config.options.trace?{'data-opf-source-start':segment.start,'data-opf-source-end':segment.end,'data-opf-segment':segment.kind}:{}),
-    },escapeText(line.slice(segment.start-sourceLine.start,segment.end-sourceLine.start)))).join(''):escapeText(line);
+    let content,family,positioned=false;
+    if(tabs) content=sourceLine.segments.map(segment=>{
+      const segmentText=line.slice(segment.start-sourceLine.start,segment.end-sourceLine.start),fixed=segment.kind==='tab'||placed;
+      const traced=(start,end)=>config.options.trace?{'data-opf-source-start':start,'data-opf-source-end':end,'data-opf-segment':segment.kind}:{};
+      const scripted=segment.kind==='tab'?{content:escapeText(segmentText)}:scriptLine(segmentText,style,bound,type,{rtl:rtlLine(bound,line),
+        placement:placed?{x:origin+segment.x,width:segment.width,fontSize:size}:undefined,
+        trace:config.options.trace?(start,end)=>traced(segment.start+start,segment.start+end):undefined});
+      if(scripted.positioned)return scripted.content;
+      return tag('tspan',{
+        x:stableNumber(origin+segment.x),textLength:fixed?stableNumber(segment.width):undefined,
+        lengthAdjust:fixed?'spacingAndGlyphs':undefined,'font-family':scripted.family,
+        ...traced(segment.start,segment.end),
+      },scripted.content);
+    }).join('');
+    else ({content,family,positioned=false}=scriptLine(line,style,bound,type,{placement:placed?.width>0?{x:placed.x,width:placed.width,fontSize:size}:undefined}));
+    // Positioned script runs carry their own x and textLength (FF-19).
+    const start=tabs||positioned;
     return tag("text", {
-    x: stableNumber(tabs?origin:placed?placed.x+placed.width*factor:x), y: stableNumber(placed?.baseline??startY + index * fit.lineHeight),
-    "text-anchor": tabs?'start':anchor, "font-family": fontStack(style.fontFamily, config.fontFamily === bound.design.fonts.code ? "monospace" : bound.design.fontScheme.type),
+    x: stableNumber(tabs?origin:positioned?placed.x:placed?placed.x+placed.width*factor:x), y: stableNumber(placed?.baseline??startY + index * fit.lineHeight),
+    "text-anchor": start?'start':anchor, "font-family": family ?? fontStack(style.fontFamily, type),
     "font-size": stableNumber(size), "font-weight": style.fontWeight, "font-style": style.italic ? "italic" : undefined, fill: config.fill,
     'xml:space':'preserve',style:'white-space:pre','text-rendering':config.options.textMeasurement?.measure?'geometricPrecision':undefined,
-    textLength:!tabs&&placed?.width>0?stableNumber(placed.width):undefined,lengthAdjust:!tabs&&placed?.width>0?'spacingAndGlyphs':undefined,
+    textLength:!start&&placed?.width>0?stableNumber(placed.width):undefined,lengthAdjust:!start&&placed?.width>0?'spacingAndGlyphs':undefined,
     ...traceAttrs(config.options, config.path),
     ...(config.options.trace&&sourceLine?{'data-opf-source-start':sourceLine.start,'data-opf-source-end':sourceLine.end,'data-opf-source-next-start':sourceLine.nextStart,'data-opf-line-boundary':sourceLine.boundary}:{}),
   }, content);
