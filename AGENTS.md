@@ -18,13 +18,13 @@
 The cross-repo program tracker lives in core at [docs/programs/font-fidelity-everywhere](https://github.com/OpenPresentation/opf/tree/main/docs/programs/font-fidelity-everywhere). `README.md` there holds the goal, done criteria and resume protocol; `burndown.md` holds item IDs and status. Before starting work:
 
 1. Read the tracker and pick or confirm a burndown ID (for example `FF-07`).
-2. Branch as `codex/ff-<id>-<slug>` from fresh `origin/main`.
-3. Reference the ID in the PR title and body.
+2. Branch as `codex/ff-<nn>-<slug>` (for example `codex/ff-07-script-slots`) from fresh `origin/main`.
+3. Start the PR title with the ID prefix (`FF-07: `) and reference the item in the PR body.
 4. When the item completes, update its burndown row and append to the progress log in core.
 
 ## Renderer rules
 
-- The preview/browser 0.1 reference-pixel tolerance (advance/origin and painted-ink containment in the accepted-text and rich-text browser checks) stays unchanged. Never relax it or any other gate to make a run pass.
+- The preview/browser 0.1 reference-pixel tolerance stays unchanged. `test/accepted-text-browser.mjs` applies it to advance/origin and to painted-ink containment (nonzero mask pixel centers within cells plus 0.1 px); `test/rich-tab-browser.mjs` and `test/rich-tab-estimated-browser.mjs` apply it only to tab and following-text positions. Never relax it or any other gate to make a run pass.
 - `npm test` checks golden PNG drift against the approved manifests in `test/golden/`. `npm run golden:update` only writes a review candidate under `artifacts/golden/`; it never overwrites the baseline. Any change to a golden manifest must be deliberate and explained in the PR: which slides changed, why, and how they were reviewed (see `test/golden/README.md`). Matching hashes do not establish readability or native pixel equivalence.
 - Keep bundled-font output deterministic: system-font loading stays opt-in.
 - No package publish or version bump outside the release process.
