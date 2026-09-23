@@ -13,7 +13,9 @@ assert.equal(fontPolicyFor('aptos').replacement.family, 'Roboto');
 assert.equal(fontPolicyFor('Aptos').replacement.decision, 'aptos-preview');
 for (const family of ['Segoe UI', 'Segoe UI Semibold', 'Segoe UI Light', 'Segoe UI Semilight']) assert.equal(fontPolicyFor(family).replacement.family, 'Red Hat Display');
 assert.deepEqual([fontPolicyFor('Cambria').replacement.family, fontPolicyFor('Cambria').replacement.compatibility], ['Caladea', 'visual']);
-assert.equal(fontPolicyFor('Georgia').replacement.compatibility, 'metric');
+assert.equal(fontPolicyFor('Georgia').replacement.compatibility, 'visual');
+assert.equal(fontPolicyFor('Cambria').replacement.metricModeFallback, true);
+assert.equal(fontPolicyFor('Consolas').replacement.family, 'Cousine');
 for (const row of FONT_POLICY) {
   if (row.licenseClass !== 'open') assert.equal(row.embeddableByOpf, false, `${row.family} is never embeddable`);
   if (!row.replacement) continue;
@@ -39,6 +41,7 @@ for (const row of FONT_POLICY) {
   const expected = candidates.find(isBundled);
   assert.ok(resolved.resolvedFamily.toLowerCase().startsWith(expected.toLowerCase()), `${row.family}: ${expected}, got ${resolved.resolvedFamily}`);
   assert.equal(resolved.substitute, true, row.family);
+  // Only the declared replacement can be metric; an alternate is always visual.
   assert.equal(resolved.compatibility, row.replacement.compatibility === 'metric' && expected === row.replacement.family ? 'metric' : 'visual', row.family);
   counts[expected === row.replacement.family ? 'declared' : 'alternate']++;
 }
@@ -62,7 +65,9 @@ assert.equal(registry.resolveFont({fontFamily: 'Segoe UI Semibold', fontWeight: 
 // Strict mode never falls back silently: the error names the replacement, its tier and the hook.
 const strict = await prepareNodeFonts({pack: 'office', substitutionPolicy: 'metric'});
 assert.throws(() => strict.registry.resolveFont({fontFamily: 'Aptos', fontWeight: 400}), error => error.code === 'font-unavailable' && error.details.replacement === 'Roboto' && error.details.replacementCompatibility === 'visual' && error.details.decision === 'aptos-preview' && /visual only/.test(error.message) && /prepareNodeFonts\(\{faces\}\)/.test(error.message) && /PPTX names 'Aptos'/.test(error.message));
-assert.equal(strict.registry.resolveFont({fontFamily: 'Georgia', fontWeight: 700}).compatibility, 'metric');
+assert.equal(strict.registry.resolveFont({fontFamily: 'Calibri', fontWeight: 700}).compatibility, 'metric');
+assert.equal(strict.registry.resolveFont({fontFamily: 'Cambria', fontWeight: 400}).compatibility, 'visual');
+assert.throws(() => strict.registry.resolveFont({fontFamily: 'Georgia', fontWeight: 400}), {code: 'font-unavailable'});
 assert.throws(() => strict.registry.resolveFont({fontFamily: 'Montserrat', fontWeight: 400}), error => error.details.licenseClass === 'open' && /no pinned renderer pack ships it yet/.test(error.message));
 assert.throws(() => strict.registry.resolveFont({fontFamily: 'Brand Sans', fontWeight: 400}), error => error.details.licenseClass === 'unknown' && /not in the OPF font policy table/.test(error.message));
 

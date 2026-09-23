@@ -17,12 +17,13 @@ const SNAPSHOT=freeze({
   "cambria-tier": {
    "replacement": "Caladea",
    "compatibility": "visual",
-   "note": "Cambria -> Caladea is visual: advances differ from Cambria 6.99 by a mean of 2.7%."
+   "metricModeFallback": true,
+   "note": "Cambria -> Caladea is visual: advances differ from Cambria 6.99 by a mean of 2.7%. metricModeFallback keeps metric-mode registries previewing Cambria with Caladea (reported as visual), as they did before FF-31."
   }
  },
  "source": {
   "path": "spec/reference/font-policy.json",
-  "sha256": "f4a0d23195ce1bc740e0b8b8910506ead393c9bf207a0175717f8436fa853bfb"
+  "sha256": "7368c1f56b8a93c63b09cabb8aa9c5284dd9c8b1fd811f9387b05c175abbd5ac"
  },
  "families": [
   {
@@ -128,12 +129,12 @@ const SNAPSHOT=freeze({
    ],
    "embeddableByOpf": false,
    "replacement": {
-    "family": "Roboto Mono",
+    "family": "Cousine",
     "compatibility": "visual",
     "measured": null
    },
    "alternates": [
-    "Cousine"
+    "Roboto Mono"
    ]
   },
   {
@@ -223,7 +224,10 @@ const SNAPSHOT=freeze({
      "reference": "Arial 7.06"
     },
     "source": "https://github.com/google/fonts/blob/main/ofl/arimo/METADATA.pb"
-   }
+   },
+   "alternates": [
+    "Liberation Sans"
+   ]
   },
   {
    "family": "Arial Black",
@@ -510,7 +514,8 @@ const SNAPSHOT=freeze({
     },
     "source": "https://chromium.googlesource.com/external/fontconfig/+/refs/heads/main/conf.d/30-metric-aliases.conf",
     "family": "Caladea",
-    "compatibility": "visual"
+    "compatibility": "visual",
+    "metricModeFallback": true
    }
   },
   {
@@ -614,19 +619,19 @@ const SNAPSHOT=freeze({
    ],
    "embeddableByOpf": false,
    "replacement": {
-    "family": "Roboto Mono",
+    "family": "Cousine",
     "compatibility": "visual",
     "measured": {
-     "replacement": "Roboto Mono",
-     "meanAbsWidthDelta": 0.0795,
-     "meanWidthDelta": 0.0795,
+     "replacement": "Cousine",
+     "meanAbsWidthDelta": 0.0915,
+     "meanWidthDelta": 0.0915,
      "maxAbsWidthDelta": 0.0915,
      "styles": 4,
      "reference": "Consolas 7.01"
     }
    },
    "alternates": [
-    "Cousine"
+    "Roboto Mono"
    ]
   },
   {
@@ -703,7 +708,10 @@ const SNAPSHOT=freeze({
      "reference": "Courier New 6.95"
     },
     "source": "https://github.com/google/fonts/blob/main/ofl/cousine/METADATA.pb"
-   }
+   },
+   "alternates": [
+    "Liberation Mono"
+   ]
   },
   {
    "family": "Cousine",
@@ -949,7 +957,7 @@ const SNAPSHOT=freeze({
    "embeddableByOpf": false,
    "replacement": {
     "family": "Gelasio",
-    "compatibility": "metric",
+    "compatibility": "visual",
     "measured": {
      "replacement": "Gelasio",
      "meanAbsWidthDelta": 0.0002,
@@ -1149,6 +1157,30 @@ const SNAPSHOT=freeze({
     "compatibility": "visual",
     "measured": null
    }
+  },
+  {
+   "family": "Liberation Mono",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
+   "family": "Liberation Sans",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
+   "family": "Liberation Serif",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
   },
   {
    "family": "Libre Caslon Text",
@@ -2247,7 +2279,10 @@ const SNAPSHOT=freeze({
      "reference": "Times New Roman 7.12"
     },
     "source": "https://github.com/google/fonts/blob/main/ofl/tinos/METADATA.pb"
-   }
+   },
+   "alternates": [
+    "Liberation Serif"
+   ]
   },
   {
    "family": "Tinos",

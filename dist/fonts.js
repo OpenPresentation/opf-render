@@ -110,16 +110,22 @@ export function createFontRegistry(entries, options = {}) {
     if (!matching.length && policy!=="none") {
       const candidate = FONT_COMPATIBILITY.find(entry=>entry.requestedFamily.toLowerCase()===family.toLowerCase());
       const tier = candidate?.compatibility==="metric" && !candidate.weights.includes(weight) ? "visual" : candidate?.compatibility;
-      if (candidate && (policy==="visual" || tier==="metric")) {
+      // A declared visual replacement is used in visual mode, and in metric mode only when the
+      // policy keeps it as a metric-mode fallback (Cambria -> Caladea); it is still reported visual.
+      const allowVisual = policy==="visual" || candidate?.metricModeFallback===true;
+      if (candidate && (allowVisual || tier==="metric")) {
         // A family that names its weight (Segoe UI Semibold, Arial Black) selects that weight in
         // the replacement; its bold style link still selects bold (FF-31).
         const wanted = candidate.weight ? (weight>=600 ? Math.max(candidate.weight,700) : candidate.weight) : weight;
         for (const [index, substitute] of candidate.substitutes.entries()) {
-          const faces = findFamily(substitute).filter(face=>tier!=="metric" || face.weight===weight);
+          // Only the declared replacement can carry the row's metric claim; an alternate is visual.
+          const substituteTier = index===0 ? tier : "visual";
+          if (substituteTier==="visual" && !allowVisual) continue;
+          const faces = findFamily(substitute).filter(face=>substituteTier!=="metric" || face.weight===weight);
           let available = faces.filter(face=>face.italic===!!style.italic);
           // Visual replacements without the requested style draw the other one and say so.
-          if (!available.length && tier==="visual" && faces.length) { available = faces.filter(face=>!face.italic); styleFallback = available.length>0; }
-          if (available.length) { matching=available; compatibility=tier; rule={...candidate, substituteIndex:index}; targetWeight=wanted; via="replacement"; break; }
+          if (!available.length && substituteTier==="visual" && faces.length) { available = faces.filter(face=>!face.italic); styleFallback = available.length>0; }
+          if (available.length) { matching=available; compatibility=substituteTier; rule={...candidate, substituteIndex:index}; targetWeight=wanted; via="replacement"; break; }
         }
       }
     }

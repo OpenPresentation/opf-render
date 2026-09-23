@@ -21,7 +21,7 @@ export interface FontResolution {
 export interface FontPolicyEntry {
   family:string; licenseClass:"open"|"proprietary-standard"|"proprietary-nonstandard"; license:string;
   availability:("windows"|"windows-optional"|"macos"|"office"|"office-cloud")[]; embeddableByOpf:boolean;
-  replacement:{family:string; compatibility:"metric"|"visual"; decision?:string; weight?:number; measured:FontReplacementMeasurement|null; source?:string}|null;
+  replacement:{family:string; compatibility:"metric"|"visual"; decision?:string; metricModeFallback?:true; weight?:number; measured:FontReplacementMeasurement|null; source?:string}|null;
   alternates?:string[];
 }
 export declare const FONT_POLICY: readonly Readonly<FontPolicyEntry>[];
@@ -34,7 +34,7 @@ export interface FontRegistryOptions {
   substitutionPolicy?: "none" | "metric" | "visual";
   themeFonts?: Partial<Record<"majorLatin"|"minorLatin"|"majorEastAsia"|"minorEastAsia"|"majorComplexScript"|"minorComplexScript",string>>;
 }
-export declare const FONT_COMPATIBILITY: readonly Readonly<{requestedFamily:string;substitutes:readonly string[];compatibility:"metric"|"visual";weights?:readonly number[];weight?:number;source?:string;measured?:FontReplacementMeasurement;decision?:string;licenseClass?:FontPolicyEntry['licenseClass'];note:string}>[];
+export declare const FONT_COMPATIBILITY: readonly Readonly<{requestedFamily:string;substitutes:readonly string[];compatibility:"metric"|"visual";weights?:readonly number[];weight?:number;source?:string;measured?:FontReplacementMeasurement;decision?:string;metricModeFallback?:true;licenseClass?:FontPolicyEntry['licenseClass'];note:string}>[];
 export declare const EXPERIMENTAL_FONT_CANDIDATES: readonly Readonly<{requestedFamily:string;substitute:string;source:string;note:string}>[];
 export interface FaceDescription { family:string; weight:number; italic:boolean; scripts?:string[] }
 export interface FontRegistry {

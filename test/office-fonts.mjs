@@ -7,9 +7,10 @@ for(const [fontFamily,substitute] of Object.entries(pairs)) for(const fontWeight
   const style={fontFamily,fontWeight,italic,path:'slides.0.text'};
   const resolved=registry.resolveFont(style);
   assert.equal(resolved.resolvedFamily,substitute);
-  // FF-31: tiers come from the OPF font policy (Georgia->Gelasio metric; Cambria->Caladea measured visual).
+  // FF-31: tiers come from the OPF font policy. Georgia->Gelasio (ligature runs up to 1.02% off)
+  // and Cambria->Caladea (2.7% mean) are visual; the other four are metric.
   assert.equal(resolved.compatibility,fontPolicyFor(fontFamily).replacement.compatibility);
-  assert.equal(resolved.compatibility,fontFamily==='Cambria'?'visual':'metric');
+  assert.equal(resolved.compatibility,['Georgia','Cambria'].includes(fontFamily)?'visual':'metric');
   assert.equal(resolved.substitute,true);
   assert.equal(resolved.path,style.path);
   assert.ok(registry.textMeasurement.measure('AVATAR office 1234',25,style)>0);
@@ -24,11 +25,27 @@ assert.equal(alias.resolveFont({fontFamily:'Calibri Light',fontWeight:300}).comp
 assert.equal(alias.resolveFont({fontFamily:'Aptos',fontWeight:400}).compatibility,'visual');
 assert.equal(alias.resolveFont({fontFamily:'Calibri',fontWeight:500}).compatibility,'visual');
 const metricOnly=createFontRegistry(entries,{substitutionPolicy:'metric'});
-assert.throws(()=>metricOnly.resolveFont({fontFamily:'Cambria',fontWeight:400}),{code:'font-unavailable',message:/Caladea is visual only/});
+assert.throws(()=>metricOnly.resolveFont({fontFamily:'Georgia',fontWeight:400}),{code:'font-unavailable',message:/Gelasio is visual only/});
+// FF-31: Cambria was metric before; its policy decision keeps metric-mode registries previewing it
+// with Caladea, reported as visual, instead of throwing.
+{const cambria=metricOnly.resolveFont({fontFamily:'Cambria',fontWeight:700,italic:true});
+assert.deepEqual([cambria.resolvedFamily,cambria.compatibility,cambria.substitute,cambria.decision,cambria.italic],['Caladea','visual',true,'cambria-tier',true]);}
+{const office=await loadOfficeFontRegistry(),cambria=office.resolveFont({fontFamily:'Cambria',fontWeight:400});
+assert.deepEqual([cambria.resolvedFamily,cambria.compatibility],['Caladea','visual'],'the default office registry (metric mode) still previews Cambria');}
+// An alternate on a metric row is never labelled metric (Arial -> Arimo, alternate Liberation Sans).
+{const liberation=entries.filter(face=>face.family==='Arimo').map(face=>({...face,family:'Liberation Sans'}));
+const others=entries.filter(face=>face.family!=='Arimo');
+assert.throws(()=>createFontRegistry([...others,...liberation],{substitutionPolicy:'metric'}).resolveFont({fontFamily:'Arial',fontWeight:400}),{code:'font-unavailable'});
+const viaAlternate=createFontRegistry([...others,...liberation],{substitutionPolicy:'visual'}).resolveFont({fontFamily:'Arial',fontWeight:400});
+assert.deepEqual([viaAlternate.resolvedFamily,viaAlternate.compatibility,viaAlternate.substitute],['Liberation Sans','visual',true]);
+assert.equal(createFontRegistry(entries,{substitutionPolicy:'metric'}).resolveFont({fontFamily:'Arial',fontWeight:400}).compatibility,'metric');}
+// Consolas keeps Cousine, so bold italic code stays italic.
+{const consolas=registry.resolveFont({fontFamily:'Consolas',fontWeight:700,italic:true});
+assert.deepEqual([consolas.resolvedFamily,consolas.italic,consolas.styleFallback],['Cousine',true,undefined]);}
 for(const family of ['Calibri Light','Aptos','Calibri']) assert.throws(()=>metricOnly.resolveFont({fontFamily:family,fontWeight:500}),{code:'font-unavailable'});
-const theme=createFontRegistry(entries,{substitutionPolicy:'metric',themeFonts:{minorLatin:'Calibri',majorLatin:'Times New Roman'},fallbackFamily:'Roboto'});
+const theme=createFontRegistry(entries,{substitutionPolicy:'metric',themeFonts:{minorLatin:'Calibri',majorLatin:'Cambria'},fallbackFamily:'Roboto'});
 assert.equal(theme.resolveFont({fontFamily:'+mn-lt',fontWeight:400}).resolvedFamily,'Carlito');
-assert.equal(theme.resolveFont({fontFamily:'+mj-lt',fontWeight:700}).resolvedFamily,'Tinos');
+assert.equal(theme.resolveFont({fontFamily:'+mj-lt',fontWeight:700}).resolvedFamily,'Caladea');
 assert.throws(()=>theme.resolveFont({fontFamily:'+mn-ea',fontWeight:400}),{code:'unresolved-theme-font'});
 assert.equal(theme.resolveFont({fontFamily:'Unknown Font',fontWeight:400}).compatibility,'generic');
 for(const fontFamily of ['Wingdings','Wingdings 2','Wingdings 3','Webdings','Symbol']) assert.throws(()=>theme.resolveFont({fontFamily,fontWeight:400}),{code:'font-encoding-required'});

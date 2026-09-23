@@ -67,6 +67,7 @@ const FROM_POLICY = FONT_POLICY.filter(row => row.replacement).map(row => ({
   ...(row.replacement.source ? {source: row.replacement.source} : {}),
   ...(row.replacement.measured ? {measured: row.replacement.measured} : {}),
   ...(row.replacement.decision ? {decision: row.replacement.decision} : {}),
+  ...(row.replacement.metricModeFallback ? {metricModeFallback: true} : {}),
   licenseClass: row.licenseClass,
   note: row.replacement.compatibility === "metric"
     ? `Standard regular, bold, italic and bold italic styles. ${describe(row.replacement)}`

@@ -18,6 +18,7 @@ for (const row of table.families) {
   if (!id) continue;
   if (!decisions[id]) throw new Error(`${row.family}: unknown decision ${id}`);
   Object.assign(row.replacement, {family: decisions[id].replacement, compatibility: decisions[id].compatibility});
+  if (decisions[id].metricModeFallback) row.replacement.metricModeFallback = true;
   if (row.replacement.measured && row.replacement.measured.replacement !== decisions[id].replacement) row.replacement.measured = null;
 }
 // Keep what renderers and exporters decide with; sources and notes stay in core.
