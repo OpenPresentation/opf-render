@@ -57,7 +57,10 @@ try{
       const family=(element.getAttribute('font-family')??title.getAttribute('font-family')).split(',')[0].trim();
       element.removeAttribute('textLength');
       const natural=element.getComputedTextLength?element.getComputedTextLength():title.getComputedTextLength();
-      return {text:element.textContent,family,accepted,natural,loaded:document.fonts.check(`54px "${family}"`,element.textContent.replace(/[\u2066-\u2069]/g,''))};
+      // document.fonts.check() also consults system fonts (the Linux Playwright image
+      // has a system Roboto), so require a pinned FontFace of this family, loaded.
+      const loaded=[...document.fonts].some(face=>face.family.replace(/^"|"$/g,'')===family&&face.status==='loaded');
+      return {text:element.textContent,family,accepted,natural,loaded};
     });
     // Visual order: the final full stop of an RTL title is painted left of its first letter.
     const content=title.textContent,stop=content.lastIndexOf('.'),first=content.search(/[\u0590-\u08FF]/);
