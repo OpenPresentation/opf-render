@@ -1,5 +1,9 @@
 # Raster regression baseline
 
+## FF-22b classic chart previews
+
+Kept classic chart types now preview their native construct (`src/charts.js`). 115 of 805 slides change, and every one of them contains a chart. A local copy of core `scripts/review-chart-colors.mjs` (imports pointed at this checkout) verified that only chart slides changed, and all changes were inspected in ten before/after sheets. The other 690 hashes are unchanged. The candidate was generated on Windows with Node 24.21.0. The pre-change baseline also passes there byte-for-byte, so the resvg/bundled-font hashes do not depend on the platform; CI (Linux Playwright container) confirms this on the PR. Chartex types keep the legacy preview. Chart labels respect the readability floor (`minFontSize`), so they are larger than PowerPoint's 9 pt axis text.
+
 ## Unreleased shared code review
 
 The shared code integration changes 43 of 805 slides, with the same 126-deck source digest. Every changed image was reproduced against ordinary registry renderer 0.6.0 and reviewed in eight before/after sheets; all three technical slides and one representative gallery code slide were also inspected at full resolution. Filenames now appear, metadata retains case, source indentation survives and code uses left alignment. The other 762 hashes are unchanged. Sparse gallery code panels and existing theme/logo placeholders remain quality limitations.
