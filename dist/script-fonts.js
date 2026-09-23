@@ -138,26 +138,62 @@ function fontKey(script, text, profile) {
   return latinGroup.has(script) ? "Latn" : script;
 }
 
+// East Asian common characters that PowerPoint always draws with the East Asian
+// (a:ea) font: CJK symbols and punctuation, kana marks, enclosed CJK, CJK
+// compatibility, vertical and small forms, and halfwidth/fullwidth forms.
+const eastAsianCommon = /[\u3000-\u303F\u3040-\u30FF\u31F0-\u31FF\u3200-\u33FF\uFE30-\uFE4F\uFF00-\uFFEF]/u;
+// Characters whose font PowerPoint picks from the run language: with an East
+// Asian language they use the a:ea font (curly quotes, dashes, ellipsis,
+// daggers, per-mille, primes, reference mark).
+const eastAsianAmbiguous = /[\u2010-\u2016\u2018-\u2022\u2025\u2026\u2030\u2032\u2033\u203B]/u;
+const eastAsianLanguage = profile => profile?.scriptRole === "eastAsian" || /^(ja|zh|ko)\b/i.test(String(profile?.bcp47 ?? ""));
+
 /**
- * Split text into font runs by Unicode script. Common and inherited characters
- * (spaces, digits, punctuation, combining marks) join the preceding run, or the
- * following run at the start of the text. Latin, Greek and Cyrillic share one run.
- * `profile` (for example core `resolveScriptFonts` output) disambiguates Han.
+ * Split text into font runs by Unicode script, following PowerPoint's
+ * character-to-slot rules where they are known:
+ * - Letters take their script's slot. Latin, Greek and Cyrillic share one run.
+ * - East Asian common characters (CJK punctuation U+3000-303F, fullwidth forms
+ *   U+FF00-FFEF and similar) are East Asian, also at the start of a text; with
+ *   an East Asian language, curly quotes, dashes and the ellipsis are too.
+ * - ASCII spaces, digits and punctuation use the latin slot next to East Asian
+ *   text, and stay in a complex-script run (as PowerPoint draws them with the
+ *   complex-script font inside Arabic, Hebrew, Indic or Thai text).
+ * - Other common and inherited characters (combining marks, other punctuation)
+ *   join the preceding run, or the following run at the start of the text.
+ * `profile` (for example core `resolveScriptFonts` output) supplies the
+ * language, which disambiguates Han and the language-dependent characters.
  */
 export function itemizeScripts(text, profile) {
+  const source = String(text);
   const runs = [];
   let pending = "";
-  for (const character of String(text)) {
-    const script = scriptOfCharacter(character);
-    if (script === "Zyyy" || script === "Zinh") {
-      if (runs.length) runs.at(-1).text += character;
-      else pending += character;
-    } else {
-      const key = fontKey(script, text, profile);
-      const last = runs.at(-1);
-      if (last && last.script === key) last.text += character;
-      else runs.push({text: (runs.length ? "" : pending) + character, script: key, role: scriptFontRole(key)});
+  const eastAsian = eastAsianLanguage(profile);
+  const push = (character, key) => {
+    const last = runs.at(-1);
+    if (last && last.script === key) last.text += character;
+    else runs.push({text: character, script: key, role: scriptFontRole(key)});
+  };
+  const strong = (character, key) => {
+    // Leading neutrals join a complex-script run; otherwise they are Latin.
+    if (!runs.length && pending) {
+      if (scriptFontRole(key) === "complexScript") { runs.push({text: pending, script: key, role: "complexScript"}); }
+      else push(pending, "Latn");
+      pending = "";
     }
+    push(character, key);
+  };
+  for (const character of source) {
+    const script = scriptOfCharacter(character);
+    if (eastAsianCommon.test(character) || (eastAsian && eastAsianAmbiguous.test(character))) {
+      strong(character, script === "Hira" || script === "Kana" ? "Jpan" : hanScript(source, profile));
+    } else if (script === "Zinh") {
+      if (runs.length) runs.at(-1).text += character; else pending += character;
+    } else if (script === "Zyyy") {
+      const last = runs.at(-1);
+      if (!last) pending += character;
+      else if (character.codePointAt(0) < 0x80 && last.role === "eastAsian") push(character, "Latn");
+      else last.text += character;
+    } else strong(character, fontKey(script, source, profile));
   }
   if (!runs.length) return [{text: pending, script: "Latn", role: "latin"}];
   return runs;
@@ -223,6 +259,36 @@ export function openTypeLanguage(tag) {
   return openTypeLanguages[language];
 }
 
+/**
+ * Heading or body role of a text style from its OPF path: title, subtitle and
+ * tag placeholders are headings (the exporter's heading shapes), everything
+ * else is body. Undefined when the style carries no slide path.
+ */
+export function textRole(style) {
+  const path = typeof style?.path === "string" ? style.path : undefined;
+  if (!path || !/^slides\.\d+\./.test(path)) return undefined;
+  return /^slides\.\d+\.(?:title|subtitle|tag)(?:\.\d+)?$/.test(path) ? "heading" : "body";
+}
+
+// Strong right-to-left letters (Unicode bidi classes R and AL, by script).
+const rtlStrong = /[\p{Script=Arab}\p{Script=Hebr}\p{Script=Syrc}\p{Script=Thaa}\p{Script=Nkoo}\p{Script=Adlm}\p{Script=Rohg}\p{Script=Mand}\p{Script=Samr}]/u;
+const letter = /\p{L}/u;
+
+/**
+ * Paragraph base direction, vendored to match core `paragraphDirection(text,
+ * deckDirection)` (FF-07) until core publishes it: right to left when the deck
+ * is right to left and the paragraph's first strong character is right to left
+ * or it has no strong character; otherwise left to right.
+ */
+export function paragraphDirection(text, deckDirection) {
+  if (deckDirection !== "rtl") return "ltr";
+  for (const character of String(text ?? "")) {
+    if (rtlStrong.test(character) && letter.test(character)) return "rtl";
+    if (letter.test(character)) return "ltr";
+  }
+  return "rtl";
+}
+
 /** True when the profile's language is written right to left. */
 export function isRtlProfile(profile) {
   return profile?.rtl === true || profile?.direction === "rtl" || (!profile?.direction && rtlScripts.has(profile?.script));
@@ -247,6 +313,7 @@ export function createScriptFonts(profile = {}, measurement) {
   // The language the SVG declares (lang) also selects OpenType language systems in measurement.
   const lang = profile.languageSource === "document" || profile.languageSource === "option" ? profile.bcp47 : undefined;
   const styled = style => lang && style.lang === undefined ? {...style, lang} : style;
+  const eastAsianText = eastAsianLanguage(profile);
   const plans = new Map();
   const resolvedNames = new Map();
   const coverage = new Map();
@@ -275,7 +342,12 @@ export function createScriptFonts(profile = {}, measurement) {
   };
   const headingLatin = () => profile.heading?.latin === undefined ? undefined : measured ? resolveName(profile.heading.latin, {fontWeight: 700}) : profile.heading.latin;
   const slotsFor = style => {
-    const useHeading = profile.heading && profile.body && JSON.stringify(profile.heading) !== JSON.stringify(profile.body) && style.fontFamily === headingLatin();
+    const role = textRole(style);
+    // The text's role picks the major (heading) or minor (body) slots, as the
+    // exporter's heading shapes do. Only a style without an OPF path falls back
+    // to comparing its latin family with the heading's.
+    const useHeading = profile.heading && profile.body && JSON.stringify(profile.heading) !== JSON.stringify(profile.body) &&
+      (role ? role === "heading" : style.fontFamily === headingLatin());
     const slots = (useHeading ? profile.heading : profile.body) ?? {};
     const supplement = profile.supplement ? {script: profile.supplement.script === "Hang" ? "Kore" : profile.supplement.script, family: useHeading ? profile.supplement.heading : profile.supplement.body} : undefined;
     return {latin: style.fontFamily, eastAsian: slots.eastAsian ?? style.fontFamily, complexScript: slots.complexScript ?? style.fontFamily, supplement};
@@ -292,8 +364,8 @@ export function createScriptFonts(profile = {}, measurement) {
   /** Font runs for text drawn in `style` (the resolved latin style). `own` runs use the style's family. */
   const plan = (text, style) => {
     text = String(text ?? "");
-    if (latinOnly.test(text)) return [{text, family: style.fontFamily, own: true}];
-    const cacheKey = `${style.fontFamily}\u0000${style.fontWeight ?? 400}\u0000${!!style.italic}\u0000${text}`;
+    if (latinOnly.test(text) && !(eastAsianText && eastAsianAmbiguous.test(text))) return [{text, family: style.fontFamily, own: true}];
+    const cacheKey = `${style.fontFamily}\u0000${style.fontWeight ?? 400}\u0000${!!style.italic}\u0000${textRole(style) ?? ""}\u0000${text}`;
     const cached = plans.get(cacheKey);
     if (cached) return cached;
     const slots = slotsFor(style);

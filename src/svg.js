@@ -7,7 +7,7 @@ import {
 // Optional core exports are read from the namespace so an older published core
 // still loads; resolveScriptFonts ships with core FF-18.
 import * as opfCore from "@openpresentation/opf";
-import { createScriptFonts } from "./script-fonts.js";
+import { createScriptFonts, paragraphDirection } from "./script-fonts.js";
 
 export const packageName = "@openpresentation/opf-render";
 
@@ -432,10 +432,17 @@ function resolveDesign(presentation, slide, context, index) {
  * font; a script slot that core fills from the latin family follows it too.
  * Without core support every slot repeats the latin family.
  */
-function scriptProfile(presentation, index, design) {
+function scriptProfile(presentation, index, design, context) {
   let resolved;
   if (typeof opfCore.resolveScriptFonts === "function") {
-    try { resolved = opfCore.resolveScriptFonts(presentation, { slideIndex: index }); } catch { resolved = undefined; }
+    try { resolved = opfCore.resolveScriptFonts(presentation, { slideIndex: index }); }
+    catch (error) {
+      reportLanguageDiagnostic(context, { code: "language-preview-unresolved", path: "language",
+        message: "Script fonts could not be resolved (" + (error instanceof Error ? error.message : String(error)) + "), so the preview uses the design font for every script, sets no lang and lays out every paragraph left to right." });
+    }
+  } else if (presentation.language !== undefined) {
+    reportLanguageDiagnostic(context, { code: "language-preview-unavailable", path: "language",
+      message: "The installed @openpresentation/opf has no resolveScriptFonts (FF-18), so the preview uses the design font for every script, sets no lang and lays out every paragraph left to right. Use a core release with the language model." });
   }
   const slots = role => {
     const latin = design.fonts[role];
@@ -447,10 +454,19 @@ function scriptProfile(presentation, index, design) {
     body: slots("body"),
     ...(resolved?.supplement ? { supplement: resolved.supplement } : {}),
     script: resolved?.script ?? "Zzzz",
+    ...(resolved?.scriptRole ? { scriptRole: resolved.scriptRole } : {}),
     ...(resolved ? { bcp47: resolved.bcp47, lang: resolved.lang, languageSource: resolved.languageSource, direction: resolved.direction } : {}),
     rtl: resolved?.rtl === true,
     serif: design.fontScheme?.type === "serif"
   };
+}
+
+/** Report a language diagnostic once per resolvePresentation call. */
+function reportLanguageDiagnostic(context, diagnostic) {
+  context.languageDiagnostics ??= new Set();
+  if (context.languageDiagnostics.has(diagnostic.code)) return;
+  context.languageDiagnostics.add(diagnostic.code);
+  context.options.onDiagnostic?.(diagnostic);
 }
 
 function inferLayoutId(slide) {
@@ -577,7 +593,7 @@ function bindSlide(presentation, slide, layout, index, context) {
   const design = resolveDesign(presentation, slide, context, index);
   // Script fonts (FF-19): each text run is measured and drawn with its script
   // slot's face; the latin slot stays the design font scheme's family.
-  const scriptFonts = createScriptFonts(scriptProfile(presentation, index, design), context.options.textMeasurement);
+  const scriptFonts = createScriptFonts(scriptProfile(presentation, index, design, context), context.options.textMeasurement);
   const textMeasurement = scriptFonts.textMeasurement ?? context.options.textMeasurement;
   for (const role of ["heading","body","code"]) design.fonts[role] = resolveTextStyle({fontFamily:design.fonts[role],fontWeight:role === "heading" ? 700 : 400},textMeasurement).fontFamily;
   const geometry = composeSlide(slide, { ...design.dimensions, layout, presentation, slideIndex: index, fonts: design.fonts, contentAlignment:design.contentAlignment, titleAlignment:design.titleAlignment, textRasterPadding:context.options.textRasterPadding, contentBox:design.contentBox, textMeasurement });
@@ -954,6 +970,7 @@ function renderMetric(item, box, bound, options) {
     if (invalid) throw new OPFRenderError('invalid-metric-text',`Metric text contains U+${invalid[0].codePointAt(0).toString(16).toUpperCase().padStart(4,'0')} at UTF-16 offset ${invalid.index}, which XML cannot represent; edit that character before rendering.`,{path:part.path});
     if (!part.visible) continue;
     if (!part.fit||part.linePositions?.length!==part.fit.sourceLines.length) throw new OPFRenderError('layout-overflow','Metric content has no accepted internal line positions; increase its cell size or coordinate package versions.',{path:part.path,issues:layout.diagnostics});
+    const partRtl=paragraphRtl(bound,part.text);
     const lines=part.fit.sourceLines.map((line,index)=>{
       const origin=part.linePositions[index];
       return tag('text',{x:stableNumber(origin.x),y:stableNumber(origin.baseline),'text-anchor':'start',
@@ -965,7 +982,7 @@ function renderMetric(item, box, bound, options) {
       },line.segments.map(segment=>segmentSpan({x:stableNumber(origin.x+segment.x),
         ...(segment.kind==='tab'?{textLength:stableNumber(segment.width),lengthAdjust:'spacingAndGlyphs'}:{}),
         ...(options.trace?{'data-opf-segment':segment.kind,'data-opf-text-start':segment.start,'data-opf-text-end':segment.end}:{}),
-      },segment,part.text.slice(segment.start,segment.end),part.style,bound,bound.design.fontScheme.type)).join(''));
+      },segment,part.text.slice(segment.start,segment.end),part.style,bound,bound.design.fontScheme.type,{rtl:partRtl(line.start)})).join(''));
     });
     children.push(tag('g',{...traceAttrs(options,part.path),...(options.trace?{'data-opf-metric-role':part.role,
       'data-opf-box-x':part.box.x,'data-opf-box-y':part.box.y,'data-opf-box-width':part.box.width,'data-opf-box-height':part.box.height}:{}),
@@ -1284,15 +1301,23 @@ function fontStack(family, type) {
   return `${[family].flat().join(", ")}, ${fallback}`;
 }
 
-// Unicode directional isolates (FF-19): in a right-to-left-language deck, a line
-// that contains right-to-left letters is laid out as one right-to-left isolate,
-// the base direction of a PPTX rtl paragraph. Lines without right-to-left
-// letters keep left-to-right order. Absolute alignment and measured advances
-// are unchanged.
+// Unicode directional isolates (FF-19): each paragraph (text between hard line
+// breaks) of a right-to-left-language deck takes one base direction from
+// paragraphDirection(text, deckDirection), the rule the PPTX export uses for
+// a:pPr rtl. Every wrapped line of a right-to-left paragraph is laid out as a
+// right-to-left isolate, so its lines never differ in direction. Absolute
+// alignment and measured advances are unchanged.
 const RIGHT_TO_LEFT_ISOLATE = "\u2067", POP_DIRECTIONAL_ISOLATE = "\u2069";
-const RTL_LETTER = /[\p{Script=Arab}\p{Script=Hebr}\p{Script=Syrc}\p{Script=Thaa}\p{Script=Nkoo}\p{Script=Adlm}\p{Script=Rohg}\p{Script=Mand}\p{Script=Samr}]/u;
-function rtlLine(bound, text) {
-  return bound.scriptFonts?.rtl === true && RTL_LETTER.test(text);
+const resolveParagraphDirection = typeof opfCore.paragraphDirection === "function" ? opfCore.paragraphDirection : paragraphDirection;
+/** Maps a source offset of the text to whether its paragraph is right to left. */
+function paragraphRtl(bound, text) {
+  if (bound.scriptFonts?.rtl !== true) return () => false;
+  const source = String(text ?? ""), spans = [];
+  let start = 0;
+  for (const match of source.matchAll(/\r\n|\r|\n/g)) { spans.push([start, match.index]); start = match.index + match[0].length; }
+  spans.push([start, source.length]);
+  const rtl = spans.map(([from, to]) => resolveParagraphDirection(source.slice(from, to), "rtl") === "rtl");
+  return offset => { for (let index = spans.length - 1; index >= 0; index--) if (offset >= spans[index][0]) return rtl[index]; return rtl[0]; };
 }
 
 /**
@@ -1304,10 +1329,10 @@ function rtlLine(bound, text) {
  * a textLength spanning differently fonted tspans does not rasterize reliably;
  * the caller then drops its own textLength and anchors at the start.
  */
-function scriptLine(text, style, bound, type, { rtl, placement, trace } = {}) {
+function scriptLine(text, style, bound, type, { rtl = false, placement, trace } = {}) {
   const value = String(text ?? "");
   const scripts = bound.scriptFonts;
-  rtl = (rtl ?? rtlLine(bound, value)) && value !== "";
+  rtl = rtl && value !== "";
   const isolate = content => rtl ? `${RIGHT_TO_LEFT_ISOLATE}${content}${POP_DIRECTIONAL_ISOLATE}` : content;
   const runs = value && scripts ? scripts.plan(value, style) : [{ text: value, own: true }];
   if (runs.length === 1) {
@@ -1363,6 +1388,7 @@ function renderRichLines(value,fit,box,bound,config) {
   const alignment=fit.placement?.alignment??config.align??bound.design.contentAlignment;
   let textOffset=0;
   const runOffsets=value.map(run=>{const start=textOffset;textOffset+=(typeof run==='string'?run:run.text).length;return start;});
+  const richRtl=paragraphRtl(bound,value.map(run=>typeof run==='string'?run:run.text).join(''));
   // With no measurement provider, fragment advances are estimates. Let SVG
   // shape adjacent runs naturally inside each estimated line instead of turning
   // those estimates into visible gaps. Supplied measurements keep exact origins.
@@ -1374,7 +1400,7 @@ function renderRichLines(value,fit,box,bound,config) {
     const offset=alignment==='right'?box.width-line.width:alignment==='center'?(box.width-line.width)/2:0;
     const placed=fit.placement?.lines[lineIndex];
     const originX=placed?.x??box.x+offset,baseline=placed?.baseline??box.y+line.baseline;
-    const rtl=rtlLine(bound,line.fragments.map(fragment=>fragment.text).join(''));
+    const firstFragment=line.fragments[0],rtl=richRtl(firstFragment?runOffsets[firstFragment.runIndex]+firstFragment.start:0);
     const renderFragment=(fragment,asFlow,edges={})=>{
     const run=fragment.run;
     // Accepted outline placement owns the horizontal advance. Geometric precision
@@ -1447,15 +1473,20 @@ function renderTextBox(text, box, bound, config) {
   const anchor = alignment === "center" ? "middle" : alignment === "right" ? "end" : "start";
   const x = alignment === "center" ? box.x + box.width / 2 : alignment === "right" ? box.x + box.width : box.x;
   const type = config.fontFamily === bound.design.fonts.code ? "monospace" : bound.design.fontScheme.type;
+  const source = String(text ?? ""), boxRtl = paragraphRtl(bound, source);
+  let cursor = 0;
   const lines = fit.lines.map((line, index) => {
     const sourceLine=fit.sourceLines?.[index],placed=fit.placement?.lines[index],factor=alignment==='right'?1:alignment==='center'?.5:0;
+    // The line's paragraph decides its direction: source offsets when layout has them, else the next match.
+    const found=sourceLine?sourceLine.start:source.indexOf(line,cursor),lineStart=found>=0?found:cursor;cursor=lineStart+line.length;
+    const rtl=boxRtl(lineStart);
     const origin=placed?.x??x-(sourceLine?.width??0)*factor;
     const tabs=sourceLine?.segments.some(segment=>segment.kind==='tab');
     let content,family,positioned=false;
     if(tabs) content=sourceLine.segments.map(segment=>{
       const segmentText=line.slice(segment.start-sourceLine.start,segment.end-sourceLine.start),fixed=segment.kind==='tab'||placed;
       const traced=(start,end)=>config.options.trace?{'data-opf-source-start':start,'data-opf-source-end':end,'data-opf-segment':segment.kind}:{};
-      const scripted=segment.kind==='tab'?{content:escapeText(segmentText)}:scriptLine(segmentText,style,bound,type,{rtl:rtlLine(bound,line),
+      const scripted=segment.kind==='tab'?{content:escapeText(segmentText)}:scriptLine(segmentText,style,bound,type,{rtl,
         placement:placed?{x:origin+segment.x,width:segment.width,fontSize:size}:undefined,
         trace:config.options.trace?(start,end)=>traced(segment.start+start,segment.start+end):undefined});
       if(scripted.positioned)return scripted.content;
@@ -1465,7 +1496,7 @@ function renderTextBox(text, box, bound, config) {
         ...traced(segment.start,segment.end),
       },scripted.content);
     }).join('');
-    else ({content,family,positioned=false}=scriptLine(line,style,bound,type,{placement:placed?.width>0?{x:placed.x,width:placed.width,fontSize:size}:undefined}));
+    else ({content,family,positioned=false}=scriptLine(line,style,bound,type,{rtl,placement:placed?.width>0?{x:placed.x,width:placed.width,fontSize:size}:undefined}));
     // Positioned script runs carry their own x and textLength (FF-19).
     const start=tabs||positioned;
     return tag("text", {

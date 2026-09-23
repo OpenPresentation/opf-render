@@ -33,7 +33,7 @@ export interface ScriptFontProfile {
   heading?: ScriptFontSlots; body?: ScriptFontSlots;
   supplement?: { script: string; heading: string; body: string };
   script?: string; bcp47?: string; lang?: string; direction?: "ltr" | "rtl"; rtl?: boolean;
-  languageSource?: "document" | "option" | "default"; serif?: boolean;
+  languageSource?: "document" | "option" | "default"; scriptRole?: ScriptRole; serif?: boolean;
 }
 export interface ScriptRun { text: string; script: string; role: ScriptRole }
 export interface PlannedRun { text: string; family: string; own: boolean; stack?: string[] }
@@ -58,3 +58,7 @@ export declare function createScriptFonts(profile?: ScriptFontProfile, measureme
 /** Wrap a measurement so pagination, the renderer and the editor itemize script runs identically. */
 export declare function createScriptTextMeasurement(measurement: TextMeasurement, profile: ScriptFontProfile): TextMeasurement;
 export declare function openTypeLanguage(tag: string | undefined): string | undefined;
+/** Paragraph base direction (vendored core paragraphDirection rule). */
+export declare function paragraphDirection(text: string, deckDirection: "ltr" | "rtl" | undefined): "ltr" | "rtl";
+/** Heading or body role of a style from its OPF path; undefined without a slide path. */
+export declare function textRole(style: { path?: string } | undefined): "heading" | "body" | undefined;

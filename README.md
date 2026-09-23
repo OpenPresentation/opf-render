@@ -109,9 +109,9 @@ Each entry contains `url` or `data: Uint8Array`, with optional `family`, `weight
 
 ## Script fonts, lang and right-to-left text (FF-19)
 
-Previews itemize text by Unicode script. Each run uses the OOXML script slot its script belongs to (`latin`, `eastAsian` or `complexScript`), as resolved by core `resolveScriptFonts` from the document's language and font scheme. Latin, Greek and Cyrillic text stays in the design font. Licensed script fonts are never bundled. With a measured registry, a proprietary family (for example Meiryo, Microsoft YaHei, Malgun Gothic, Arabic Typesetting, David, Mangal or Angsana New) is previewed with its designated open replacement from `SCRIPT_FONT_REPLACEMENTS`, and each replacement is recorded in `registry.substitutions` as `visual`. The PPTX keeps the chosen family. If the slot's face has no glyph for a run, the run falls back by coverage to the designated OFL Noto family for its script.
+Previews itemize text by Unicode script. Each run uses the OOXML script slot its script belongs to (`latin`, `eastAsian` or `complexScript`), as resolved by core `resolveScriptFonts` from the document's language and font scheme. Latin, Greek and Cyrillic text stays in the design font. The text's role picks the major (heading) or minor (body) slots: title, subtitle and tag text is heading, as in the exporter's heading shapes, and all other text is body. Licensed script fonts are never bundled. With a measured registry, a proprietary family (for example Meiryo, Microsoft YaHei, Malgun Gothic, Arabic Typesetting, David, Mangal or Angsana New) is previewed with its designated open replacement from `SCRIPT_FONT_REPLACEMENTS`, and each replacement is recorded in `registry.substitutions` as `visual`. The PPTX keeps the chosen family. If the slot's face has no glyph for a run, the run falls back by coverage to the designated OFL Noto family for its script.
 
-The replacement faces are an optional, hash-pinned font pack: 63 static regular and bold faces from 31 `@expo-google-fonts/noto-*` packages (SIL OFL 1.1, 66.9 MiB, of which 55.9 MiB is CJK). They are exact optional peer dependencies, so the renderer install does not grow. Install only the scripts you need, then load them:
+The replacement faces are an optional, hash-pinned font pack: 63 static regular and bold faces from 31 `@expo-google-fonts/noto-*` packages (SIL OFL 1.1). The pinned faces total 66.9 MiB, of which 55.9 MiB is CJK. Installing all 31 packages takes about 325.8 MiB, because they also ship weights the manifest does not pin. They are exact optional peer dependencies, so the renderer install does not grow. Install only the scripts you need, then load them:
 
 ```js
 import { prepareNodeFonts } from '@openpresentation/opf-render/fonts-node';
@@ -127,11 +127,22 @@ const png = await svgToPng(slides[0], options);
 
 The renderer measures and paints with the same runs. A line whose runs use different families is drawn as positioned tspans, each with its own measured advance. For consistent line breaks, pass the same measurement to pagination and editing: `createScriptTextMeasurement(registry.textMeasurement, resolveScriptFonts(presentation))`. Without a registry, the SVG names every candidate family in order (for example `Meiryo, Noto Sans JP, sans-serif`), and the host resolves glyphs itself.
 
-The SVG root carries `lang` and `xml:lang` from the document's `language`. Measurement applies the same OpenType language system that a browser selects for that `lang`; Noto Sans KR spacing, for example, differs under `KOR`. In a right-to-left language deck, each line that contains right-to-left letters is laid out as one right-to-left isolate (U+2067 ... U+2069), the base direction of a PPTX `rtl` paragraph. Measured rich-text fragments are placed from the right edge. Lines without right-to-left letters keep left-to-right order.
+The SVG root carries `lang` and `xml:lang` from the document's `language`. Measurement applies the same OpenType language system that a browser selects for that `lang`; Noto Sans KR spacing, for example, differs under `KOR`. Direction is set per paragraph, meaning the text between hard line breaks. The rule is `paragraphDirection(text, deckDirection)`, the one the exporter uses for `a:pPr rtl`: a paragraph is right to left when the deck language is right to left and its first strong letter is right to left, or it has no strong letter. Until core publishes the function, the renderer uses an identical vendored copy, and a test checks it against core when core exports it. Every wrapped line of a right-to-left paragraph is laid out as a right-to-left isolate (U+2067 ... U+2069), so lines of one paragraph never differ. Measured rich-text fragments are placed from the right edge.
+
+When the installed core has no `resolveScriptFonts` (published core 0.11.0 and earlier) and the document names a `language`, the renderer reports `language-preview-unavailable` once through `onDiagnostic`. The preview then uses the design font for every script, sets no `lang` and lays out every paragraph left to right. If the resolver throws, the renderer falls back the same way and reports `language-preview-unresolved`.
+
+Characters are assigned to slots following PowerPoint where its rules are known:
+
+- Letters take their script's slot.
+- CJK symbols and punctuation (U+3000-303F), kana, enclosed and compatibility CJK, and halfwidth and fullwidth forms (U+FF00-FFEF) always use the East Asian slot, even at the start of a text.
+- With an East Asian document language (ja, zh, ko), curly quotes, dashes, the ellipsis, daggers, primes and the reference mark also use the East Asian slot.
+- ASCII spaces, digits and punctuation use the latin slot next to East Asian text. They stay with complex-script text, and leading ones join a following complex-script run.
+- Other common characters and combining marks join the preceding run.
 
 Limits:
 
 - Alignment stays absolute, as authored or composed. RTL decks are not right-aligned automatically.
+- Known differences from PowerPoint: the character tables above are approximations, not PowerPoint's full per-character table. Non-ASCII common characters, such as Latin-1 symbols and other general punctuation, join the neighbouring run instead of following PowerPoint's per-character slot, and PowerPoint's `hint="eastAsia"` run property is not modelled.
 - Per-run language (`lang` on individual runs) is not modelled. Han text uses kana or Hangul context, then the document language, and defaults to Simplified Chinese.
 - Faces have no italics, so italic script text uses upright advances. Browsers may slant it synthetically.
 - Serif CJK replacements (Noto Serif JP/SC/TC/KR) are designated but not pinned; serif CJK requests use the sans face unless you supply the serif face.

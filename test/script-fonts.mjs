@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import * as core from '@openpresentation/opf';
 import {renderSvg,renderSvgDeck,resolvePresentation,svgToPng} from '../dist/index.js';
 import {prepareNodeFonts,scriptFontPackages,BUNDLED_FONT_MANIFEST} from '../dist/fonts-node.js';
-import {createScriptFonts,createScriptTextMeasurement,detectScripts,itemizeScripts,scriptFontAliases,scriptFontRole,SCRIPT_FONT_FAMILIES,SCRIPT_FONT_REPLACEMENTS} from '../dist/fonts.js';
+import {createScriptFonts,createScriptTextMeasurement,detectScripts,itemizeScripts,paragraphDirection,scriptFontAliases,scriptFontRole,textRole,SCRIPT_FONT_FAMILIES,SCRIPT_FONT_REPLACEMENTS} from '../dist/fonts.js';
 
 const pkg=JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8'));
 const hasCoreResolver=typeof core.resolveScriptFonts==='function';
@@ -33,12 +33,40 @@ assert.equal(scriptFontAliases(['Noto Sans JP']).Meiryo,'Noto Sans JP');
 assert.equal(scriptFontAliases(['Noto Sans JP'])['MS Mincho'],'Noto Sans JP');
 assert.equal(scriptFontAliases([]).Meiryo,undefined);
 
-// Itemization by Unicode script; neutrals join the preceding run.
+// Itemization by Unicode script with PowerPoint's slot rules for common characters.
 assert.deepEqual(itemizeScripts('ABC 日本語、テスト。').map(run=>[run.text,run.script,run.role]),[['ABC ','Latn','latin'],['日本語、テスト。','Jpan','eastAsian']]);
 assert.deepEqual(itemizeScripts('中文 text').map(run=>run.script),['Hans','Latn']);
 assert.deepEqual(itemizeScripts('中文',{bcp47:'zh-Hant'}).map(run=>run.script),['Hant']);
-assert.deepEqual(itemizeScripts('한국어 漢字').map(run=>run.script),['Kore']);
+// ASCII spaces, digits and punctuation next to East Asian text use the latin slot.
+assert.deepEqual(itemizeScripts('한국어 漢字').map(run=>[run.text,run.script]),[['한국어','Kore'],[' ','Latn'],['漢字','Kore']]);
+assert.deepEqual(itemizeScripts('売上は12%増').map(run=>[run.text,run.role]),[['売上は','eastAsian'],['12%','latin'],['増','eastAsian']]);
+// CJK punctuation (U+3000-303F) and fullwidth forms (U+FF00-FFEF) are East Asian, also at the start of a text.
+assert.deepEqual(itemizeScripts('「引用」').map(run=>[run.text,run.role]),[['「引用」','eastAsian']]);
+assert.deepEqual(itemizeScripts('　ABC').map(run=>[run.text,run.role]),[['　','eastAsian'],['ABC','latin']]);
+assert.deepEqual(itemizeScripts('ABC（x）').map(run=>[run.text,run.role]),[['ABC','latin'],['（','eastAsian'],['x','latin'],['）','eastAsian']]);
+// Curly quotes, dashes and the ellipsis follow the language: East Asian under ja-JP, Latin otherwise.
+const japaneseProfile={bcp47:'ja',script:'Jpan',scriptRole:'eastAsian'};
+assert.deepEqual(itemizeScripts('“Hi” — ok…',japaneseProfile).map(run=>run.role),['eastAsian','latin','eastAsian','latin','eastAsian','latin','eastAsian']);
+assert.deepEqual(itemizeScripts('“Hi” — ok…',{bcp47:'en'}).map(run=>run.role),['latin']);
+// ASCII neutrals stay inside complex-script runs; leading ones join the first complex-script run.
+assert.deepEqual(itemizeScripts('12 مرحبا 34').map(run=>[run.text,run.script]),[['12 مرحبا 34','Arab']]);
 assert.deepEqual(itemizeScripts('"مرحبا" hello').map(run=>[run.text,run.script]),[['"مرحبا" ','Arab'],['hello','Latn']]);
+// Paragraph direction: RTL deck and first strong letter RTL, or no strong letter.
+assert.equal(paragraphDirection('مرحبا PowerPoint','rtl'),'rtl');
+assert.equal(paragraphDirection('PowerPoint مرحبا','rtl'),'ltr');
+assert.equal(paragraphDirection('123 !?','rtl'),'rtl');
+assert.equal(paragraphDirection('مرحبا','ltr'),'ltr');
+assert.equal(paragraphDirection('','rtl'),'rtl');
+if(typeof core.paragraphDirection==='function')for(const text of ['مرحبا PowerPoint','PowerPoint مرحبا','123 !?','','שלום','English only.'])for(const deck of ['ltr','rtl'])assert.equal(paragraphDirection(text,deck),core.paragraphDirection(text,deck),'vendored paragraphDirection equals core for '+JSON.stringify(text)+' '+deck);
+// Heading or body slots follow the text's role, not its latin family.
+assert.equal(textRole({path:'slides.0.title'}),'heading');assert.equal(textRole({path:'slides.2.subtitle.1'}),'heading');
+assert.equal(textRole({path:'slides.0.text'}),'body');assert.equal(textRole({path:'slides.0.blocks.1.text.0'}),'body');assert.equal(textRole({}),undefined);
+{
+  const same={latin:'Roboto',eastAsian:'Heading EA',complexScript:'Roboto'},body={latin:'Roboto',eastAsian:'Body EA',complexScript:'Roboto'};
+  const planner=createScriptFonts({heading:same,body,script:'Latn'});
+  assert.equal(planner.plan('Title 日本',{fontFamily:'Roboto',path:'slides.0.title'}).find(run=>!run.own).family,'Heading EA');
+  assert.equal(planner.plan('Body 日本',{fontFamily:'Roboto',path:'slides.0.text'}).find(run=>!run.own).family,'Body EA');
+}
 assert.deepEqual(itemizeScripts('हिन्दी').map(run=>run.role),['complexScript']);
 assert.equal(scriptFontRole('Thai'),'complexScript');assert.equal(scriptFontRole('Cyrl'),'latin');
 assert.deepEqual(detectScripts({slides:[{title:'Привет',text:['日本語です','ไทย']}]}),['Jpan','Thai']);
@@ -106,7 +134,7 @@ for(const element of mixedSvg.match(/<text [^>]*>(?:(?!<\/text>).)*<\/text>/gs).
 }
 const resolvedMixed=resolvePresentation(mixed,fonts.options).slides[0];
 const measurement=resolvedMixed.textMeasurement,style={fontFamily:'Roboto',fontWeight:400};
-const parts=[['Body with ','Roboto'],['中文 ','Noto Sans SC'],['and ','Roboto'],['العربية ','Noto Sans Arabic'],['text','Roboto']];
+const parts=[['Body with ','Roboto'],['中文','Noto Sans SC'],[' and ','Roboto'],['العربية ','Noto Sans Arabic'],['text','Roboto']];
 const sum=parts.reduce((total,[text,fontFamily])=>total+fonts.registry.textMeasurement.measure(text,25,{...style,fontFamily}),0);
 assert.ok(Math.abs(measurement.measure('Body with 中文 and العربية text',25,style)-sum)<1e-9);
 // Latin text measures exactly as before (the wrapper passes it through).
@@ -129,6 +157,23 @@ if(hasCoreResolver){
   assert.deepEqual(positions.map(([text])=>text),['العربية ','PowerPoint 365.']);
   assert.ok(positions[0][1]>positions[1][1],'The first logical run is placed to the right');
   assert.match(arabicMixed,/>English only line\.</);
+}
+
+// Direction is per paragraph: every wrapped line of an RTL paragraph is isolated,
+// including lines with only Latin words, and each paragraph decides on its own.
+if(hasCoreResolver){
+  const paragraphDeck=deck('arabic','roboto','Title','مرحبا '+'English words wrap here '.repeat(12)+'\nSecond paragraph in English.');
+  const svg=renderSvg(paragraphDeck,fonts.options);
+  const body=[...svg.matchAll(/<text [^>]*font-size="25"[^>]*>([\s\S]*?)<\/text>/g)].map(match=>match[1]);
+  assert.ok(body.length>=3,'the RTL paragraph wraps');
+  assert.ok(body.slice(0,-1).every(line=>line.includes('\u2067')),'every wrapped line of the RTL paragraph is isolated');
+  assert.ok(body.slice(0,-1).some(line=>!/[؀-ۿ]/.test(line)),'a wrapped RTL-paragraph line holds only Latin words');
+  assert.ok(!body.at(-1).includes('\u2067'),'the English paragraph stays left to right');
+  const diagnostics=[];renderSvg(paragraphDeck,{onDiagnostic:item=>diagnostics.push(item)});
+  assert.ok(!diagnostics.some(item=>/^language-preview/.test(item.code)),'no language diagnostic with a resolver');
+}else{
+  const diagnostics=[];renderSvgDeck(deck('arabic','roboto','مرحبا','x'),{onDiagnostic:item=>diagnostics.push(item)});
+  assert.equal(diagnostics.filter(item=>item.code==='language-preview-unavailable').length,1,'published core without the resolver reports once');
 }
 
 // Estimated previews (no registry) name every candidate so the host resolves glyphs.
