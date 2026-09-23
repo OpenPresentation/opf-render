@@ -52,15 +52,39 @@ jobs:
           persist-credentials: false
           sparse-checkout: test/fixtures/font-formats/source-serif
           sparse-checkout-cone-mode: true
+      # Reuse the exact core commit ci.yml pins so test:browser (rich tabs) sees the same core.
+      - name: Read pinned core SHA from ci.yml
+        id: core
+        run: |
+          sha=$(awk '/repository: OpenPresentation\/opf$/{getline; sub(/.*ref: */,""); print; exit}' .github/workflows/ci.yml)
+          echo "$sha" | grep -Eq '^[0-9a-f]{40}$' || { echo "::error::Could not read pinned core SHA from ci.yml"; exit 1; }
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: OpenPresentation/opf
+          ref: ${{ steps.core.outputs.sha }}
+          path: opf
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: 10.33.2
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: opf-render/package-lock.json
-      # The font measurement path uses only the renderer's own dist and the locked
-      # published core, so the coordinated core/pptx/editor source checkouts in ci.yml
-      # are not needed here.
       - run: npm ci
+      # Link only the renderer to the pinned core source (ci.yml links all siblings via
+      # link-ecosystem; the pptx/editor checkouts are not needed for renderer checks).
+      - name: Build and link pinned core
+        id: link
+        continue-on-error: true
+        run: |
+          pnpm --dir ../opf install --frozen-lockfile
+          pnpm --dir ../opf build
+          rm -rf node_modules/@openpresentation/opf
+          ln -s "$(cd ../opf/packages/javascript && pwd)" node_modules/@openpresentation/opf
+          node -e "import('@openpresentation/opf').then(()=>console.log('linked pinned core source'))"
       - run: npm run build
       - name: Verify Playwright version
         run: node -e "if (require('playwright/package.json').version !== '1.63.0') throw new Error('Update the pinned Playwright version with the test package.');"
@@ -87,9 +111,10 @@ jobs:
           PREPARATION: ${{ steps.preparation.outcome }}
           BROWSER: ${{ steps.browser.outcome }}
           PROBE: ${{ steps.probe.outcome }}
+          LINK: ${{ steps.link.outcome }}
         run: |
           mkdir -p "$REPORT_DIR"
-          node -e "require('fs').writeFileSync(process.argv[1],JSON.stringify({platform:process.env.PLATFORM,'font-variants-browser':process.env.VARIANTS,'font-preparation-browser':process.env.PREPARATION,'test:browser':process.env.BROWSER,'issue24-probe':process.env.PROBE},null,2)+'\n')" "$REPORT_DIR/outcomes.json"
+          node -e "require('fs').writeFileSync(process.argv[1],JSON.stringify({platform:process.env.PLATFORM,'core-link':process.env.LINK,'font-variants-browser':process.env.VARIANTS,'font-preparation-browser':process.env.PREPARATION,'test:browser':process.env.BROWSER,'issue24-probe':process.env.PROBE},null,2)+'\n')" "$REPORT_DIR/outcomes.json"
           node scripts/platform-residual-summary.mjs "$REPORT_DIR/summary.md" "$REPORT_DIR/summary.json" "$REPORT_DIR" >/dev/null
           cat "$REPORT_DIR/summary.md" >> "$GITHUB_STEP_SUMMARY"
       - name: Upload residual report
