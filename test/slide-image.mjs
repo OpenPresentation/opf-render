@@ -5,10 +5,10 @@ import sharp from 'sharp';
 import { composeSlide } from '@openpresentation/opf/composition';
 import { renderSvg, svgToPng } from '../dist/index.js';
 
-if (!composeSlide({ title: 'probe', design: { slideImage: { src: 'x', position: 'left' } } }).slideImage) {
-  console.log('slide image: core composition has no slideImage; skipped.');
-  process.exit(0);
-}
+// This suite runs against the linked coordinated core. A core without
+// geometry.slideImage is a pinning error, not a reason to skip.
+assert.ok(composeSlide({ title: 'probe', design: { slideImage: { src: 'x', position: 'left' } } }).slideImage,
+  'Linked core composition has no geometry.slideImage; pin a core with FF-26 slide-image composition.');
 // 120x60 source: left half red, right half blue.
 const raw = Buffer.alloc(120 * 60 * 3);
 for (let y = 0; y < 60; y++) for (let x = 0; x < 120; x++) raw.set(x < 60 ? [220, 30, 30] : [30, 30, 220], (y * 120 + x) * 3);
