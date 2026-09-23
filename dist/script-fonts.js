@@ -270,25 +270,6 @@ export function textRole(style) {
   return /^slides\.\d+\.(?:title|subtitle|tag)(?:\.\d+)?$/.test(path) ? "heading" : "body";
 }
 
-// Strong right-to-left letters (Unicode bidi classes R and AL, by script).
-const rtlStrong = /[\p{Script=Arab}\p{Script=Hebr}\p{Script=Syrc}\p{Script=Thaa}\p{Script=Nkoo}\p{Script=Adlm}\p{Script=Rohg}\p{Script=Mand}\p{Script=Samr}]/u;
-const letter = /\p{L}/u;
-
-/**
- * Paragraph base direction, vendored to match core `paragraphDirection(text,
- * deckDirection)` (FF-07) until core publishes it: right to left when the deck
- * is right to left and the paragraph's first strong character is right to left
- * or it has no strong character; otherwise left to right.
- */
-export function paragraphDirection(text, deckDirection) {
-  if (deckDirection !== "rtl") return "ltr";
-  for (const character of String(text ?? "")) {
-    if (rtlStrong.test(character) && letter.test(character)) return "rtl";
-    if (letter.test(character)) return "ltr";
-  }
-  return "rtl";
-}
-
 /** True when the profile's language is written right to left. */
 export function isRtlProfile(profile) {
   return profile?.rtl === true || profile?.direction === "rtl" || (!profile?.direction && rtlScripts.has(profile?.script));

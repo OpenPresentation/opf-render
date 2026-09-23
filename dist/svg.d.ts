@@ -32,7 +32,7 @@ export declare const engineDefaults: Readonly<{
 }>;
 
 export type RenderDiagnostic = LayoutDiagnostic | {
-  code: "unsupported-pattern" | "date-needs-value" | "language-preview-unavailable" | "language-preview-unresolved";
+  code: "unsupported-pattern" | "date-needs-value" | "language-preview-unavailable" | "language-preview-unresolved" | "paragraph-direction-unavailable";
   path: string;
   message: string;
 } | {

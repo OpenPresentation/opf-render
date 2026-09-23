@@ -7,7 +7,7 @@ import {
 // Optional core exports are read from the namespace so an older published core
 // still loads; resolveScriptFonts ships with core FF-18.
 import * as opfCore from "@openpresentation/opf";
-import { createScriptFonts, paragraphDirection } from "./script-fonts.js";
+import { createScriptFonts } from "./script-fonts.js";
 
 export const packageName = "@openpresentation/opf-render";
 
@@ -443,6 +443,10 @@ function scriptProfile(presentation, index, design, context) {
   } else if (presentation.language !== undefined) {
     reportLanguageDiagnostic(context, { code: "language-preview-unavailable", path: "language",
       message: "The installed @openpresentation/opf has no resolveScriptFonts (FF-18), so the preview uses the design font for every script, sets no lang and lays out every paragraph left to right. Use a core release with the language model." });
+  }
+  if (resolved?.rtl === true && typeof opfCore.paragraphDirection !== "function") {
+    reportLanguageDiagnostic(context, { code: "paragraph-direction-unavailable", path: "language",
+      message: "The installed @openpresentation/opf has no paragraphDirection, so the preview lays out every paragraph of this right-to-left deck left to right, as the PPTX export does. Use a core release that exports it." });
   }
   const slots = role => {
     const latin = design.fonts[role];
@@ -1308,15 +1312,17 @@ function fontStack(family, type) {
 // right-to-left isolate, so its lines never differ in direction. Absolute
 // alignment and measured advances are unchanged.
 const RIGHT_TO_LEFT_ISOLATE = "\u2067", POP_DIRECTIONAL_ISOLATE = "\u2069";
-const resolveParagraphDirection = typeof opfCore.paragraphDirection === "function" ? opfCore.paragraphDirection : paragraphDirection;
+// Core owns the rule (paragraphDirection, core #134), so preview and export agree.
+// Without it (published core 0.11.0) every paragraph is left to right, as in export.
+const coreParagraphDirection = typeof opfCore.paragraphDirection === "function" ? opfCore.paragraphDirection : null;
 /** Maps a source offset of the text to whether its paragraph is right to left. */
 function paragraphRtl(bound, text) {
-  if (bound.scriptFonts?.rtl !== true) return () => false;
+  if (bound.scriptFonts?.rtl !== true || !coreParagraphDirection) return () => false;
   const source = String(text ?? ""), spans = [];
   let start = 0;
   for (const match of source.matchAll(/\r\n|\r|\n/g)) { spans.push([start, match.index]); start = match.index + match[0].length; }
   spans.push([start, source.length]);
-  const rtl = spans.map(([from, to]) => resolveParagraphDirection(source.slice(from, to), "rtl") === "rtl");
+  const rtl = spans.map(([from, to]) => coreParagraphDirection(source.slice(from, to), "rtl") === "rtl");
   return offset => { for (let index = spans.length - 1; index >= 0; index--) if (offset >= spans[index][0]) return rtl[index]; return rtl[0]; };
 }
 

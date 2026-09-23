@@ -25,12 +25,12 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
           path: opf-render
-      # FF-19 script fonts use core resolveScriptFonts (FF-18). Core and sibling pins
+      # FF-19 uses core resolveScriptFonts (FF-18) and paragraphDirection (#134); sibling pins
       # match core main's ecosystem-ci. Verify the released graph before using source links.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OpenPresentation/opf
-          ref: c278532426a7ff8519295590fe12e6e469cf106a
+          ref: 9695bf37b21420315f48af758490cc5964695ddf
           path: opf
           fetch-depth: 0
           persist-credentials: false

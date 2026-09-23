@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import * as core from '@openpresentation/opf';
 import {renderSvg,renderSvgDeck,resolvePresentation,svgToPng} from '../dist/index.js';
 import {prepareNodeFonts,scriptFontPackages,BUNDLED_FONT_MANIFEST} from '../dist/fonts-node.js';
-import {createScriptFonts,createScriptTextMeasurement,detectScripts,itemizeScripts,paragraphDirection,scriptFontAliases,scriptFontRole,textRole,SCRIPT_FONT_FAMILIES,SCRIPT_FONT_REPLACEMENTS} from '../dist/fonts.js';
+import {createScriptFonts,createScriptTextMeasurement,detectScripts,itemizeScripts,scriptFontAliases,scriptFontRole,textRole,SCRIPT_FONT_FAMILIES,SCRIPT_FONT_REPLACEMENTS} from '../dist/fonts.js';
 
 const pkg=JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8'));
 const hasCoreResolver=typeof core.resolveScriptFonts==='function';
@@ -51,13 +51,30 @@ assert.deepEqual(itemizeScripts('“Hi” — ok…',{bcp47:'en'}).map(run=>run.
 // ASCII neutrals stay inside complex-script runs; leading ones join the first complex-script run.
 assert.deepEqual(itemizeScripts('12 مرحبا 34').map(run=>[run.text,run.script]),[['12 مرحبا 34','Arab']]);
 assert.deepEqual(itemizeScripts('"مرحبا" hello').map(run=>[run.text,run.script]),[['"مرحبا" ','Arab'],['hello','Latn']]);
-// Paragraph direction: RTL deck and first strong letter RTL, or no strong letter.
-assert.equal(paragraphDirection('مرحبا PowerPoint','rtl'),'rtl');
-assert.equal(paragraphDirection('PowerPoint مرحبا','rtl'),'ltr');
-assert.equal(paragraphDirection('123 !?','rtl'),'rtl');
-assert.equal(paragraphDirection('مرحبا','ltr'),'ltr');
-assert.equal(paragraphDirection('','rtl'),'rtl');
-if(typeof core.paragraphDirection==='function')for(const text of ['مرحبا PowerPoint','PowerPoint مرحبا','123 !?','','שלום','English only.'])for(const deck of ['ltr','rtl'])assert.equal(paragraphDirection(text,deck),core.paragraphDirection(text,deck),'vendored paragraphDirection equals core for '+JSON.stringify(text)+' '+deck);
+// Paragraph direction comes from core paragraphDirection (core #134): required, never vendored.
+// Every paragraph's rendered direction must equal core's, including marks, isolates and historic RTL scripts.
+assert.equal(typeof core.paragraphDirection,'function','the linked core exports paragraphDirection');
+{
+  const ch=code=>String.fromCodePoint(code),arabic=ch(0x645)+ch(0x631)+ch(0x62D)+ch(0x628)+ch(0x627),hebrew=ch(0x5E9)+ch(0x5DC)+ch(0x5D5)+ch(0x5DD);
+  const LRM=ch(0x200E),RLM=ch(0x200F),ALM=ch(0x61C),LRI=ch(0x2066),RLI=ch(0x2067),PDI=ch(0x2069);
+  const samples=[
+    [arabic+' PowerPoint','rtl'],['PowerPoint '+arabic,'ltr'],['123 !?','rtl'],['English only.','ltr'],[hebrew,'rtl'],
+    [LRM+'123','ltr'],[RLM+'123 abc','rtl'],[ALM+' abc','rtl'],
+    [LRI+arabic+PDI+' abc','ltr'],[RLI+'abc'+PDI+' '+arabic,'rtl'],
+    [ch(0x10900)+ch(0x10901)+' abc','rtl'],[ch(0x10A10)+' abc','rtl'],
+  ];
+  const rendered=(text,language)=>{
+    const svg=renderSvg({$schema:'https://openpresentation.org/schema/opf/v1',name:'direction',language,design:{fontScheme:'roboto'},slides:[{title:'T',text}]});
+    const body=/<text [^>]*font-size="25"[^>]*>([\s\S]*?)<\/text>/.exec(svg)[1];
+    // The renderer wraps an RTL paragraph in RLI...PDI; no sample text itself ends with PDI.
+    return body.startsWith(RLI)&&body.endsWith(PDI)?'rtl':'ltr';
+  };
+  for(const [text,expected] of samples){
+    assert.equal(core.paragraphDirection(text,'rtl'),expected,'core rule for '+JSON.stringify(text));
+    assert.equal(rendered(text,'arabic'),core.paragraphDirection(text,'rtl'),'preview direction equals core for '+JSON.stringify(text));
+    assert.equal(rendered(text,'english'),core.paragraphDirection(text,'ltr'),'left-to-right deck for '+JSON.stringify(text));
+  }
+}
 // Heading or body slots follow the text's role, not its latin family.
 assert.equal(textRole({path:'slides.0.title'}),'heading');assert.equal(textRole({path:'slides.2.subtitle.1'}),'heading');
 assert.equal(textRole({path:'slides.0.text'}),'body');assert.equal(textRole({path:'slides.0.blocks.1.text.0'}),'body');assert.equal(textRole({}),undefined);
