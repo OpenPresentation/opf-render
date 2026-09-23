@@ -6,7 +6,7 @@
   - **Provisional owner decisions (owner may revise):**
     - Aptos → Roboto, measured at a 2.15% mean width difference (signed +0.1%). Before, Aptos previewed with Carlito, which is 7.1% narrower. Aptos Display keeps Carlito.
     - Segoe UI → Red Hat Display.
-    - Cambria → Caladea reclassified as visual: advances differ from Cambria 6.99 by a mean of 2.7%. The decision's `metricModeFallback` keeps metric-mode registries previewing Cambria with Caladea, now reported as visual. That includes the default `loadOfficeFontRegistry()`. Before FF-31, Cambria resolved there as metric.
+    - Cambria → Caladea reclassified as visual: advances differ from Cambria 6.99 by a mean of 2.7%. Before FF-31, metric mode, including the default `loadOfficeFontRegistry()`, resolved Cambria to Caladea as metric at weights 400 and 700, upright and italic, and threw `font-unavailable` at any other weight. The decision's `metricModeFallback` keeps exactly that coverage in metric mode, now reported as visual: weights 400 and 700, upright and italic, with exact Caladea faces. Every other weight still throws `font-unavailable`, as Calibri 500 does. Visual mode previews every Cambria weight.
   - **Georgia → Gelasio stays visual.** Basic-Latin advances are identical, but runs where Gelasio applies optional ligatures differ by up to 1.02%, which is how the renderer shapes them. Metric mode still does not use it.
   - **Consolas and Aptos Mono keep Cousine**, which has all four styles, so bold italic code stays italic. Roboto Mono is an alternate.
   - **Alternates are always visual.** Only a row's declared replacement can carry its metric claim. Metric mode never uses an alternate, for example Liberation Sans for Arial; visual mode uses it and reports it as visual.

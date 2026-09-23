@@ -26,10 +26,19 @@ assert.equal(alias.resolveFont({fontFamily:'Aptos',fontWeight:400}).compatibilit
 assert.equal(alias.resolveFont({fontFamily:'Calibri',fontWeight:500}).compatibility,'visual');
 const metricOnly=createFontRegistry(entries,{substitutionPolicy:'metric'});
 assert.throws(()=>metricOnly.resolveFont({fontFamily:'Georgia',fontWeight:400}),{code:'font-unavailable',message:/Gelasio is visual only/});
-// FF-31: Cambria was metric before; its policy decision keeps metric-mode registries previewing it
-// with Caladea, reported as visual, instead of throwing.
-{const cambria=metricOnly.resolveFont({fontFamily:'Cambria',fontWeight:700,italic:true});
-assert.deepEqual([cambria.resolvedFamily,cambria.compatibility,cambria.substitute,cambria.decision,cambria.italic],['Caladea','visual',true,'cambria-tier',true]);}
+// FF-31: Cambria was metric at 400/700 (upright and italic) before; its policy decision keeps
+// metric-mode registries previewing exactly those styles with Caladea, now reported as visual.
+for(const fontWeight of [400,700])for(const italic of [false,true]){
+  const cambria=metricOnly.resolveFont({fontFamily:'Cambria',fontWeight,italic});
+  assert.deepEqual([cambria.resolvedFamily,cambria.resolvedWeight,cambria.italic,cambria.compatibility,cambria.substitute,cambria.decision],['Caladea',fontWeight,italic,'visual',true,'cambria-tier']);
+}
+// Other weights still throw in metric mode, as they did before FF-31 and as Calibri 500 does.
+for(const fontWeight of [300,500])for(const italic of [false,true]){
+  assert.throws(()=>metricOnly.resolveFont({fontFamily:'Cambria',fontWeight,italic}),{code:'font-unavailable'},`Cambria ${fontWeight}`);
+  assert.throws(()=>metricOnly.resolveFont({fontFamily:'Calibri',fontWeight,italic}),{code:'font-unavailable'},`Calibri ${fontWeight}`);
+}
+// Visual mode still previews Cambria at any weight, reported as visual.
+assert.equal(registry.resolveFont({fontFamily:'Cambria',fontWeight:500}).resolvedFamily,'Caladea');
 {const office=await loadOfficeFontRegistry(),cambria=office.resolveFont({fontFamily:'Cambria',fontWeight:400});
 assert.deepEqual([cambria.resolvedFamily,cambria.compatibility],['Caladea','visual'],'the default office registry (metric mode) still previews Cambria');}
 // An alternate on a metric row is never labelled metric (Arial -> Arimo, alternate Liberation Sans).

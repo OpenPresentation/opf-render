@@ -112,7 +112,10 @@ export function createFontRegistry(entries, options = {}) {
       const tier = candidate?.compatibility==="metric" && !candidate.weights.includes(weight) ? "visual" : candidate?.compatibility;
       // A declared visual replacement is used in visual mode, and in metric mode only when the
       // policy keeps it as a metric-mode fallback (Cambria -> Caladea); it is still reported visual.
-      const allowVisual = policy==="visual" || candidate?.metricModeFallback===true;
+      // In metric mode the fallback applies only where the pre-FF-31 metric rule did: the declared
+      // replacement at weights 400 and 700, normal or italic, with an exact face weight.
+      const metricFallback = policy!=="visual" && candidate?.metricModeFallback===true && [400,700].includes(weight);
+      const allowVisual = policy==="visual" || metricFallback;
       if (candidate && (allowVisual || tier==="metric")) {
         // A family that names its weight (Segoe UI Semibold, Arial Black) selects that weight in
         // the replacement; its bold style link still selects bold (FF-31).
@@ -120,11 +123,12 @@ export function createFontRegistry(entries, options = {}) {
         for (const [index, substitute] of candidate.substitutes.entries()) {
           // Only the declared replacement can carry the row's metric claim; an alternate is visual.
           const substituteTier = index===0 ? tier : "visual";
-          if (substituteTier==="visual" && !allowVisual) continue;
-          const faces = findFamily(substitute).filter(face=>substituteTier!=="metric" || face.weight===weight);
+          if (substituteTier==="visual" && !(policy==="visual" || metricFallback && index===0)) continue;
+          const exactWeight = substituteTier==="metric" || policy!=="visual";
+          const faces = findFamily(substitute).filter(face=>!exactWeight || face.weight===weight);
           let available = faces.filter(face=>face.italic===!!style.italic);
           // Visual replacements without the requested style draw the other one and say so.
-          if (!available.length && substituteTier==="visual" && faces.length) { available = faces.filter(face=>!face.italic); styleFallback = available.length>0; }
+          if (!available.length && substituteTier==="visual" && policy==="visual" && faces.length) { available = faces.filter(face=>!face.italic); styleFallback = available.length>0; }
           if (available.length) { matching=available; compatibility=substituteTier; rule={...candidate, substituteIndex:index}; targetWeight=wanted; via="replacement"; break; }
         }
       }
