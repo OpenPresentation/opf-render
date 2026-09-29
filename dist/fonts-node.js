@@ -1,12 +1,15 @@
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { createFontRegistry, OPFFontError } from "./fonts.js";
 import { BUNDLED_FONT_MANIFEST } from "./font-manifest.js";
 export { BUNDLED_FONT_MANIFEST } from "./font-manifest.js";
-import { scriptFontPackages } from "./script-font-pack.js";
-export { scriptFontPackages } from "./script-font-pack.js";
+import { analyzePresentationScripts, nextFallbackPackage, scriptFontPackages, scriptSelectionOf, uncoveredCjkCharacters } from "./script-font-pack.js";
+export { autoScriptSelection, detectPresentationScripts, scriptFontPackages } from "./script-font-pack.js";
+// Script faces are embedded in a standalone SVG only when the slide's text uses their family.
+const embedUsed = entries => entries.map(entry => ({...entry, embed: "used"}));
 const require = createRequire(import.meta.url);
 
 async function verifiedFile(file, expected, details) {
@@ -18,14 +21,29 @@ async function verifiedFile(file, expected, details) {
   return bytes;
 }
 
-async function loadPackages(packages) {
+// `skipped`: an optional npm package that is not installed is recorded there instead of failing (scripts: 'auto').
+async function loadPackages(packages, skipped) {
   const entries = [], fontFiles = [];
   for (const pkg of packages) {
+    if (pkg.vendored) {
+      // FF-31: vendored faces ship inside this package (pkg.vendored, for example fonts/carlito), hash-pinned like the npm packs. The open pack is
+      // embedded in an SVG only when the slide's text names the family (embed "used"); raster output reads the files.
+      const directory = fileURLToPath(new URL(`../${pkg.vendored}/`, import.meta.url));
+      const license = (await verifiedFile(path.join(directory, pkg.licenseFile), pkg.licenseSha256, {package:pkg.name, file:pkg.licenseFile})).toString("utf8");
+      for (const face of pkg.faces) {
+        const file = path.join(directory, face.file);
+        const data = await verifiedFile(file, face.sha256, {package:pkg.name, file:face.file});
+        fontFiles.push(file);
+        entries.push({data:new Uint8Array(data), family:face.family, weight:face.weight, italic:face.italic, license, ...(pkg.pack === "open" ? {embed:"used"} : {})});
+      }
+      continue;
+    }
     let manifestPath, installed;
     try {
       manifestPath = require.resolve(`${pkg.name}/package.json`);
       installed = JSON.parse(await readFile(manifestPath, "utf8"));
     } catch (error) {
+      if (skipped) { skipped.push({package: pkg.name, version: pkg.version, scripts: [...pkg.scripts]}); continue; }
       throw new OPFFontError("font-resource-unavailable", `Install ${pkg.name}@${pkg.version} to use this offline font pack.`, {package:pkg.name, cause:error.code});
     }
     if (installed.version !== pkg.version) throw new OPFFontError("font-version-mismatch", `Expected ${pkg.name}@${pkg.version}; reinstall the pinned package.`, {package:pkg.name, expected:pkg.version, actual:installed.version});
@@ -41,12 +59,59 @@ async function loadPackages(packages) {
   return {entries, fontFiles};
 }
 
+// A package that is the renamed successor of a family (Source Sans 3, formerly Source Sans Pro) answers to the
+// old name through a built-in alias, reported visual like other aliases; it is not a claim of the old face.
+const renamedAliases = () => Object.fromEntries(BUNDLED_FONT_MANIFEST.packages.filter(item => item.pack === "open" && item.renamedFrom).map(item => [item.renamedFrom, item.faces[0].family]));
 const loadPack = pack => loadPackages(BUNDLED_FONT_MANIFEST.packages.filter(item => item.pack === pack));
 
-async function withScripts(loaded, scripts) {
+/**
+ * Adds the script pack. `scripts` is 'all', ISO 15924 codes, or 'auto' (FF-19): detect the scripts the
+ * `presentation` draws and load only their faces. Auto never fails on a missing optional package or a
+ * script no pinned font serves; it reports them through `onDiagnostic` and `selection`.
+ */
+async function withScripts(loaded, scripts, {presentation, onDiagnostic} = {}) {
   if (scripts === undefined || (Array.isArray(scripts) && !scripts.length)) return loaded;
-  const extra = await loadPackages(scriptFontPackages(scripts));
-  return {entries:[...loaded.entries, ...extra.entries], fontFiles:[...loaded.fontFiles, ...extra.fontFiles]};
+  if (scripts !== "auto") {
+    const extra = await loadPackages(scriptFontPackages(scripts));
+    return {entries:[...loaded.entries, ...embedUsed(extra.entries)], fontFiles:[...loaded.fontFiles, ...extra.fontFiles]};
+  }
+  if (presentation === null || typeof presentation !== "object") throw new OPFFontError("invalid-font-scripts", "scripts: 'auto' needs the presentation whose text decides the scripts.", {scripts});
+  const selection = scriptSelectionOf(analyzePresentationScripts(presentation)), skipped = [];
+  const extra = await loadPackages(scriptFontPackages(selection.scripts), skipped);
+  for (const script of selection.unavailable) onDiagnostic?.({code: "script-font-unavailable", script, message: `No pinned open font serves script '${script}'; that text uses the design font.`});
+  for (const item of skipped) onDiagnostic?.({code: "script-font-not-installed", package: item.package, scripts: item.scripts, message: `Install ${item.package}@${item.version} to preview ${item.scripts.join(", ")} text with its designated open font.`});
+  return {entries:[...loaded.entries, ...embedUsed(extra.entries)], fontFiles:[...loaded.fontFiles, ...extra.fontFiles],
+    selection:{...selection, packages: scriptFontPackages(selection.scripts).map(item => item.name).filter(name => !skipped.some(item => item.package === name)), notInstalled: skipped.map(item => item.package)}};
+}
+
+/**
+ * scripts: 'auto' with glyph fallback (FF-19): a drawn Han, kana or Hangul character that no loaded script face
+ * has (Japanese-only kanji in a Simplified Chinese run, hanja) needs the next CJK face along the fallback chain.
+ * Adds those packages to the registry and its fontFiles until every such character is covered or the chain ends.
+ */
+async function completeFallback(registry, presentation, loaded, onDiagnostic) {
+  const selection = loaded.selection;
+  if (!selection) return;
+  const seen = new Set([...selection.packages, ...selection.notInstalled]);
+  for (;;) {
+    const analysis = analyzePresentationScripts(presentation), covers = character => registry.scriptFacesCover(character);
+    const next = nextFallbackPackage(analysis, {covers, loaded: seen});
+    if (!next) {
+      const uncovered = uncoveredCjkCharacters(analysis, {covers, limit: 8});
+      if (uncovered.length) { selection.uncovered = uncovered; onDiagnostic?.({code: "script-glyph-uncovered", characters: uncovered, message: `No loaded script face has ${uncovered.map(character => "U+" + character.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")).join(", ")}; the preview reports missing-glyph for them.`}); }
+      return;
+    }
+    seen.add(next.name);
+    const skipped = [], extra = await loadPackages([next], skipped);
+    if (skipped.length) {
+      selection.notInstalled.push(next.name);
+      onDiagnostic?.({code: "script-font-not-installed", package: next.name, scripts: [...next.scripts], message: `Install ${next.name}@${next.version} for glyphs the loaded CJK faces lack.`});
+      continue;
+    }
+    registry.addFaces(embedUsed(extra.entries));
+    loaded.fontFiles.push(...extra.fontFiles);
+    selection.packages.push(next.name);
+  }
 }
 
 /** FF-31: caller-supplied faces, for example the caller's own licensed Aptos files. Plain
@@ -70,25 +135,32 @@ async function callerFaces(faces = []) {
 async function withFaces(loaded, faces) {
   if (!faces?.length) return loaded;
   const own = await callerFaces(faces);
-  return {entries:[...own.entries, ...loaded.entries], fontFiles:[...own.fontFiles, ...loaded.fontFiles]};
+  return {...loaded, entries:[...own.entries, ...loaded.entries], fontFiles:[...own.fontFiles, ...loaded.fontFiles]};
 }
 
 /** Bundled, openly licensed faces. No system font discovery or network requests. */
-export async function loadBundledFontRegistry({scripts, faces, ...options} = {}) {
-  const {entries, fontFiles} = await withFaces(await withScripts(await loadPack("base"), scripts), faces);
-  return Object.assign(createFontRegistry(entries,options),{fontFiles});
+export async function loadBundledFontRegistry({scripts, faces, presentation, onDiagnostic, ...options} = {}) {
+  const {entries, fontFiles, selection} = await withFaces(await withScripts(await loadPack("base"), scripts, {presentation, onDiagnostic}), faces);
+  const registry = Object.assign(createFontRegistry(entries,options),{fontFiles, ...(selection ? {scriptSelection: selection} : {})});
+  await completeFallback(registry, presentation, {fontFiles, selection}, onDiagnostic);
+  return registry;
 }
 
-/** Six pinned open-source Office substitutes, optionally alongside the base Roboto pack. */
-export async function loadOfficeFontRegistry({scripts, faces, ...options} = {}) {
+/** Office substitutes plus the open families that font schemes select (FF-31),
+ * optionally alongside the base Roboto pack. `includeOpenFonts: false` leaves the open families out. */
+export async function loadOfficeFontRegistry({scripts, faces, presentation, onDiagnostic, ...options} = {}) {
   const {entries, fontFiles} = await loadPack("office");
-  if (options.includeBaseFonts !== false) {
-    const base = await loadPack("base");
-    fontFiles.push(...base.fontFiles);
-    entries.push(...base.entries);
+  for (const [include, pack] of [[options.includeOpenFonts, "open"], [options.includeBaseFonts, "base"]]) {
+    if (include === false) continue;
+    const extra = await loadPack(pack);
+    fontFiles.push(...extra.fontFiles);
+    entries.push(...extra.entries);
   }
-  const loaded = await withFaces(await withScripts({entries, fontFiles}, scripts), faces);
-  return Object.assign(createFontRegistry(loaded.entries,{substitutionPolicy:"metric",...options}),{fontFiles:loaded.fontFiles});
+  const loaded = await withFaces(await withScripts({entries, fontFiles}, scripts, {presentation, onDiagnostic}), faces);
+  const aliases = options.includeOpenFonts === false ? options.aliases : {...renamedAliases(), ...options.aliases};
+  const registry = Object.assign(createFontRegistry(loaded.entries,{substitutionPolicy:"metric",...options,...(aliases?{aliases}:{})}),{fontFiles:loaded.fontFiles, ...(loaded.selection ? {scriptSelection: loaded.selection} : {})});
+  await completeFallback(registry, presentation, loaded, onDiagnostic);
+  return registry;
 }
 
 /** One set of verified font inputs for layout, SVG, editor, PPTX, and Node raster export. */

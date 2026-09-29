@@ -20,7 +20,8 @@ function validFamily(family) {
   if (typeof family !== "string" || !family.trim() || /[\u0000-\u001f"'\\<>;]/.test(family)) throw new OPFFontError("invalid-font-family", "Font family must be a nonempty plain name.");
   return family;
 }
-const packFor = family => BUNDLED_FONT_MANIFEST.packages.find(pkg=>pkg.faces.some(face=>face.family.toLowerCase()===family.toLowerCase()))?.pack;
+// The open families load with the office pack (prepareNodeFonts({pack:"office"})).
+const packFor = family => { const pack = BUNDLED_FONT_MANIFEST.packages.find(pkg=>pkg.renamedFrom?.toLowerCase()===family.toLowerCase() || pkg.faces.some(face=>face.family.toLowerCase()===family.toLowerCase()))?.pack; return pack==="open" ? "office" : pack; };
 const percent = value => `${(value*100).toFixed(1)}%`;
 /** FF-31: say why a family has no face and what the caller can do, from the OPF font policy. */
 function unavailableFontError(family, style, policy) {
@@ -46,7 +47,7 @@ function unavailableFontError(family, style, policy) {
 /** Local font files only. The caller explicitly chooses aliases and fallback. */
 export function createFontRegistry(entries, options = {}) {
   if (!Array.isArray(entries) || !entries.length) throw new OPFFontError("empty-font-registry", "Supply at least one font file.");
-  const faces = entries.map(entry => {
+  const makeFace = entry => {
     if (!(entry.data instanceof Uint8Array)) throw new OPFFontError("invalid-font-data", "Font data must be a Uint8Array.");
     const data = entry.data.slice();
     let font;
@@ -68,25 +69,38 @@ export function createFontRegistry(entries, options = {}) {
     const format = signature === "OTTO" ? "otf" : signature === "wOFF" ? "woff" : signature === "wOF2" ? "woff2" : "ttf";
     // Script replacement faces (FF-19) declare the ISO 15924 scripts they serve.
     const scripts = Array.isArray(entry.scripts) && entry.scripts.length ? Object.freeze(entry.scripts.map(String)) : undefined;
-    return {family,familyGroup,fontFace,weight,italic,font,data,format,license:entry.license,scripts,cache:new Map()};
-  });
-  const duplicates = new Set();
-  for (const face of faces) {
-    const id = key(face.family,face.weight,face.italic);
-    if (duplicates.has(id)) throw new OPFFontError("duplicate-font-face", `Duplicate face: ${id}`);
-    duplicates.add(id);
-  }
-  const familySlots = new Map();
-  for (const face of faces) for (const family of new Set([face.family,face.familyGroup])) {
-    const id=key(family,face.weight,face.italic),previous=familySlots.get(id);
-    if(previous && previous!==face) throw new OPFFontError('ambiguous-font-face', `Multiple physical faces match '${family}' at weight ${face.weight}.`, {fontFamily:family,fontWeight:face.weight,italic:face.italic});
-    familySlots.set(id,face);
-  }
+    // "used": a bundled face is embedded in an SVG only when the slide's text names its family.
+    if (entry.embed !== undefined && entry.embed !== "always" && entry.embed !== "used") throw new OPFFontError("invalid-font-embed", "Font embed must be 'always' or 'used'.");
+    return {family,familyGroup,fontFace,weight,italic,font,data,format,license:entry.license,embed:entry.embed,scripts,cache:new Map()};
+  };
+  const faces = [], duplicates = new Set(), familySlots = new Map();
+  // Adds faces atomically: every check runs before any face is registered.
+  const register = added => {
+    const ids = new Set(duplicates), slots = new Map(familySlots);
+    for (const face of added) {
+      const id = key(face.family,face.weight,face.italic);
+      if (ids.has(id)) throw new OPFFontError("duplicate-font-face", `Duplicate face: ${id}`);
+      ids.add(id);
+    }
+    for (const face of added) for (const family of new Set([face.family,face.familyGroup])) {
+      const id=key(family,face.weight,face.italic),previous=slots.get(id);
+      if(previous && previous!==face) throw new OPFFontError('ambiguous-font-face', `Multiple physical faces match '${family}' at weight ${face.weight}.`, {fontFamily:family,fontWeight:face.weight,italic:face.italic});
+      slots.set(id,face);
+    }
+    faces.push(...added);
+    for (const id of ids) duplicates.add(id);
+    for (const [id,face] of slots) familySlots.set(id,face);
+  };
+  register(entries.map(makeFace));
   const substitutions = new Map();
   // Loaded script replacement faces stand in for the proprietary script fonts
   // they replace (Meiryo -> Noto Sans JP). Caller aliases take precedence.
-  const scriptAliases = scriptFontAliases(new Set(faces.filter(face=>face.scripts).map(face=>face.family)));
-  const aliases = new Map(Object.entries({...scriptAliases,...options.aliases}).map(([from,to])=>[validFamily(from).toLowerCase(),validFamily(to)]));
+  let aliases = new Map();
+  const buildAliases = () => {
+    const scriptAliases = scriptFontAliases(new Set(faces.filter(face=>face.scripts).map(face=>face.family)));
+    aliases = new Map(Object.entries({...scriptAliases,...options.aliases}).map(([from,to])=>[validFamily(from).toLowerCase(),validFamily(to)]));
+  };
+  buildAliases();
   const policy = options.substitutionPolicy ?? "none";
   if (!["none","metric","visual"].includes(policy)) throw new OPFFontError("invalid-font-policy", "substitutionPolicy must be none, metric, or visual.");
   if (options.fallbackFamily) validFamily(options.fallbackFamily);
@@ -212,11 +226,28 @@ export function createFontRegistry(entries, options = {}) {
     resolveFont(style) { return resolve(style).resolution; },
     clearSubstitutions() { substitutions.clear(); },
     get substitutions() { return [...substitutions.values()]; },
-    get embeddedFonts() { return embedded(()=>true); },
+    // Faces flagged embed:"used" (the open pack, FF-31) are not in this eager list: supplied with selectEmbeddedFonts (or
+    // prepareNodeFonts().options.embeddedFonts) they are embedded only in SVGs whose text names their family.
+    get embeddedFonts() { return embedded(face=>face.embed!=="used"); },
     /** Parsed face metadata in entry order, without encoding font bytes. */
     describeFaces: ()=>faces.map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.scripts?{scripts:[...face.scripts]}:{})})),
     /** Embedded faces for which `predicate({family,weight,italic,scripts})` holds; large script faces can be left to raster fontFiles. */
     selectEmbeddedFonts: predicate=>embedded(predicate),
+    /** True when a loaded script-pack face has a glyph for the character (FF-19 glyph fallback planning). */
+    scriptFacesCover: character => faces.some(face => face.scripts && face.font.hasGlyphForCodePoint(character.codePointAt(0))),
+    /**
+     * Register more faces in this registry (FF-19: script faces are added once a document needs
+     * them). Atomic: on an error no face is added. Returns the added faces' metadata. Text
+     * measurements planned before the call may not know the new faces; plan again afterwards.
+     */
+    addFaces(added) {
+      if (!Array.isArray(added)) throw new OPFFontError("invalid-font-data", "addFaces requires an array of font entries.");
+      const made = added.map(makeFace);
+      register(made);
+      buildAliases();
+      substitutions.clear();
+      return made.map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.scripts?{scripts:[...face.scripts]}:{})}));
+    },
   };
-  function embedded(predicate) { return faces.filter(face=>predicate({family:face.family,weight:face.weight,italic:face.italic,scripts:face.scripts})).map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.license ? {license:face.license} : {}),dataUrl:`data:font/${face.format};base64,${base64(face.data)}`})); }
+  function embedded(predicate) { return faces.filter(face=>predicate({family:face.family,weight:face.weight,italic:face.italic,scripts:face.scripts,embed:face.embed})).map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.license ? {license:face.license} : {}),...(face.embed==="used" ? {embed:"used"} : {}),dataUrl:`data:font/${face.format};base64,${base64(face.data)}`})); }
 }
