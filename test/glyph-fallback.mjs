@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import * as core from '@openpresentation/opf';
 import {renderSvg, renderSvgDeck, svgToPng} from '../dist/index.js';
 import {prepareNodeFonts} from '../dist/fonts-node.js';
-import {createScriptFonts, createScriptTextMeasurement, glyphFallbackFamilies, designatedFamilies, requiredFallbackScripts} from '../dist/fonts.js';
+import {createScriptFonts, createScriptTextMeasurement, glyphFallbackFamilies, designatedFamilies} from '../dist/fonts.js';
 
 assert.equal(typeof core.resolveScriptFonts, 'function', 'the linked core exports resolveScriptFonts');
 const fonts = await prepareNodeFonts({pack: 'office', substitutionPolicy: 'visual', scripts: 'all'});
@@ -216,20 +216,15 @@ function designatedFamiliesAll() {
   // With the script pack requested explicitly, Noto Sans is loaded once.
   const all = await prepareNodeFonts({pack: 'office', substitutionPolicy: 'visual', scripts: ['Latn', 'Jpan']});
   assert.equal(all.registry.describeFaces().filter((face) => face.family === 'Noto Sans').length, 4);
-  // CJK fallback faces for the auto script-pack selection.
-  const cjk = {slides: [{title: 'Revenue 収益 성장'}]};
-  assert.deepEqual(requiredFallbackScripts(cjk), ['Hans', 'Hant', 'Jpan', 'Kore'], 'Han text can fall back to every CJK face');
-  assert.deepEqual(requiredFallbackScripts(cjk, bare.registry), ['Hans', 'Hant', 'Jpan', 'Kore'], 'none is loaded in the bare registry');
-  assert.deepEqual(requiredFallbackScripts(cjk, all.registry), ['Hans', 'Hant', 'Kore'], 'only what is not loaded yet');
-  assert.deepEqual(requiredFallbackScripts({slides: [{title: TEXT.greek.title}]}), ['Latn']);
-  assert.deepEqual(requiredFallbackScripts({slides: [{title: TEXT.greek.title}]}, bare.registry), [], 'Noto Sans is already loaded by default');
-  assert.deepEqual(requiredFallbackScripts({slides: [{title: 'Plain ASCII'}]}), []);
-  assert.deepEqual(requiredFallbackScripts({slides: [{title: 'Plain ASCII'}]}, ['Noto Sans JP']), []);
-  assert.deepEqual(requiredFallbackScripts(cjk, ['Noto Sans JP', 'Noto Sans SC', 'Noto Sans TC', 'Noto Sans KR']), [], 'accepts family names');
-  // Using the helper's answer loads exactly the faces the document needs: kanji beside Hangul renders on a bare office registry.
-  const needed = await prepareNodeFonts({pack: 'office', substitutionPolicy: 'visual', scripts: requiredFallbackScripts(cjk)});
-  const document = deck('english', 'calibri', 'Revenue 収益 성장', 'Revenue grew');
-  assert.doesNotThrow(() => renderSvg(document, {...needed.options, textMeasurement: createScriptTextMeasurement(needed.registry.textMeasurement, core.resolveScriptFonts(document))}));
+  // Auto script selection (scripts: 'auto') owns fallback packages: kanji beside Hangul loads the language face plus at most
+  // one CJK fallback face, and Greek needs no package because Noto Sans is always loaded.
+  const cjk = {language: 'english', design: {fontScheme: 'calibri'}, slides: [{title: 'Revenue 収益 성장', text: 'Revenue grew'}]};
+  const auto = await prepareNodeFonts({pack: 'office', substitutionPolicy: 'visual', scripts: 'auto', presentation: cjk});
+  assert.equal(auto.registry.describeFaces().filter((face) => face.family === 'Noto Sans').length, 4, 'Noto Sans is loaded once under auto');
+  assert.ok(auto.registry.scriptSelection.packages.length <= 2, `${auto.registry.scriptSelection.packages}`);
+  assert.doesNotThrow(() => renderSvg(deck('english', 'calibri', 'Revenue 収益 성장', 'Revenue grew'), {...auto.options, textMeasurement: createScriptTextMeasurement(auto.registry.textMeasurement, core.resolveScriptFonts(cjk))}));
+  const greek = await prepareNodeFonts({pack: 'office', substitutionPolicy: 'visual', scripts: 'auto', presentation: {language: 'greek', design: {fontScheme: 'georgia'}, slides: [{title: TEXT.greek.title}]}});
+  assert.deepEqual(greek.registry.scriptSelection.packages, []);
 }
 
 // 8d. Notes: one per path (a cached plan still reports its own path), the face actually drawn, and copied arrays.

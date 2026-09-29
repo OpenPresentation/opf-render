@@ -47,6 +47,10 @@ export interface FontRegistry {
   /** Parsed face metadata in entry order, without encoding font bytes. */
   describeFaces(): FaceDescription[];
   readonly substitutions: FontResolution[];
+  /** True when a loaded script-pack face has a glyph for the character. */
+  scriptFacesCover(character: string): boolean;
+  /** Register more faces (FF-19 script faces once a document needs them). Atomic; returns the added faces' metadata. */
+  addFaces(entries: FontFaceInput[]): { family: string; weight: number; italic: boolean; scripts?: string[] }[];
 }
 export declare class OPFFontError extends Error { code:string; details:Record<string,unknown>; constructor(code:string,message:string,details?:Record<string,unknown>) }
 export declare function createFontRegistry(entries: FontFaceInput[], options?: FontRegistryOptions): FontRegistry;
@@ -79,7 +83,8 @@ export declare const SCRIPT_FONT_REPLACEMENTS: readonly Readonly<{requestedFamil
 export declare function scriptOfCharacter(character: string): string;
 export declare function scriptFontRole(script: string): ScriptRole;
 export declare function itemizeScripts(text: string, profile?: ScriptFontProfile): ScriptRun[];
-export declare function detectScripts(value: unknown, profile?: ScriptFontProfile): string[];
+/** Script keys in the strings of a JSON value. The profile's own script counts unless `includeLanguage` is false; `ignoreKeys` are not visited. */
+export declare function detectScripts(value: unknown, profile?: ScriptFontProfile, options?: { includeLanguage?: boolean; ignoreKeys?: readonly string[] }): string[];
 export declare function designatedFamilies(script: string, serif?: boolean): string[];
 export declare function scriptFontAliases(families: Iterable<string>): Record<string, string>;
 export interface GlyphFallbackNote { fontFamily: string; fallbackFamily: string; scripts: string[]; characters: string[]; path?: string }
@@ -89,8 +94,6 @@ export interface ScriptFontsOptions {
   onFallback?: (note: GlyphFallbackNote) => void;
 }
 export declare function createScriptFonts(profile?: ScriptFontProfile, measurement?: TextMeasurement, options?: ScriptFontsOptions): ScriptFonts;
-/** Script packs (ISO 15924 codes) the text of a presentation may need as glyph fallback faces; with a registry or family names, only those not loaded yet. */
-export declare function requiredFallbackScripts(value: unknown, registry?: { describeFaces(): { family: string }[] } | Iterable<string>, profile?: ScriptFontProfile): string[];
 /** Designated open families a preview tries, in order, for a character its face lacks (own script, deck script, Noto Sans, other CJK, other Noto scripts). */
 export declare function glyphFallbackFamilies(character: string, profile?: ScriptFontProfile, serif?: boolean): string[];
 /** Wrap a measurement so pagination, the renderer and the editor itemize script runs identically. */

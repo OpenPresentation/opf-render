@@ -207,41 +207,32 @@ export function itemizeScripts(text, profile) {
   return runs;
 }
 
-/** Script keys (as used by the script font pack) present in the strings of any JSON value. */
-export function detectScripts(value, profile) {
-  const scripts = new Set();
-  const visit = item => {
-    if (typeof item === "string") { if (!latinOnly.test(item)) for (const run of itemizeScripts(item, profile)) if (run.script !== "Latn") scripts.add(run.script); }
-    else if (Array.isArray(item)) item.forEach(visit);
-    else if (item && typeof item === "object") Object.values(item).forEach(visit);
-  };
-  visit(value);
-  if (profile?.script && !latinGroup.has(profile.script)) scripts.add(fontKey(profile.script, "", profile));
-  return [...scripts].sort();
+/**
+ * Non-Latin script keys the renderer would plan runs for in `text`. It applies the same shortcut as drawing
+ * (`createScriptFonts().plan`): Latin, Greek and Cyrillic text is one run in the design font, except that
+ * with an East Asian document language the curly quotes, dashes and ellipsis are East Asian characters.
+ */
+export function scriptsOfText(text, profile) {
+  const source = String(text ?? "");
+  if (latinOnly.test(source) && !(eastAsianLanguage(profile) && eastAsianAmbiguous.test(source))) return [];
+  return itemizeScripts(source, profile).filter(run => run.script !== "Latn").map(run => run.script);
 }
 
 /**
- * Script packs a presentation's text may need as glyph fallback faces, as ISO 15924 codes that
- * `scriptFontPackages`, `prepareNodeFonts({scripts})` and auto script-pack selection accept.
- * Beyond the scripts the text is written in (`detectScripts`): any Han or other CJK text can fall
- * back to every CJK face (Japanese, Simplified, Traditional, Korean), and Latin-group text with
- * Cyrillic, Greek or other non-ASCII letters falls back to Noto Sans (`Latn`).
- *
- * `registry` is optional: a font registry (`describeFaces()`) or an iterable of loaded family
- * names. With it, scripts whose designated face is already loaded are left out, so the result is
- * exactly what still has to be loaded. `profile` is core `resolveScriptFonts` output, as for `detectScripts`.
+ * Script keys (as used by the script font pack) present in the strings of any JSON value.
+ * The profile's own script is included too, unless `includeLanguage` is false (then only
+ * text decides). `ignoreKeys` names object keys whose values are not visited.
  */
-export function requiredFallbackScripts(value, registry, profile) {
-  const needed = new Set(detectScripts(value, profile));
+export function detectScripts(value, profile, { includeLanguage = true, ignoreKeys = [] } = {}) {
+  const scripts = new Set(), ignored = new Set(ignoreKeys);
   const visit = item => {
-    if (typeof item === "string") { if (!/^[\u0000-\u007F]*$/.test(item) && latinOnly.test(item)) needed.add("Latn"); else if (!latinOnly.test(item) && itemizeScripts(item, profile).some(run => run.script === "Latn" && !/^[\u0000-\u007F]*$/.test(run.text))) needed.add("Latn"); }
+    if (typeof item === "string") { for (const script of scriptsOfText(item, profile)) scripts.add(script); }
     else if (Array.isArray(item)) item.forEach(visit);
-    else if (item && typeof item === "object") Object.values(item).forEach(visit);
+    else if (item && typeof item === "object") for (const [key, child] of Object.entries(item)) if (!ignored.has(key)) visit(child);
   };
   visit(value);
-  if ([...needed].some(script => hanKeys.includes(script))) for (const script of hanKeys) needed.add(script);
-  const loaded = registry === undefined ? undefined : new Set((typeof registry.describeFaces === "function" ? registry.describeFaces().map(face => face.family) : [...registry]).map(family => String(family).toLowerCase()));
-  return [...needed].filter(script => !loaded || !designatedFamilies(script).some(family => loaded.has(family.toLowerCase()))).sort();
+  if (includeLanguage && profile?.script && !latinGroup.has(profile.script)) scripts.add(fontKey(profile.script, "", profile));
+  return [...scripts].sort();
 }
 
 /** Designated open families for a script key, preferring the serif face for serif schemes. */
