@@ -20,7 +20,8 @@ function validFamily(family) {
   if (typeof family !== "string" || !family.trim() || /[\u0000-\u001f"'\\<>;]/.test(family)) throw new OPFFontError("invalid-font-family", "Font family must be a nonempty plain name.");
   return family;
 }
-const packFor = family => BUNDLED_FONT_MANIFEST.packages.find(pkg=>pkg.faces.some(face=>face.family.toLowerCase()===family.toLowerCase()))?.pack;
+// The open families load with the office pack (prepareNodeFonts({pack:"office"})).
+const packFor = family => { const pack = BUNDLED_FONT_MANIFEST.packages.find(pkg=>pkg.renamedFrom?.toLowerCase()===family.toLowerCase() || pkg.faces.some(face=>face.family.toLowerCase()===family.toLowerCase()))?.pack; return pack==="open" ? "office" : pack; };
 const percent = value => `${(value*100).toFixed(1)}%`;
 /** FF-31: say why a family has no face and what the caller can do, from the OPF font policy. */
 function unavailableFontError(family, style, policy) {
@@ -225,7 +226,9 @@ export function createFontRegistry(entries, options = {}) {
     resolveFont(style) { return resolve(style).resolution; },
     clearSubstitutions() { substitutions.clear(); },
     get substitutions() { return [...substitutions.values()]; },
-    get embeddedFonts() { return embedded(()=>true); },
+    // Faces flagged embed:"used" (the open pack, FF-31) are not in this eager list: supplied with selectEmbeddedFonts (or
+    // prepareNodeFonts().options.embeddedFonts) they are embedded only in SVGs whose text names their family.
+    get embeddedFonts() { return embedded(face=>face.embed!=="used"); },
     /** Parsed face metadata in entry order, without encoding font bytes. */
     describeFaces: ()=>faces.map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.scripts?{scripts:[...face.scripts]}:{})})),
     /** Embedded faces for which `predicate({family,weight,italic,scripts})` holds; large script faces can be left to raster fontFiles. */
@@ -246,5 +249,5 @@ export function createFontRegistry(entries, options = {}) {
       return made.map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.scripts?{scripts:[...face.scripts]}:{})}));
     },
   };
-  function embedded(predicate) { return faces.filter(face=>predicate({family:face.family,weight:face.weight,italic:face.italic,scripts:face.scripts})).map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.license ? {license:face.license} : {}),...(face.embed==="used" ? {embed:"used"} : {}),dataUrl:`data:font/${face.format};base64,${base64(face.data)}`})); }
+  function embedded(predicate) { return faces.filter(face=>predicate({family:face.family,weight:face.weight,italic:face.italic,scripts:face.scripts,embed:face.embed})).map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.license ? {license:face.license} : {}),...(face.embed==="used" ? {embed:"used"} : {}),dataUrl:`data:font/${face.format};base64,${base64(face.data)}`})); }
 }

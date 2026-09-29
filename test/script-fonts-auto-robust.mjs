@@ -176,9 +176,11 @@ const fresh=(options={})=>{const document=makeDocument();return loadBrowserFontR
 // ---- Script faces embed only when the slide uses them ----
 {
   const registry=await loadBundledFontRegistry({scripts:['Jpan','Arab']});
-  const scriptFaces=registry.embeddedFonts.filter(face=>/Noto/.test(face.family));
+  // The eager list leaves "used" faces out (like the open families); select them explicitly to embed them per slide.
+  assert.equal(registry.embeddedFonts.some(face=>/Noto/.test(face.family)),false,'script faces are not in the eager embeddedFonts');
+  const scriptFaces=registry.selectEmbeddedFonts(face=>face.scripts);
   assert.ok(scriptFaces.length>=4&&scriptFaces.every(face=>face.embed==='used'),'script faces are flagged used');
-  const options={textMeasurement:registry.textMeasurement,embeddedFonts:registry.embeddedFonts};
+  const options={textMeasurement:registry.textMeasurement,embeddedFonts:[...registry.embeddedFonts,...scriptFaces]};
   const latin=renderSvg({slides:[{title:'Plain title',text:'Body'}],design:{fontScheme:'roboto'}},options);
   assert.equal(/font-family:"Noto/.test(latin),false,'a Latin slide embeds no script face');
   const japaneseSvg=renderSvg({language:'ja',design:{fontScheme:'roboto'},slides:[{title:'四半期レビュー',text:'Body'}]},options);
@@ -187,7 +189,9 @@ const fresh=(options={})=>{const document=makeDocument();return loadBrowserFontR
   assert.ok(latin.length<japaneseSvg.length/3,'the Latin slide is much smaller');
   // Browser entries are flagged too.
   const browser=(await fresh({scripts:['Jpan']})).registry;
-  assert.ok(browser.embeddedFonts.filter(face=>/Noto Sans JP/.test(face.family)).every(face=>face.embed==='used'));
+  const browserFaces=browser.selectEmbeddedFonts(face=>face.scripts);
+  assert.ok(browserFaces.length===2&&browserFaces.every(face=>face.embed==='used'&&/Noto Sans JP/.test(face.family)));
+  assert.equal(browser.embeddedFonts.some(face=>/Noto/.test(face.family)),false);
 }
 
 // ---- Glyph fallback faces (renderer with glyphFallbackFamilies, FF-19 per-character fallback) ----
