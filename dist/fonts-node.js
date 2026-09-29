@@ -1,15 +1,18 @@
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import { createFontRegistry, OPFFontError } from "./fonts.js";
 import { BUNDLED_FONT_MANIFEST } from "./font-manifest.js";
 export { BUNDLED_FONT_MANIFEST } from "./font-manifest.js";
-import { analyzePresentationScripts, nextFallbackPackage, scriptFontPackages, scriptSelectionOf } from "./script-font-pack.js";
+import { analyzePresentationScripts, nextFallbackPackage, scriptFontPackages, scriptSelectionOf, uncoveredCjkCharacters } from "./script-font-pack.js";
 export { autoScriptSelection, detectPresentationScripts, scriptFontPackages } from "./script-font-pack.js";
 // Script faces are embedded in a standalone SVG only when the slide's text uses their family.
 const embedUsed = entries => entries.map(entry => ({...entry, embed: "used"}));
 const require = createRequire(import.meta.url);
+// dist/ (published) and src/ (checkout) both sit directly below the package root.
+const packageRoot = fileURLToPath(new URL("../", import.meta.url));
 
 async function verifiedFile(file, expected, details) {
   let bytes;
@@ -20,20 +23,34 @@ async function verifiedFile(file, expected, details) {
   return bytes;
 }
 
+// An npm font package, resolved from node_modules and checked against its pinned version.
+async function installedDirectory(pkg) {
+  let manifestPath, installed;
+  try {
+    manifestPath = require.resolve(`${pkg.name}/package.json`);
+    installed = JSON.parse(await readFile(manifestPath, "utf8"));
+  } catch (error) {
+    throw new OPFFontError("font-resource-unavailable", `Install ${pkg.name}@${pkg.version} to use this offline font pack.`, {package:pkg.name, cause:error.code});
+  }
+  if (installed.version !== pkg.version) throw new OPFFontError("font-version-mismatch", `Expected ${pkg.name}@${pkg.version}; reinstall the pinned package.`, {package:pkg.name, expected:pkg.version, actual:installed.version});
+  return path.dirname(manifestPath);
+}
+
+// A `vendored` entry (FF-31) ships inside this package, for example fonts/carlito: the unmodified
+// upstream files, which verifiedFile checks against the same reviewed SHA-256 pins.
 // `skipped`: an optional package that is not installed is recorded there instead of failing (scripts: 'auto').
 async function loadPackages(packages, skipped) {
   const entries = [], fontFiles = [];
   for (const pkg of packages) {
-    let manifestPath, installed;
-    try {
-      manifestPath = require.resolve(`${pkg.name}/package.json`);
-      installed = JSON.parse(await readFile(manifestPath, "utf8"));
-    } catch (error) {
-      if (skipped) { skipped.push({package: pkg.name, version: pkg.version, scripts: [...pkg.scripts]}); continue; }
-      throw new OPFFontError("font-resource-unavailable", `Install ${pkg.name}@${pkg.version} to use this offline font pack.`, {package:pkg.name, cause:error.code});
+    let directory;
+    if (pkg.vendored) directory = path.join(packageRoot, pkg.vendored);
+    else {
+      try { directory = await installedDirectory(pkg); }
+      catch (error) {
+        if (skipped && error.code === "font-resource-unavailable") { skipped.push({package: pkg.name, version: pkg.version, scripts: [...pkg.scripts]}); continue; }
+        throw error;
+      }
     }
-    if (installed.version !== pkg.version) throw new OPFFontError("font-version-mismatch", `Expected ${pkg.name}@${pkg.version}; reinstall the pinned package.`, {package:pkg.name, expected:pkg.version, actual:installed.version});
-    const directory = path.dirname(manifestPath);
     const license = (await verifiedFile(path.join(directory, pkg.licenseFile), pkg.licenseSha256, {package:pkg.name, file:pkg.licenseFile})).toString("utf8");
     for (const face of pkg.faces) {
       const file = path.join(directory, face.file);
@@ -77,8 +94,13 @@ async function completeFallback(registry, presentation, loaded, onDiagnostic) {
   if (!selection) return;
   const seen = new Set([...selection.packages, ...selection.notInstalled]);
   for (;;) {
-    const next = nextFallbackPackage(analyzePresentationScripts(presentation), {covers: character => registry.scriptFacesCover(character), loaded: seen});
-    if (!next) return;
+    const analysis = analyzePresentationScripts(presentation), covers = character => registry.scriptFacesCover(character);
+    const next = nextFallbackPackage(analysis, {covers, loaded: seen});
+    if (!next) {
+      const uncovered = uncoveredCjkCharacters(analysis, {covers, limit: 8});
+      if (uncovered.length) { selection.uncovered = uncovered; onDiagnostic?.({code: "script-glyph-uncovered", characters: uncovered, message: `No loaded script face has ${uncovered.map(character => "U+" + character.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")).join(", ")}; the preview reports missing-glyph for them.`}); }
+      return;
+    }
     seen.add(next.name);
     const skipped = [], extra = await loadPackages([next], skipped);
     if (skipped.length) {

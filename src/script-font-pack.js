@@ -50,23 +50,42 @@ export function scriptPackageEntries(packages, {baseUrl}) {
   })));
 }
 
-// Fields a preview never draws. Everywhere: the schema URL, embedded assets, catalog records, speaker notes, ids,
-// image alt text and sources, links and metadata. Only on the presentation itself: its name (aria-label
-// fallback), author, language and version. Everything else is drawn text: titles, text blocks, list items,
-// runs, table cells, chart labels, categories and series names, code, quotes, metrics, timelines, furniture.
-const UNDRAWN_KEYS = Object.freeze(["$schema", "assets", "catalogs", "notes", "id", "alt", "altText", "src", "url", "href", "link", "metadata"]);
-const UNDRAWN_ROOT_KEYS = Object.freeze(["name", "author", "authors", "creator", "language", "license", "version", "keywords"]);
+// Fields a preview never draws (checked against what the renderer and core composition draw).
+// Everywhere: the schema URL, embedded assets, catalog records, speaker notes, ids, image alt text and sources,
+// links, metadata and typed `extensions` passthrough. On the presentation: name (aria-label fallback), description,
+// filename, author, speaker, audience, purpose, tone, takeaway, duration, tags, narrative, language and version.
+// On a slide: beat. The organization (name) and a slide's section are drawn only as generated header/footer
+// furniture (`organization: true` / `section: true` in a design), so they count only when a design asks for
+// them. Everything else is drawn text: titles, text blocks, list items, runs, table cells, chart labels,
+// categories and series names, code, quotes, metrics, timelines, furniture text.
+const UNDRAWN_KEYS = Object.freeze(["$schema", "assets", "catalogs", "notes", "id", "alt", "altText", "src", "url", "href", "link", "metadata", "extensions"]);
+const UNDRAWN_ROOT_KEYS = Object.freeze(["name", "description", "filename", "author", "authors", "creator", "speaker", "audience", "purpose", "tone", "takeaway", "duration", "tags", "narrative", "language", "license", "version", "keywords"]);
+const UNDRAWN_SLIDE_KEYS = Object.freeze(["beat"]);
 const UNDRAWN_VALUE = /^(?:https?|data|blob|pkg|file|mailto):\S*$/i;
+
+/** True when a design in the presentation turns on generated `field` furniture (`organization` or `section`). */
+function furnitureUses(presentation, field) {
+  const designs = [presentation?.design, ...(Array.isArray(presentation?.slides) ? presentation.slides.map(slide => slide?.design) : [])];
+  const pattern = new RegExp(`"${field}"\\s*:\\s*true`);
+  return designs.some(design => design && pattern.test(JSON.stringify(design)));
+}
 
 /** The strings a preview of this presentation draws. */
 export function* drawnStrings(presentation) {
-  const undrawn = new Set(UNDRAWN_KEYS), undrawnRoot = new Set(UNDRAWN_ROOT_KEYS);
-  function* visit(item, root) {
+  const undrawn = new Set(UNDRAWN_KEYS), undrawnRoot = new Set(UNDRAWN_ROOT_KEYS), undrawnSlide = new Set(UNDRAWN_SLIDE_KEYS);
+  if (!furnitureUses(presentation, "organization")) undrawnRoot.add("organization");
+  if (!furnitureUses(presentation, "section")) undrawnSlide.add("section");
+  function* visit(item, level) {
     if (typeof item === "string") { if (!UNDRAWN_VALUE.test(item)) yield item; }
-    else if (Array.isArray(item)) for (const child of item) yield* visit(child, false);
-    else if (item && typeof item === "object") for (const [key, child] of Object.entries(item)) if (!undrawn.has(key) && !(root && undrawnRoot.has(key))) yield* visit(child, false);
+    else if (Array.isArray(item)) for (const child of item) yield* visit(child, level === "slides" ? "slide" : level === "root" ? "deep" : level);
+    else if (item && typeof item === "object") {
+      for (const [key, child] of Object.entries(item)) {
+        if (undrawn.has(key) || (level === "root" && undrawnRoot.has(key)) || (level === "slide" && undrawnSlide.has(key))) continue;
+        yield* visit(child, level === "root" && key === "slides" ? "slides" : "deep");
+      }
+    }
   }
-  yield* visit(presentation, true);
+  yield* visit(presentation, "root");
 }
 
 /**
@@ -137,12 +156,17 @@ export function autoScriptSelection(presentation, options) {
  * The next CJK package a glyph fallback needs (FF-19): a drawn Han, kana or Hangul character that no loaded
  * script face has (Japanese-only kanji in a Simplified Chinese run, Simplified-only hanzi beside kana, hanja)
  * takes the first unloaded CJK face along the renderer's fallback chain. `covers(character)` says whether a
- * loaded script face has the glyph; `loaded` holds the loaded package names. Undefined when nothing is needed
- * or the renderer has no glyph fallback. Call again after loading it: at most the four CJK packages follow.
+ * loaded script face has the glyph; `loaded` holds the loaded package names. Undefined when nothing is needed,
+ * the renderer has no glyph fallback, or the cap is reached: a character no CJK face covers must not pull in
+ * every CJK package (10 to 20 MiB each), so at most ONE fallback package is loaded beyond the packages the
+ * text's own scripts need. Characters still uncovered then are reported (`uncoveredCjkCharacters`) and the
+ * renderer reports `missing-glyph` for them.
  */
 export function nextFallbackPackage(analysis, { covers, loaded }) {
   if (!hasGlyphFallback()) return undefined;
   const packages = BUNDLED_FONT_MANIFEST.packages.filter(item => item.pack === "scripts" && item.scripts.some(script => cjkKeys.includes(script)));
+  const primary = analysis.detected.filter(script => cjkKeys.includes(script)).length;
+  if (packages.filter(item => loaded.has(item.name)).length >= primary + 1) return undefined;
   for (const character of analysis.cjk) {
     if (covers(character)) continue;
     for (const family of scriptFontModule.glyphFallbackFamilies(character, analysis.profile, analysis.profile?.serif === true)) {
@@ -151,4 +175,10 @@ export function nextFallbackPackage(analysis, { covers, loaded }) {
     }
   }
   return undefined;
+}
+
+/** Drawn Han, kana or Hangul characters (at most `limit`) that no loaded script face covers. Empty without glyph fallback (nothing else would draw them). */
+export function uncoveredCjkCharacters(analysis, { covers, limit = 16 }) {
+  if (!hasGlyphFallback()) return [];
+  return [...analysis.cjk].filter(character => !covers(character)).slice(0, limit);
 }

@@ -1,5 +1,5 @@
 import { createFontRegistry, OPFFontError } from "./fonts.js";
-import { analyzePresentationScripts, nextFallbackPackage, scriptFontPackages, scriptPackageEntries, scriptSelectionOf } from "./script-font-pack.js";
+import { analyzePresentationScripts, nextFallbackPackage, scriptFontPackages, scriptPackageEntries, scriptSelectionOf, uncoveredCjkCharacters } from "./script-font-pack.js";
 export { autoScriptSelection, detectPresentationScripts, scriptFontEntries, scriptFontPackages } from "./script-font-pack.js";
 
 async function verifyDigest(entry, data, subtle) {
@@ -134,17 +134,33 @@ export async function loadBrowserFontRegistry(entries, options = {}) {
     /** Load the script faces for explicit ISO 15924 codes (or 'all'). Resolves with the newly loaded package names. `signal` aborts this call's fetches. */
     loadScripts: (scripts, callOptions) => loadPackageList(scriptFontPackages(scripts), callOptions),
     /**
-     * Load the script faces the presentation's text needs, once each (FF-19), then any CJK face the glyph fallback
-     * needs for characters the loaded faces lack. Cheap when nothing new is needed; call it after edits and render
-     * again afterwards. Resolves with the detected scripts, the packages loaded by this call and the scripts no
-     * pinned font serves. `signal` aborts this call's fetches; a failed call leaves nothing loaded and can be retried.
+     * Load the script faces the presentation's text needs, once each (FF-19), then the (at most one) CJK face a glyph
+     * fallback needs for characters the loaded faces lack. Cheap when nothing new is needed; call it after edits and
+     * render again afterwards. Resolves with the detected scripts, the packages loaded by this call, the scripts no
+     * pinned font serves and `uncovered`, drawn CJK characters no loaded face covers (the renderer reports
+     * `missing-glyph` for them). Each package loads all or nothing. If some package fails, the others still load: the
+     * call then rejects with an OPFFontError (the first failure's code) whose `details` hold `loaded` (packages this
+     * call did load) and `failed` (`{package, code, message}` per failed package); nothing is lost and a later call
+     * retries only the failures. `signal` aborts this call's fetches.
      */
     async ensureScripts(presentation, callOptions) {
+      if (disposed) throw gone();
       const analysis = analyzePresentationScripts(presentation), selection = scriptSelectionOf(analysis);
-      const loadedNow = selection.scripts.length ? await loadPackageList(scriptFontPackages(selection.scripts), callOptions) : [];
-      for (let next = nextFallbackPackage(analysis, { covers, loaded: scriptPackages }); next; next = nextFallbackPackage(analysis, { covers, loaded: scriptPackages }))
-        loadedNow.push(...(await loadPackageList([next], callOptions)));
-      return { ...selection, loaded: loadedNow };
+      const loadedNow = [], failed = [];
+      const attempt = async (item) => {
+        try { loadedNow.push(...(await loadPackageList([item], callOptions))); }
+        catch (error) { failed.push({ package: item.name, code: error?.code ?? "font-load-failed", message: error?.message ?? String(error), error }); }
+      };
+      for (const item of scriptFontPackages(selection.scripts)) await attempt(item);
+      // Fallback faces only follow a clean primary load: a failed package would otherwise be judged uncovered.
+      if (!failed.length) for (let next = nextFallbackPackage(analysis, { covers, loaded: scriptPackages }); next && !failed.length; next = nextFallbackPackage(analysis, { covers, loaded: scriptPackages })) await attempt(next);
+      // An aborted call rejects with the signal's reason; packages loaded before the abort stay loaded.
+      if (callOptions?.signal?.aborted) throw callOptions.signal.reason ?? failed[0]?.error;
+      if (failed.length) {
+        const first = failed[0];
+        throw new OPFFontError(first.code, first.message, { loaded: loadedNow, failed: failed.map(({ package: name, code, message }) => ({ package: name, code, message })), cause: first.error });
+      }
+      return { ...selection, loaded: loadedNow, uncovered: uncoveredCjkCharacters(analysis, { covers }) };
     },
     /** Synchronous: script-pack packages the presentation needs that are not loaded yet. Empty means `ensureScripts` would fetch nothing. */
     pendingScripts(presentation) {

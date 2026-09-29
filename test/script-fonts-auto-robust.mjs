@@ -33,6 +33,13 @@ for(const [field,value] of Object.entries({title:drawn.title[0],subtitle:drawn.s
 }
 for(const [index,block] of drawn.blocks.entries())assert.deepEqual(detectPresentationScripts({slides:[{title:"T",blocks:[block]}]}),["Jpan"],`block ${index}`);
 assert.deepEqual(detectPresentationScripts({design:drawn.design,slides:[{title:'T'}]}),['Jpan']);
+// Deck metadata is not drawn: description, filename, speaker, audience, purpose, tone, takeaway, duration, tags, narrative,
+// extensions, and a slide's beat. Organization and section are drawn only as generated furniture, when a design asks for them.
+assert.deepEqual(detectPresentationScripts({description:'説明です',filename:'ファイル',speaker:{name:'山田さん'},audience:'顧客です',purpose:'目的です',tone:'丁寧です',takeaway:'要点です',duration:'三十分',tags:['タグです'],narrative:'物語です',extensions:{x:'拡張です'},
+  organization:{name:'株式会社です'},slides:[{title:'T',beat:'導入です',section:'第一章です',extensions:{y:'値です'}}]}),[]);
+assert.deepEqual(detectPresentationScripts({organization:{name:'株式会社です'},design:{footer:{left:{organization:true}}},slides:[{title:'T'}]}),['Jpan']);
+assert.deepEqual(detectPresentationScripts({design:{footer:{left:{section:true}}},slides:[{title:'T',section:'第一章です'}]}),['Jpan']);
+assert.deepEqual(detectPresentationScripts({design:{footer:{left:{section:true}}},organization:{name:'株式会社です'},slides:[{title:'T'}]}),[],'a section footer does not draw the organization');
 // A URL is not text; ids, alt, src, notes and metadata are not drawn; the presentation's own name and author are not either.
 assert.deepEqual(detectPresentationScripts({slides:[{title:'T',text:'https://例え.jp/日本語'}]}),[]);
 
@@ -105,14 +112,24 @@ const fresh=(options={})=>{const document=makeDocument();return loadBrowserFontR
   assert.equal(document.fonts.size,3);
   assert.deepEqual(registry.pendingScripts(japanese),[]);
 }
-// A failure in a later package of one call leaves the packages of that call not loaded (all or nothing per package).
+// One failing package does not lose the others: each package is all or nothing, the call rejects with per-package details
+// (loaded and failed), and a later call retries only the failure.
 {
   const {registry,document}=await fresh();
   Face.failing=/Noto Naskh Arabic/;
-  await assert.rejects(()=>registry.ensureScripts(deck('مراجعة','Body',{language:'ar'})),{code:'font-load-failed'});
-  assert.equal(document.fonts.size,1);
-  assert.deepEqual(registry.loadedScriptPackages,[]);
+  const arabic=deck('مراجعة','Body',{language:'ar'});
+  const failure=await registry.ensureScripts(arabic).then(()=>undefined,error=>error);
+  assert.equal(failure?.code,'font-load-failed');
+  assert.deepEqual(failure.details.loaded.map(short),['noto-sans-arabic','noto-nastaliq-urdu']);
+  assert.deepEqual(failure.details.failed.map(item=>[short(item.package),item.code]),[['noto-naskh-arabic','font-load-failed']]);
+  assert.deepEqual(registry.loadedScriptPackages.map(short),['noto-sans-arabic','noto-nastaliq-urdu'],'the successful packages stay loaded');
+  assert.equal(document.fonts.size,1+4,'only the two loaded packages are in the document');
+  assert.deepEqual(registry.pendingScripts(arabic).map(short),['noto-naskh-arabic']);
+  const requestsBefore=calls.length;
   Face.failing=undefined;
+  const retried=await registry.ensureScripts(arabic);
+  assert.deepEqual(retried.loaded.map(short),['noto-naskh-arabic']);
+  assert.equal(calls.length-requestsBefore,2,'only the failed package is fetched again');
 }
 // dispose() during a load leaves no face in the registry or the document, and later calls are rejected.
 {
@@ -174,6 +191,7 @@ const fresh=(options={})=>{const document=makeDocument();return loadBrowserFontR
 }
 
 // ---- Glyph fallback faces (renderer with glyphFallbackFamilies, FF-19 per-character fallback) ----
+const cappedDiagnostics=[];
 if(!hasFallback){
   console.log('Glyph fallback loading skipped: this renderer has no glyphFallbackFamilies; detection then adds no fallback faces.');
   assert.deepEqual(detectPresentationScripts(deck('Ελληνικά Кириллица')),[]);
@@ -191,6 +209,18 @@ if(!hasFallback){
   assert.equal(registry.fontFiles.filter(file=>/noto-sans-sc/.test(file)).length,2,'the raster font files include the fallback face');
   // Only characters the loaded faces lack trigger more faces: plain Japanese needs only Noto Sans JP.
   assert.deepEqual((await loadBundledFontRegistry({scripts:'auto',presentation:deck('これは日本語です','Body',{language:'ja'})})).scriptSelection.packages.map(short),['noto-sans-jp']);
+  // The fallback is capped: a Han character no CJK face covers loads the language's face plus ONE fallback, not all four, and is reported.
+  const nowhere=deck('これは\u{20000}です','Body',{language:'ja'});
+  const capped=await loadBundledFontRegistry({scripts:'auto',presentation:nowhere,onDiagnostic:value=>cappedDiagnostics.push(value)});
+  assert.equal(capped.scriptSelection.packages.length,2,'the language face and one fallback');
+  assert.ok(capped.scriptSelection.packages.map(short).includes('noto-sans-jp'));
+  assert.deepEqual(capped.scriptSelection.uncovered,['\u{20000}']);
+  assert.deepEqual(cappedDiagnostics.map(value=>value.code),['script-glyph-uncovered']);
+  const {registry:cappedBrowser}=await fresh();
+  const cappedResult=await cappedBrowser.ensureScripts(nowhere);
+  assert.equal(cappedResult.loaded.length,2);
+  assert.deepEqual(cappedResult.uncovered,['\u{20000}']);
+  assert.deepEqual(cappedBrowser.pendingScripts(nowhere),[],'nothing more is pending once the cap is reached');
   // Browser: pendingScripts reports the fallback package once the primary is loaded, and ensureScripts loads it.
   const {registry:browser}=await fresh();
   assert.deepEqual(browser.pendingScripts(japaneseText).map(short),['noto-sans-jp']);

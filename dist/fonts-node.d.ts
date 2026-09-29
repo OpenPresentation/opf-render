@@ -13,7 +13,7 @@ export interface AutoScriptSelection {
   unavailable: string[];
 }
 /** Script-pack packages that `scripts: "auto"` loaded or found not installed. */
-export interface AppliedScriptSelection extends AutoScriptSelection { packages: string[]; notInstalled: string[] }
+export interface AppliedScriptSelection extends AutoScriptSelection { packages: string[]; notInstalled: string[]; /** Drawn CJK characters no loaded face covers (glyph fallback stopped at its cap). */ uncovered?: string[] }
 /** Script keys whose faces a preview of the presentation needs: text decides, the document language only tells Han scripts apart. */
 export declare function detectPresentationScripts(presentation: unknown, options?: { profile?: ScriptFontProfile }): string[];
 export declare function autoScriptSelection(presentation: unknown, options?: { profile?: ScriptFontProfile }): AutoScriptSelection;
@@ -37,11 +37,19 @@ export declare function loadBundledFontRegistry(options?: FontRegistryOptions & 
 export declare function loadOfficeFontRegistry(options?: FontRegistryOptions & ScriptPackOptions & {includeBaseFonts?:boolean}): Promise<ScriptFontRegistry>;
 
 export type BundledFontPackage = Readonly<{
-  name:string; version:string; pack:"base"|"office"|"scripts"; source:string;
+  /** An npm package name, or a plain id for a vendored entry. */
+  name:string;
+  /** The exact npm version, or for a vendored entry the pinned upstream commit. */
+  version:string; pack:"base"|"office"|"scripts"; source:string;
+  /** FF-31: directory inside this package (for example `fonts/carlito`) that holds unmodified upstream files; absent for npm packages. */
+  vendored?: string;
   /** ISO 15924 scripts served by a script-pack package. */
   scripts?: readonly string[];
   license:string; licenseFile:string; licenseSha256:string;
-  faces:readonly Readonly<{file:string; family:string; weight:number; italic:boolean; sha256:string}>[];
+  reservedFontNames:readonly string[]; upstream:string; copyright:string;
+  faces:readonly Readonly<{file:string; family:string; weight:number; italic:boolean; sha256:string;
+    /** FF-31: the byte-identical upstream release file this face is (sha256 equals the face's own). */
+    upstreamFile?: Readonly<{url:string; sha256:string}>}>[];
 }>;
 export interface BundledFontManifest {
   readonly version: number;
