@@ -59,7 +59,10 @@ assert.ok(aptos.measured.meanAbsWidthDelta > 0.015 && aptos.measured.meanAbsWidt
 assert.equal(registry.textMeasurement.resolveFont({fontFamily: 'Roboto', fontWeight: 700}).substitute, false);
 
 // A weight-named family selects its encoded weight in the replacement; bold still selects bold.
-assert.equal(registry.resolveFont({fontFamily: 'Segoe UI Semibold', fontWeight: 400}).resolvedWeight, 600);
+// Red Hat Display is bundled (FF-31) without a 600 face (upstream's SemiBold has OS/2 weight 707, which resvg would rank above Bold), so
+// Semibold snaps to its Bold face, reported visual. The weight-named row still selects an encoded weight where a face exists.
+assert.deepEqual(['Red Hat Display', 700], (({resolvedFamily, resolvedWeight}) => [resolvedFamily, resolvedWeight])(registry.resolveFont({fontFamily: 'Segoe UI Semibold', fontWeight: 400})));
+assert.equal(registry.resolveFont({fontFamily: 'Segoe UI Light', fontWeight: 400}).resolvedWeight, 300);
 assert.equal(registry.resolveFont({fontFamily: 'Segoe UI Semibold', fontWeight: 700}).resolvedWeight, 700);
 
 // Strict mode never falls back silently: the error names the replacement, its tier and the hook.

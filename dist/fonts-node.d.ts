@@ -15,16 +15,19 @@ export declare function loadOfficeFontRegistry(options?: FontRegistryOptions & S
 
 export type BundledFontPackage = Readonly<{
   name:string; version:string; pack:"base"|"office"|"open"|"scripts"; source:string;
+  /** Vendored packages ship inside this package under `directory` (`file` and `licenseFile` are relative to it, with a generated PROVENANCE.json), instead of as a separate npm package. `commit` pins a git upstream. */
+  vendored?:boolean; directory?:string; commit?:string;
   /** ISO 15924 scripts served by a script-pack package. */
   scripts?: readonly string[];
   license:string; licenseFile:string; licenseSha256:string;
-  /** Whether the shipped notice declares a Reserved Font Name, and which (read from the notice, never assumed). */
-  hasReservedFontName:boolean; reservedFontNames:readonly string[];
+  /** Vendored from a commit: the commit-pinned URL of the upstream license notice. Vendored from npm: the notice's path in the package. */
+  upstreamLicenseUrl?:string; npmLicenseFile?:string;
   /** The family this package is the renamed successor of; requests for the old name draw these faces, reported visual. */
   renamedFrom?:string;
-  /** Open pack: the directory inside this package holding the vendored faces, notice and PROVENANCE.json; `file` and `licenseFile` are relative to it. */
-  vendored?:string; upstreamLicenseFile?:string;
-  faces:readonly Readonly<{file:string; family:string; weight:number; italic:boolean; sha256:string; upstreamFile?:string}>[];
+  /** Reserved Font Names declared in the license's copyright block (empty when none), the upstream project URL and the copyright line. */
+  reservedFontNames:readonly string[]; upstream:string; copyright:string;
+  /** `upstreamFile`: the copyright holder's byte-identical file at a pinned commit (sha256 equals the face's own). `npmFile`: the file's path in the npm package it was vendored from. */
+  faces:readonly Readonly<{file:string; family:string; weight:number; italic:boolean; sha256:string; upstreamFile?:Readonly<{url:string; sha256:string}>; npmFile?:string}>[];
 }>;
 export interface BundledFontManifest {
   readonly version: number;
@@ -43,4 +46,4 @@ export interface PreparedNodeFonts {
     loadSystemFonts: false;
   };
 }
-export declare function prepareNodeFonts(options?: FontRegistryOptions & ScriptPackOptions & {pack?:"base"|"office"; includeBaseFonts?:boolean; /** With pack "office": leave out the open families (FF-31); default true. */ includeOpenFonts?:boolean; /** Embed script faces in SVG (large); default false. */ embedScriptFonts?:boolean; /** Embed the open families in SVG (about 9 MiB); default false, raster reads them from fontFiles. */ embedOpenFonts?:boolean}): Promise<PreparedNodeFonts>;
+export declare function prepareNodeFonts(options?: FontRegistryOptions & ScriptPackOptions & {pack?:"base"|"office"; includeBaseFonts?:boolean; /** With pack "office": leave out the open families (FF-31); default true. */ includeOpenFonts?:boolean; /** Embed script faces in SVG (large); default false. */ embedScriptFonts?:boolean;}): Promise<PreparedNodeFonts>;

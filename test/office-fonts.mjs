@@ -15,8 +15,9 @@ for(const [fontFamily,substitute] of Object.entries(pairs)) for(const fontWeight
   assert.equal(resolved.path,style.path);
   assert.ok(registry.textMeasurement.measure('AVATAR office 1234',25,style)>0);
 }
-// 9 base + 24 Office faces, plus the 38 open-family faces that font schemes select (FF-31).
-assert.equal(registry.embeddedFonts.length,71);
+// 9 base + 24 Office faces are embedded eagerly; the 35 vendored open-family faces (FF-31) are embed:"used" and only in the SVGs that name them.
+assert.equal(registry.embeddedFonts.length,33);
+assert.equal(registry.describeFaces().length,68);
 for(const face of registry.embeddedFonts) assert.ok(face.license?.length>1000);
 const entries=registry.embeddedFonts.map(face=>({...face,data:new Uint8Array(Buffer.from(face.dataUrl.split(',')[1],'base64'))}));
 const alias=createFontRegistry(entries,{aliases:{Carlito:'Arimo'},substitutionPolicy:'visual'});

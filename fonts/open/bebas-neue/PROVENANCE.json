@@ -7,18 +7,17 @@
   },
   "license": "OFL-1.1",
   "licenseFile": "OFL.txt",
-  "upstreamLicenseFile": "LICENSE_FONT",
   "licenseSha256": "72082f6cb4d04be2ecf7cc7d9e1e7d73787f0af8a5a278a47cade70c16b78341",
-  "hasReservedFontName": false,
   "reservedFontNames": [],
+  "copyright": "Copyright © 2010 by Dharma Type.",
   "faces": [
     {
       "file": "BebasNeue_400Regular.ttf",
-      "upstreamFile": "400Regular/BebasNeue_400Regular.ttf",
       "family": "Bebas Neue",
       "weight": 400,
       "italic": false,
-      "sha256": "830ea186acffc2316ed1a4e42319246ba3b46b04e33a211079249bf901193f04"
+      "sha256": "830ea186acffc2316ed1a4e42319246ba3b46b04e33a211079249bf901193f04",
+      "npmFile": "400Regular/BebasNeue_400Regular.ttf"
     }
   ]
 }

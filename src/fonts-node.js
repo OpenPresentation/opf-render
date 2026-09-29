@@ -23,14 +23,15 @@ async function loadPackages(packages) {
   const entries = [], fontFiles = [];
   for (const pkg of packages) {
     if (pkg.vendored) {
-      // FF-31: vendored faces ship inside this package (fonts/open/<family>/), hash-pinned like the npm packs.
-      const directory = fileURLToPath(new URL(`../${pkg.vendored}/`, import.meta.url));
+      // FF-31: vendored faces ship inside this package (pkg.directory), hash-pinned like the npm packs. The open pack is
+      // embedded in an SVG only when the slide's text names the family (embed "used"); raster output reads the files.
+      const directory = fileURLToPath(new URL(`../${pkg.directory}/`, import.meta.url));
       const license = (await verifiedFile(path.join(directory, pkg.licenseFile), pkg.licenseSha256, {package:pkg.name, file:pkg.licenseFile})).toString("utf8");
       for (const face of pkg.faces) {
         const file = path.join(directory, face.file);
         const data = await verifiedFile(file, face.sha256, {package:pkg.name, file:face.file});
         fontFiles.push(file);
-        entries.push({data:new Uint8Array(data), family:face.family, weight:face.weight, italic:face.italic, license});
+        entries.push({data:new Uint8Array(data), family:face.family, weight:face.weight, italic:face.italic, license, embed:"used"});
       }
       continue;
     }
@@ -111,15 +112,12 @@ export async function loadOfficeFontRegistry({scripts, faces, ...options} = {}) 
 }
 
 /** One set of verified font inputs for layout, SVG, editor, PPTX, and Node raster export. */
-export async function prepareNodeFonts({pack = "base", embedScriptFonts = false, embedOpenFonts = false, ...options} = {}) {
+export async function prepareNodeFonts({pack = "base", embedScriptFonts = false, ...options} = {}) {
   if (pack !== "base" && pack !== "office") throw new OPFFontError("invalid-font-pack", "Choose the base or office font pack.", {pack});
   const registry = await (pack === "base" ? loadBundledFontRegistry(options) : loadOfficeFontRegistry(options));
   // Script faces are large (CJK faces are 5-10 MB each). Raster output reads them
   // from fontFiles; embed them in standalone SVG only on request.
-  // The open families (Open Sans, Montserrat, ...) add about 9 MiB of base64 to every standalone SVG, so
-  // they are read from fontFiles for raster output and embedded only on request, like script faces.
-  const openFamilies = new Set(pack === "office" && options.includeOpenFonts !== false ? BUNDLED_FONT_MANIFEST.packages.filter(item => item.pack === "open").flatMap(item => item.faces.map(face => face.family.toLowerCase())) : []);
-  const embeddedFonts = registry.selectEmbeddedFonts(face => (embedScriptFonts || !face.scripts) && (embedOpenFonts || !openFamilies.has(face.family.toLowerCase())));
+  const embeddedFonts = registry.selectEmbeddedFonts(face => embedScriptFonts || !face.scripts);
   return {
     registry,
     manifest:BUNDLED_FONT_MANIFEST,

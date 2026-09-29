@@ -1,50 +1,50 @@
 {
   "upstream": {
-    "package": "@expo-google-fonts/lora",
-    "version": "0.4.2",
-    "source": "https://www.npmjs.com/package/@expo-google-fonts/lora/v/0.4.2",
-    "integrity": "sha512-Bnofh2mIOUKp4KUS48VjaBgug4lQOcw/ftU0NFv5OPtiutL422//G1v63xDZEMUEL6ft4fi5q94/uKcpDjbPag=="
+    "repository": "https://github.com/cyrealtype/Lora-Cyrillic",
+    "commit": "0caf2e6389163dd49e5f973d7ed8bf42e60d83a2",
+    "release": "3.021",
+    "source": "https://github.com/cyrealtype/Lora-Cyrillic/tree/0caf2e6389163dd49e5f973d7ed8bf42e60d83a2",
+    "licenseUrl": "https://raw.githubusercontent.com/cyrealtype/Lora-Cyrillic/0caf2e6389163dd49e5f973d7ed8bf42e60d83a2/OFL.txt"
   },
   "license": "OFL-1.1",
   "licenseFile": "OFL.txt",
-  "upstreamLicenseFile": "LICENSE_FONT",
   "licenseSha256": "1d9a970809ac804b582a6ce7f0ebc4e7fefcbfd7ff6299cad35ee656a21be716",
-  "hasReservedFontName": true,
   "reservedFontNames": [
     "Lora"
   ],
+  "copyright": "Copyright 2011 The Lora Project Authors (https://github.com/cyrealtype/Lora-Cyrillic), with Reserved Font Name \"Lora\".",
   "faces": [
     {
-      "file": "Lora_400Regular.ttf",
-      "upstreamFile": "400Regular/Lora_400Regular.ttf",
+      "file": "Lora-Regular.ttf",
       "family": "Lora",
       "weight": 400,
       "italic": false,
-      "sha256": "7ed00e7c9cdf16ab7e2fd2361fe45d4f0b61263cd60aae398b27b7ee08108827"
+      "sha256": "c72a925082ba55885e7b4ead25d34a3c91fa44edda72a16a3a2983fc7fa7cef3",
+      "upstreamUrl": "https://raw.githubusercontent.com/cyrealtype/Lora-Cyrillic/0caf2e6389163dd49e5f973d7ed8bf42e60d83a2/fonts/ttf/Lora-Regular.ttf"
     },
     {
-      "file": "Lora_400Regular_Italic.ttf",
-      "upstreamFile": "400Regular_Italic/Lora_400Regular_Italic.ttf",
+      "file": "Lora-Italic.ttf",
       "family": "Lora",
       "weight": 400,
       "italic": true,
-      "sha256": "be627e595184e8afe521f08da0607eee613f1997d423bc8dadc5798995581377"
+      "sha256": "1985f2fa49d675c3d88ca6a0b9161be38f955bec7efb025d2a5b68bc03e471fe",
+      "upstreamUrl": "https://raw.githubusercontent.com/cyrealtype/Lora-Cyrillic/0caf2e6389163dd49e5f973d7ed8bf42e60d83a2/fonts/ttf/Lora-Italic.ttf"
     },
     {
-      "file": "Lora_700Bold.ttf",
-      "upstreamFile": "700Bold/Lora_700Bold.ttf",
+      "file": "Lora-Bold.ttf",
       "family": "Lora",
       "weight": 700,
       "italic": false,
-      "sha256": "7d74015e950c2fb66519c7295b8155621d22200ae2ca2a4c6b43ce3c490cac87"
+      "sha256": "32baf740eac1bf3f257904a6cf89e4e067ca1566b375bf22f743a26fc88b3791",
+      "upstreamUrl": "https://raw.githubusercontent.com/cyrealtype/Lora-Cyrillic/0caf2e6389163dd49e5f973d7ed8bf42e60d83a2/fonts/ttf/Lora-Bold.ttf"
     },
     {
-      "file": "Lora_700Bold_Italic.ttf",
-      "upstreamFile": "700Bold_Italic/Lora_700Bold_Italic.ttf",
+      "file": "Lora-BoldItalic.ttf",
       "family": "Lora",
       "weight": 700,
       "italic": true,
-      "sha256": "152f87e71f5ddb60d5c57ecd9132807c947e65c42977193c9164e7c5a6690081"
+      "sha256": "f448e41ab0bf529ec7bd4f8aef843eb4d33b5608c7ed0a53128ead588e6ea9e5",
+      "upstreamUrl": "https://raw.githubusercontent.com/cyrealtype/Lora-Cyrillic/0caf2e6389163dd49e5f973d7ed8bf42e60d83a2/fonts/ttf/Lora-BoldItalic.ttf"
     }
   ]
 }
