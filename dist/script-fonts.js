@@ -350,7 +350,9 @@ export function createScriptFonts(profile = {}, measurement, options = {}) {
   const inner = wrapped?.inner ?? measurement;
   // Glyph fallback is on unless `glyphFallback: "none"` (strict faces); a wrapped measurement keeps its options.
   // Only defined keys override: a caller passing `glyphFallback: undefined` must not undo a wrapper's `"none"`.
-  options = {...wrapped?.options, ...Object.fromEntries(Object.entries(options ?? {}).filter(([, value]) => value !== undefined))};
+  // A renderer-supplied `onFallback` chains with, and does not replace, the wrapper's own.
+  const notifiers = [wrapped?.options?.onFallback, options?.onFallback].filter(notify => typeof notify === "function");
+  options = {...wrapped?.options, ...Object.fromEntries(Object.entries(options ?? {}).filter(([, value]) => value !== undefined)), onFallback: notifiers.length ? note => { for (const notify of notifiers) notify(note); } : undefined};
   const fallbackEnabled = options.glyphFallback !== "none";
   const fallbackNotes = new Map();
   const measured = typeof inner?.measure === "function";
@@ -482,6 +484,8 @@ export function createScriptFonts(profile = {}, measurement, options = {}) {
       // so a base and its mark are never split across faces.
       const primary = chosen ?? style.fontFamily;
       let sticky = null;
+      // The note lists what the chosen face lacks (a mark, not its covered base letter); a cluster it only lacks as a whole lists all.
+      const missingFrom = (face, text) => { const lacking = [...text].filter(character => !covers(face, character, style)); return lacking.length ? lacking : [...text]; };
       const choose = (subject, sample) => unique([run.candidates[0], ...(sticky ? [sticky] : []), ...run.candidates, ...global, ...(fallbackEnabled ? chainFor(sample) : [])]).find(name => covers(name, subject, style));
       const segments = [];
       for (const character of run.text) {
@@ -502,7 +506,7 @@ export function createScriptFonts(profile = {}, measurement, options = {}) {
         for (const cluster of segment.clusters) {
           const family = face && covers(face, cluster.text, style) ? face : choose(cluster.text, cluster.base) ?? choose(cluster.base, cluster.base) ?? primary;
           if (family !== primary && family !== chosen) sticky = family;
-          if (chosen !== null && family !== chosen && covers(family, cluster.text, style)) noteFallback(pending, chosen, family, [...cluster.text]);
+          if (chosen !== null && family !== chosen && covers(family, cluster.text, style)) noteFallback(pending, chosen, family, missingFrom(chosen, cluster.text));
           push(cluster.text, family);
         }
       }

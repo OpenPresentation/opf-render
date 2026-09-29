@@ -182,6 +182,11 @@ function designatedFamiliesAll() {
   for (const run of runs) assert.ok(strictCovers(run.family, run.text), `${run.family} has every glyph of its run`);
   const measurement = createScriptTextMeasurement(raw, core.resolveScriptFonts(document));
   assert.ok(measurement.measure(`Nice e${mark} word`, 20, style) > 0, 'measures without missing-glyph');
+  // The note lists what the chosen face lacks: the mark, not the base letter Carlito covers.
+  const markNotes = [];
+  const noting = createScriptFonts(core.resolveScriptFonts(document), raw, {onFallback: (note) => markNotes.push(note)});
+  noting.plan(`e${mark}`, style);
+  assert.deepEqual(markNotes.map((note) => note.characters), [[mark]]);
   // NFD Vietnamese and NFD Cyrillic (breve U+0306) render without missing-glyph, in every registry font.
   for (const [language, scheme, text] of [['vietnamese', 'calibri', 'Vie\u0323\u0302t Nam'.normalize('NFD') + ' Tie\u0302\u0301ng Vie\u0323\u0302t'], ['russian', 'georgia', 'Кра\u0306й и\u0306 ё'.normalize('NFD')], ['russian', 'roboto', 'Кра\u0306й и\u0306'.normalize('NFD')], ['greek', 'georgia', 'ά'.normalize('NFD') + ' ώ'.normalize('NFD')]]) {
     const value = {$schema: 'https://openpresentation.org/schema/opf/v1', name: 'nfd', language: language === 'vietnamese' ? 'english' : language, design: {fontScheme: scheme}, slides: [{id: 'a', title: text, text}]};
@@ -239,6 +244,12 @@ function designatedFamiliesAll() {
   const bold = createScriptFonts(core.resolveScriptFonts(document), raw, {onFallback: (note) => notes.push(note)});
   bold.plan('Τριμηνιαία', {fontFamily: 'Gelasio', fontWeight: 700, path: 'slides.0.title'});
   assert.equal(notes.at(-1).fallbackFamily, 'Noto Sans', 'the resolved face is reported');
+  // A planner's own onFallback chains with the wrapper's, and does not replace it.
+  const fromWrapper = [], fromPlanner = [];
+  const wrapper = createScriptTextMeasurement(raw, core.resolveScriptFonts(document), {onFallback: (note) => fromWrapper.push(note.fallbackFamily)});
+  createScriptFonts(core.resolveScriptFonts(document), wrapper, {onFallback: (note) => fromPlanner.push(note.fallbackFamily)}).plan('Τριμηνιαία', {fontFamily: 'Gelasio', fontWeight: 400, path: 'slides.0.title'});
+  wrapper.measure('Τριμηνιαία', 20, {fontFamily: 'Gelasio', fontWeight: 400, path: 'slides.1.title'});
+  assert.deepEqual([fromWrapper, fromPlanner], [['Noto Sans', 'Noto Sans'], ['Noto Sans']], 'both callbacks are notified');
   const diagnostics = [];
   renderSvg(document, {...fonts.options, textMeasurement: createScriptTextMeasurement(raw, core.resolveScriptFonts(document)), onDiagnostic: (item) => diagnostics.push(item)});
   const first = diagnostics.find((item) => item.code === 'font-glyph-fallback');

@@ -499,7 +499,8 @@ function reportGlyphFallback(context, note) {
   context.options.onDiagnostic?.({
     code: "font-glyph-fallback",
     ...(note.path ? { path: note.path } : {}),
-    message: `'${note.fontFamily}' has no glyph for ${note.characters.map(character => `U+${character.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")}`).join(", ")}; the preview draws ${note.characters.length === 1 ? "it" : "them"} with '${note.fallbackFamily}'. The PPTX keeps the chosen font.`,
+    // The note is reported once per family pair and path: it names characters the face lacks, such as these, not every one.
+    message: `'${note.fontFamily}' lacks glyphs for characters such as ${note.characters.slice(0, 8).map(character => `U+${character.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")}`).join(", ")}; the preview draws those with '${note.fallbackFamily}'. The PPTX keeps the chosen font.`,
     fontFamily: note.fontFamily,
     fallbackFamily: note.fallbackFamily,
     scripts: [...note.scripts],
