@@ -15,6 +15,12 @@ for(const [fontFamily,substitute] of Object.entries(pairs)) for(const fontWeight
   assert.equal(resolved.path,style.path);
   assert.ok(registry.textMeasurement.measure('AVATAR office 1234',25,style)>0);
 }
+// FF-31: the unmodified upstream Carlito measures U+00A0 like a space in every style. The Google Fonts API subset it
+// replaces (@expo-google-fonts/carlito 0.4.1) failed here with font-shaping-failed: fontkit could not read its no-break space glyph.
+for(const fontWeight of [400,700]) for(const italic of [false,true]) {
+  const style={fontFamily:'Carlito',fontWeight,italic};
+  assert.equal(registry.textMeasurement.measure('Price: $5',20,style),registry.textMeasurement.measure('Price: $5',20,style));
+}
 assert.equal(registry.embeddedFonts.length,33);
 for(const face of registry.embeddedFonts) assert.ok(face.license?.length>1000);
 const entries=registry.embeddedFonts.map(face=>({...face,data:new Uint8Array(Buffer.from(face.dataUrl.split(',')[1],'base64'))}));
