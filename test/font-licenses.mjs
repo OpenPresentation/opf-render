@@ -9,7 +9,7 @@ import {createHash} from 'node:crypto';
 import {createRequire} from 'node:module';
 import path from 'node:path';
 import {BUNDLED_FONT_MANIFEST} from '../src/font-manifest.js';
-import {ALLOWED_FONT_LICENSES,RFN_PENDING_UNMODIFIED_UPSTREAM,copyrightLine,declaresReservedFontName,detectLicense,detectLicenses,isUnmodifiedUpstreamUrl,reservedFontNames,upstreamUrl} from '../scripts/font-license.mjs';
+import {ALLOWED_FONT_LICENSES,RFN_PENDING_UNMODIFIED_UPSTREAM,copyrightLine,declaresReservedFontName,detectLicense,detectLicenses,isUnmodifiedUpstreamUrl,nameContainsReservedName,reservedFontNames,upstreamUrl} from '../scripts/font-license.mjs';
 
 const require=createRequire(import.meta.url),hash=data=>createHash('sha256').update(data).digest('hex');
 const rootPackage=JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8'));
@@ -21,7 +21,6 @@ const fixtures={
   'OFL-1.1':`Copyright 2020 The X Project Authors, with Reserved Font Name "X"\n\n${oflDivider}`,
   'Apache-2.0':'                                 Apache License\n                           Version 2.0, January 2004\n',
   'UFL-1.0':'-------------------------------\nUBUNTU FONT LICENCE Version 1.0\n-------------------------------\n',
-  'Bitstream-Vera':'Copyright (c) 2003 by Bitstream, Inc. Bitstream Vera is a trademark of Bitstream, Inc.\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of the fonts accompanying this license ("Fonts") and associated documentation files.\n',
   MIT:mitText,
 };
 for(const [id,text] of Object.entries(fixtures)){
@@ -50,6 +49,21 @@ assert.ok(isUnmodifiedUpstreamUrl(pinnedRaw));
 assert.ok(!isUnmodifiedUpstreamUrl(pinnedRaw.replace('23e54b51ddffbc7713c583748e3bd86f62b1fa4a','main')),'a branch name is not a pin');
 assert.ok(!isUnmodifiedUpstreamUrl(pinnedRaw.replace('/google/fonts/','/someone/else/')),'repository must be allowlisted');
 assert.ok(!isUnmodifiedUpstreamUrl('https://www.npmjs.com/package/@fontsource/raleway/v/5.3.0'),'a repackaged npm file is not upstream');
+
+// Reserved Font Name parsing fails closed.
+const rfnHeader=text=>`${text}
+
+${oflDivider}`;
+assert.deepEqual(reservedFontNames(rfnHeader('Copyright 2020 The Z Authors, with Reserved Font Name Zed.')),['Zed'],'unquoted names are read');
+assert.deepEqual(reservedFontNames(rfnHeader('Copyright 2020 The Z Authors (Reserved Font Name "Zed")')),['Zed'],'parenthesised names are read');
+assert.deepEqual(reservedFontNames(rfnHeader('Copyright 2020 A, with Reserved Font Names "Alpha" and "Beta"')),['Alpha','Beta']);
+assert.throws(()=>reservedFontNames(rfnHeader('Copyright 2020 The Z Authors. This font has no Reserved Font Name.')),/no name could be read/,'a mention with no readable name must throw, not report none');
+assert.throws(()=>reservedFontNames(rfnHeader('Copyright 2020 The Z Authors. Reserved Font Name (see notes).')),/no name could be read/);
+assert.deepEqual(reservedFontNames(rfnHeader('Copyright 2020 The Z Authors')),[]);
+assert.deepEqual(reservedFontNames(['Copyright 2020 The Z Authors','','This Font Software is licensed under the SIL Open Font License, Version 1.1.','"Reserved Font Name" refers to any names specified as such after the copyright statement(s).',''].join(String.fromCharCode(10))),[],'the definition paragraph is not a declaration even without a divider');
+assert.ok(nameContainsReservedName(['Carlito','Carlito_400Regular.ttf'],['Carlito']));
+assert.ok(nameContainsReservedName(['My CARLITO Pro'],['Carlito']),'case-insensitive');
+assert.ok(!nameContainsReservedName(['Noto Sans JP','NotoSansJP_400Regular.ttf'],['Source']),'a family that does not use the reserved name is fine when modified');
 
 // Manifest checks against the installed packages.
 const packages=BUNDLED_FONT_MANIFEST.packages;
@@ -81,15 +95,16 @@ for(const pkg of packages){
   assert.equal(copyrightLine(licenseText),pkg.copyright,`${label}: copyright differs from ${pkg.licenseFile}`);
   assert.equal(upstreamUrl(licenseText),pkg.upstream,`${label}: upstream differs from ${pkg.licenseFile}`);
 
-  // RFN rule (owner decision 2026-09-29): a family that declares a Reserved Font Name ships the unmodified upstream files.
-  const declaresRfn=declaresReservedFontName(licenseText);
-  assert.ok(!declaresRfn||pkg.reservedFontNames.length>0,`${label}: the license declares a Reserved Font Name that could not be parsed`);
-  if(pkg.reservedFontNames.length>0){
-    rfnPackages.push(pkg.name);
-    const proven=pkg.faces.every(face=>face.upstreamFile&&isUnmodifiedUpstreamUrl(face.upstreamFile.url)&&face.upstreamFile.sha256===face.sha256);
-    if(proven)assert.ok(!(pkg.name in RFN_PENDING_UNMODIFIED_UPSTREAM),`${label}: ships unmodified upstream files now; remove it from RFN_PENDING_UNMODIFIED_UPSTREAM`);
-    else assert.ok(pkg.name in RFN_PENDING_UNMODIFIED_UPSTREAM,`${label} declares Reserved Font Name ${pkg.reservedFontNames.join(', ')}: every face needs upstreamFile { url, sha256 } with a pinned URL from an allowlisted upstream repository and a sha256 equal to the face's own (byte-identical, not subsetted, instanced or converted)`);
-  }else assert.ok(!(pkg.name in RFN_PENDING_UNMODIFIED_UPSTREAM),`${label}: declares no Reserved Font Name; remove it from RFN_PENDING_UNMODIFIED_UPSTREAM`);
+  // RFN rule (owner decision 2026-09-29): OFL stops a MODIFIED version from using the reserved name in its name. A face is
+  // modified unless it proves it is the byte-identical upstream file (upstreamFile); it is a problem only when its family or
+  // file name also contains a reserved name. Such a package must be listed as pending, and the list may only shrink.
+  assert.ok(!declaresReservedFontName(licenseText)||pkg.reservedFontNames.length>0,`${label}: the license declares a Reserved Font Name that could not be parsed`);
+  const provenUnmodified=face=>Boolean(face.upstreamFile)&&isUnmodifiedUpstreamUrl(face.upstreamFile.url)&&face.upstreamFile.sha256===face.sha256;
+  for(const face of pkg.faces)if(face.upstreamFile)assert.ok(provenUnmodified(face),`${label}: ${face.file} upstreamFile must be a pinned allowlisted URL with a sha256 equal to the face's own`);
+  if(pkg.reservedFontNames.length>0)rfnPackages.push(pkg.name);
+  const usesReservedName=pkg.reservedFontNames.length>0&&pkg.faces.some(face=>!provenUnmodified(face)&&nameContainsReservedName([face.family,path.basename(face.file)],pkg.reservedFontNames));
+  if(usesReservedName)assert.ok(pkg.name in RFN_PENDING_UNMODIFIED_UPSTREAM,`${label} serves a modified face whose name contains the Reserved Font Name ${pkg.reservedFontNames.join(', ')}: every face needs upstreamFile { url, sha256 } with a pinned URL from an allowlisted upstream repository and a sha256 equal to the face's own (byte-identical, not subsetted, instanced or converted)`);
+  else assert.ok(!(pkg.name in RFN_PENDING_UNMODIFIED_UPSTREAM),`${label}: no modified face uses a reserved name (or none is declared); remove it from RFN_PENDING_UNMODIFIED_UPSTREAM`);
 
   assert.ok(pkg.faces.length>0,`${label}: no faces listed`);
   for(const face of pkg.faces){
@@ -100,5 +115,5 @@ for(const pkg of packages){
 }
 assert.equal(new Set(packages.map(pkg=>pkg.name)).size,packages.length,'each package appears once in the manifest');
 for(const name of Object.keys(RFN_PENDING_UNMODIFIED_UPSTREAM))assert.ok(packages.some(pkg=>pkg.name===name),`${name} is in RFN_PENDING_UNMODIFIED_UPSTREAM but not in the manifest`);
-console.log(`Font licenses verified for ${packages.length} packages, ${rows.length} faces. Reserved Font Names: ${rfnPackages.length} packages, all ${rfnPackages.length===Object.keys(RFN_PENDING_UNMODIFIED_UPSTREAM).length?'pending a switch to unmodified upstream files':'with proven or pending upstream files'}.`);
+console.log(`Font licenses verified for ${packages.length} packages, ${rows.length} faces. Reserved Font Names: ${rfnPackages.length} packages (${rfnPackages.map(name=>name.replace('@expo-google-fonts/','')).join(', ')}); pending unmodified upstream files: ${Object.keys(RFN_PENDING_UNMODIFIED_UPSTREAM).map(name=>name.replace('@expo-google-fonts/','')).join(', ')||'none'}.`);
 if(process.argv.includes('--table'))for(const row of rows)console.log(`${row.face}\t${row.label}\tdeclared ${row.declared}\tdetected ${row.detected}\tRFN ${row.rfn}`);
