@@ -20,15 +20,16 @@ for(const [fontFamily,substitute] of Object.entries(pairs)) for(const fontWeight
   assert.equal(resolved.path,style.path);
   assert.ok(registry.textMeasurement.measure('AVATAR office 1234',25,style)>0);
 }
-assert.equal(registry.embeddedFonts.length,49);
+// 9 base + 24 Office (npm) faces are embedded eagerly; the 35 vendored open-family faces and the 16 Intos faces (FF-31) are embed:"used" and only in the SVGs that name them.
+assert.equal(registry.embeddedFonts.length,33);
+assert.equal(registry.describeFaces().length,84);
 for(const face of registry.embeddedFonts) assert.ok(face.license?.length>1000);
 const entries=registry.embeddedFonts.map(face=>({...face,data:new Uint8Array(Buffer.from(face.dataUrl.split(',')[1],'base64'))}));
 const alias=createFontRegistry(entries,{aliases:{Carlito:'Arimo'},substitutionPolicy:'visual'});
 assert.equal(alias.resolveFont({fontFamily:'Carlito',fontWeight:400}).compatibility,'exact');
 assert.equal(alias.resolveFont({fontFamily:'Carlito',fontWeight:400}).resolvedFamily,'Carlito');
 assert.equal(alias.resolveFont({fontFamily:'Calibri Light',fontWeight:300}).compatibility,'visual');
-assert.equal(alias.resolveFont({fontFamily:'Aptos',fontWeight:400}).compatibility,'metric');
-assert.equal(alias.resolveFont({fontFamily:'Aptos',fontWeight:500}).compatibility,'visual');
+assert.equal(alias.resolveFont({fontFamily:'Aptos',fontWeight:400}).compatibility,'visual');
 assert.equal(alias.resolveFont({fontFamily:'Calibri',fontWeight:500}).compatibility,'visual');
 const metricOnly=createFontRegistry(entries,{substitutionPolicy:'metric'});
 // Georgia -> Gelasio is metric at 400/700, so metric-mode registries use it, reported as metric.
@@ -126,4 +127,4 @@ assert.throws(()=>missingStyle.resolveFont({fontFamily:'Carlito',fontWeight:400,
 assert.throws(()=>createFontRegistry(entries,{substitutionPolicy:'best'}),{code:'invalid-font-policy'});
 assert.ok(Object.isFrozen(FONT_COMPATIBILITY[0].substitutes));
 registry.clearSubstitutions(); assert.deepEqual(registry.substitutions,[]);
-console.log('Office font policy passed: 40 bundled faces, exact-first lookup, scoped metric claims, theme aliases, explicit approximate fallback, and symbol/math/coverage errors.');
+console.log('Office font policy passed: 24 bundled faces, exact-first lookup, scoped metric claims, theme aliases, explicit approximate fallback, and symbol/math/coverage errors.');

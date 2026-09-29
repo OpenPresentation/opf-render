@@ -1,2 +1,6 @@
-# Vendored font files, licenses and notices are hash-pinned byte for byte; never convert line endings.
-fonts/intos/** -text
+# Vendored fonts (FF-31): binaries and license notices stay byte-exact, with no eol conversion.
+*.ttf binary
+fonts/**/OFL.txt -text
+fonts/intos/LICENSE.txt -text
+fonts/intos/NOTICE.md -text
+fonts/**/PROVENANCE.json text eol=lf

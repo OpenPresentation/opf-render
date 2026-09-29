@@ -90,6 +90,8 @@ jobs:
       - run: npm run test:font-preparation-browser
       - run: npm run test:font-variants-browser
       - run: npm run test:aptos-preview-browser
+      - run: npm run test:lazy-fonts-browser
+      - run: npm run test:aptos-preview-browser
       - run: npm run test:script-fonts-browser
       - run: npm run test:plain-whitespace-browser
       - id: rich-flow

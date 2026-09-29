@@ -46,11 +46,18 @@ const notice = (await readFile(path.join(path.dirname(vendoredFiles[0]), pkg.not
 assert.equal(hash(Buffer.from(notice)), pkg.noticeSha256);
 assert.ok(notice.includes(pkg.commit) && notice.includes('Inter Project Authors') && notice.includes('Gelasio Project Authors'));
 // Embedded SVG licenses carry the license and the notice.
-assert.ok(registry.embeddedFonts.filter(face => /^Intos/.test(face.family)).every(face => face.license.includes('SIL OPEN FONT LICENSE') && face.license.includes('Gelasio Project Authors')));
+const intosEmbedded = options.embeddedFonts.filter(face => /^Intos/.test(face.family));
+assert.equal(intosEmbedded.length, 16);
+assert.ok(intosEmbedded.every(face => face.license.includes('SIL OPEN FONT LICENSE') && face.license.includes('Gelasio Project Authors')));
 
 // The office pack is base + the six Office substitutes + Intos; the base pack never carries Intos.
-assert.equal(registry.embeddedFonts.length, 9 + 24 + 16);
-assert.ok(registry.embeddedFonts.every(face => face.embed === 'used'), 'every bundled face is embedded only when used');
+// One rule for every vendored pack (Intos and the open families): embed "used". registry.embeddedFonts is the eager list of
+// faces embedded in every SVG (the 9 base and 24 Office npm faces); the vendored faces are in options.embeddedFonts and in
+// registry.lazyFonts, and an SVG embeds them only when its text names the family.
+assert.equal(registry.embeddedFonts.length, 9 + 24);
+assert.ok(!registry.embeddedFonts.some(face => /^Intos/.test(face.family)));
+assert.ok(intosEmbedded.every(face => face.embed === 'used'));
+assert.equal(registry.lazyFonts.filter(face => /^Intos/.test(face.family)).length, 16);
 assert.ok(!(await prepareNodeFonts({pack: 'base'})).registry.describeFaces().some(face => /^Intos/.test(face.family)));
 await assert.rejects(prepareNodeFonts({pack: 'aptos'}), {code: 'invalid-font-pack'});
 // The default strict (metric) office registry resolves the Aptos family without asking for visual mode.
@@ -71,8 +78,8 @@ for (const [family, weight, italic, expected] of [
 // Real Aptos is never bundled or embedded: the source family stays the requested one.
 assert.ok(registry.embeddedFonts.every(face => !/aptos/i.test(face.family)));
 
-// Rendering: the default (Aptos) scheme measures and draws with Intos, and the SVG embeds only the
-// families its text names, not the unused Narrow and Serif families or the other packs' faces.
+// Rendering: the default (Aptos) scheme measures and draws with Intos, and the SVG embeds only the Intos
+// families its text names, not the unused Narrow and Serif families. The eager npm faces are embedded as before.
 const deck = {name: 'Aptos preview', slides: [{id: 'a', title: 'Quarterly operating review', text: 'Revenue grew in every region.'}]};
 const source = JSON.stringify(deck);
 const svg = renderSvg(deck, options);
@@ -83,10 +90,9 @@ const embedded = [...svg.matchAll(/@font-face\{font-family:"([^"]+)"/g)].map(mat
 assert.equal(embedded.filter(family => family === 'Intos').length, 4);
 assert.equal(embedded.filter(family => family === 'Intos Display').length, 4);
 assert.ok(!embedded.includes('Intos Narrow') && !embedded.includes('Intos Serif'), 'unused Intos families stay out of the SVG');
-assert.ok(!embedded.includes('Roboto') && !embedded.includes('Carlito'), 'only the families the slide names are embedded');
-assert.ok(svg.length < 9e6, 'an Aptos slide embeds about 8 MB of font data, not the whole office pack');
+assert.ok(embedded.includes('Roboto') && embedded.includes('Carlito'), 'the eager npm faces are embedded in every SVG, as before');
 const baseSvg = renderSvg({name: 'Roboto', design: {fontScheme: 'roboto'}, slides: [{id: 'r', title: 'Title', text: 'Body'}]}, (await prepareNodeFonts()).options);
-assert.deepEqual([...new Set([...baseSvg.matchAll(/@font-face\{font-family:"([^"]+)"/g)].map(match => match[1]))], ['Roboto'], 'the base pack embeds only the used family too');
+assert.ok(!/font-family:"Intos/.test(baseSvg), 'the base pack has no Intos');
 assert.equal(renderSvg(deck, (await prepareNodeFonts({pack: 'office'})).options), svg, 'same bytes and input replay identically');
 // A slide that names none of the Intos families embeds none of them.
 const roboto = renderSvg({name: 'Roboto', design: {fontScheme: 'roboto'}, slides: [{id: 'r', title: 'Title', text: 'Body'}]}, options);

@@ -1,10 +1,11 @@
 import { readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { createFontRegistry, OPFFontError } from "./fonts.js";
 import { BUNDLED_FONT_MANIFEST } from "./font-manifest.js";
+import { lazyFontList } from "./lazy-font-list.js";
 export { BUNDLED_FONT_MANIFEST } from "./font-manifest.js";
 import { scriptFontPackages } from "./script-font-pack.js";
 export { scriptFontPackages } from "./script-font-pack.js";
@@ -22,34 +23,46 @@ async function verifiedFile(file, expected, details) {
 async function loadPackages(packages) {
   const entries = [], fontFiles = [];
   for (const pkg of packages) {
-    let directory;
     if (pkg.vendored) {
-      // Vendored faces ship inside this package (fonts/<name>/), pinned by upstream commit and per-file hashes.
-      directory = fileURLToPath(new URL(`../${pkg.directory}/`, import.meta.url));
-    } else {
-      let manifestPath, installed;
-      try {
-        manifestPath = require.resolve(`${pkg.name}/package.json`);
-        installed = JSON.parse(await readFile(manifestPath, "utf8"));
-      } catch (error) {
-        throw new OPFFontError("font-resource-unavailable", `Install ${pkg.name}@${pkg.version} to use this offline font pack.`, {package:pkg.name, cause:error.code});
+      // FF-31: vendored faces ship inside this package (pkg.directory), hash-pinned like the npm packs. The open pack is
+      // embedded in an SVG only when the slide's text names the family (embed "used"); raster output reads the files.
+      const directory = fileURLToPath(new URL(`../${pkg.directory}/`, import.meta.url));
+      let license = (await verifiedFile(path.join(directory, pkg.licenseFile), pkg.licenseSha256, {package:pkg.name, file:pkg.licenseFile})).toString("utf8");
+      // A notice file carries provenance and upstream copyright lines that the upstream license file omits.
+      if (pkg.noticeFile) license += "\n\n" + (await verifiedFile(path.join(directory, pkg.noticeFile), pkg.noticeSha256, {package:pkg.name, file:pkg.noticeFile})).toString("utf8");
+      for (const face of pkg.faces) {
+        const file = path.join(directory, face.file);
+        const data = await verifiedFile(file, face.sha256, {package:pkg.name, file:face.file});
+        fontFiles.push(file);
+        entries.push({data:new Uint8Array(data), family:face.family, weight:face.weight, italic:face.italic, license, embed:"used"});
       }
-      if (installed.version !== pkg.version) throw new OPFFontError("font-version-mismatch", `Expected ${pkg.name}@${pkg.version}; reinstall the pinned package.`, {package:pkg.name, expected:pkg.version, actual:installed.version});
-      directory = path.dirname(manifestPath);
+      continue;
     }
-    let license = (await verifiedFile(path.join(directory, pkg.licenseFile), pkg.licenseSha256, {package:pkg.name, file:pkg.licenseFile})).toString("utf8");
-    // A notice file carries provenance and upstream copyright lines the upstream license file omits.
-    if (pkg.noticeFile) license += "\n\n" + (await verifiedFile(path.join(directory, pkg.noticeFile), pkg.noticeSha256, {package:pkg.name, file:pkg.noticeFile})).toString("utf8");
+    let manifestPath, installed;
+    try {
+      manifestPath = require.resolve(`${pkg.name}/package.json`);
+      installed = JSON.parse(await readFile(manifestPath, "utf8"));
+    } catch (error) {
+      throw new OPFFontError("font-resource-unavailable", `Install ${pkg.name}@${pkg.version} to use this offline font pack.`, {package:pkg.name, cause:error.code});
+    }
+    if (installed.version !== pkg.version) throw new OPFFontError("font-version-mismatch", `Expected ${pkg.name}@${pkg.version}; reinstall the pinned package.`, {package:pkg.name, expected:pkg.version, actual:installed.version});
+    const directory = path.dirname(manifestPath);
+    const license = (await verifiedFile(path.join(directory, pkg.licenseFile), pkg.licenseSha256, {package:pkg.name, file:pkg.licenseFile})).toString("utf8");
     for (const face of pkg.faces) {
       const file = path.join(directory, face.file);
       const data = await verifiedFile(file, face.sha256, {package:pkg.name, file:face.file});
       fontFiles.push(file);
-      entries.push({data:new Uint8Array(data), family:face.family, weight:face.weight, italic:face.italic, license, embed:"used", ...(pkg.scripts ? {scripts:[...pkg.scripts]} : {})});
+      entries.push({data:new Uint8Array(data), family:face.family, weight:face.weight, italic:face.italic, license, ...(pkg.scripts ? {scripts:[...pkg.scripts]} : {})});
     }
   }
   return {entries, fontFiles};
 }
 
+// A package that is the renamed successor of a family (Source Sans 3, formerly Source Sans Pro) answers to the
+// old name through a built-in alias, reported visual like other aliases; it is not a claim of the old face.
+const renamedAliases = () => Object.fromEntries(BUNDLED_FONT_MANIFEST.packages.filter(item => item.pack === "open" && item.renamedFrom).map(item => [item.renamedFrom, item.faces[0].family]));
+// The vendored faces this registry holds (embed "used"): a host that serves fonts itself lists them to copy their files.
+const lazyOf = registry => lazyFontList().filter(face => registry.describeFaces().some(held => held.family === face.family && held.weight === face.weight && held.italic === face.italic));
 const loadPack = pack => loadPackages(BUNDLED_FONT_MANIFEST.packages.filter(item => item.pack === pack));
 
 async function withScripts(loaded, scripts) {
@@ -85,19 +98,24 @@ async function withFaces(loaded, faces) {
 /** Bundled, openly licensed faces. No system font discovery or network requests. */
 export async function loadBundledFontRegistry({scripts, faces, ...options} = {}) {
   const {entries, fontFiles} = await withFaces(await withScripts(await loadPack("base"), scripts), faces);
-  return Object.assign(createFontRegistry(entries,options),{fontFiles});
+  const registry = createFontRegistry(entries,options);
+  return Object.assign(registry,{fontFiles,lazyFonts:lazyOf(registry)});
 }
 
-/** Pinned open-source Office substitutes (Carlito, Caladea, Arimo, Tinos, Cousine, Gelasio and the vendored Intos family for Aptos), optionally alongside the base Roboto pack. */
+/** Office substitutes plus the open families that font schemes select (FF-31),
+ * optionally alongside the base Roboto pack. `includeOpenFonts: false` leaves the open families out. */
 export async function loadOfficeFontRegistry({scripts, faces, ...options} = {}) {
   const {entries, fontFiles} = await loadPack("office");
-  if (options.includeBaseFonts !== false) {
-    const base = await loadPack("base");
-    fontFiles.push(...base.fontFiles);
-    entries.push(...base.entries);
+  for (const [include, pack] of [[options.includeOpenFonts, "open"], [options.includeBaseFonts, "base"]]) {
+    if (include === false) continue;
+    const extra = await loadPack(pack);
+    fontFiles.push(...extra.fontFiles);
+    entries.push(...extra.entries);
   }
   const loaded = await withFaces(await withScripts({entries, fontFiles}, scripts), faces);
-  return Object.assign(createFontRegistry(loaded.entries,{substitutionPolicy:"metric",...options}),{fontFiles:loaded.fontFiles});
+  const aliases = options.includeOpenFonts === false ? options.aliases : {...renamedAliases(), ...options.aliases};
+  const registry = createFontRegistry(loaded.entries,{substitutionPolicy:"metric",...options,...(aliases?{aliases}:{})});
+  return Object.assign(registry,{fontFiles:loaded.fontFiles,lazyFonts:lazyOf(registry)});
 }
 
 /** One set of verified font inputs for layout, SVG, editor, PPTX, and Node raster export. */

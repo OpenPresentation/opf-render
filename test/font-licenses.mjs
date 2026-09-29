@@ -7,12 +7,12 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {createRequire} from 'node:module';
-import {fileURLToPath} from 'node:url';
 import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {BUNDLED_FONT_MANIFEST} from '../src/font-manifest.js';
 import {ALLOWED_FONT_LICENSES,RFN_PENDING_UNMODIFIED_UPSTREAM,copyrightLine,declaresReservedFontName,detectLicense,detectLicenses,isUnmodifiedUpstreamUrl,nameContainsReservedName,reservedFontNames,upstreamUrl} from '../scripts/font-license.mjs';
 
-const require=createRequire(import.meta.url),hash=data=>createHash('sha256').update(data).digest('hex');
+const repoRoot=fileURLToPath(new URL('../',import.meta.url)),require=createRequire(import.meta.url),hash=data=>createHash('sha256').update(data).digest('hex');
 const rootPackage=JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8'));
 
 // Detector self-checks: each allowed license is recognised, copyleft and unknown texts are not accepted.
@@ -76,22 +76,27 @@ for(const pkg of packages){
     assert.ok(pkg[field]!==undefined&&pkg[field]!==null&&pkg[field]!=='',`${label}: manifest entry is missing "${field}"; run scripts/update-font-manifest.mjs`);
   assert.ok(Array.isArray(pkg.reservedFontNames)&&pkg.reservedFontNames.every(name=>typeof name==='string'&&name),`${label}: reservedFontNames must be an array of names (empty when none)`);
   assert.match(pkg.upstream,/^https?:\/\//,`${label}: upstream must be a URL`);
-  // Vendored packages ship inside this repository (fonts/<name>/), pinned by a full upstream commit instead of an npm version.
-  const vendored=pkg.vendored===true;
-  if(vendored){
-    assert.match(pkg.commit,/^[0-9a-f]{40}$/,`${label}: a vendored package must pin a full upstream commit`);
-    assert.equal(pkg.source,`${pkg.upstream}/tree/${pkg.commit}`,`${label}: source must be the upstream tree at the pinned commit`);
-    assert.ok(pkg.directory&&!path.isAbsolute(pkg.directory)&&!pkg.directory.split(/[\\/]/).includes('..'),`${label}: vendored directory must stay inside the repository`);
+  // A vendored pack (FF-31) ships inside this package. It is pinned by upstream commit (source is the tree at that commit and
+  // every face and the notice name it) or, for a family with no Reserved Font Name, by the exact npm version it was copied from.
+  if(pkg.vendored&&pkg.commit){
+    assert.match(pkg.commit,/^[0-9a-f]{40}$/,`${label}: pin the upstream commit`);
+    assert.match(pkg.source,new RegExp(`^https://github\\.com/[^/]+/[^/]+/tree/${pkg.commit}$`),`${label}: source must be the upstream tree at the pinned commit`);
+    assert.ok(pkg.upstreamLicenseUrl?.includes(pkg.commit),`${label}: the notice must come from the pinned upstream commit`);
+    for(const face of pkg.faces)assert.ok(face.upstreamFile?.url.includes(pkg.commit),`${label}: ${face.file} must be pinned to the package commit`);
   }else assert.equal(pkg.source,`https://www.npmjs.com/package/${pkg.name}/v/${pkg.version}`,`${label}: source must be the exact npm package URL`);
   assert.ok(ALLOWED_FONT_LICENSES.includes(pkg.license),`${label}: ${pkg.license} is not an allowed bundled-font license (${ALLOWED_FONT_LICENSES.join(', ')})`);
 
   let directory;
-  if(vendored)directory=path.join(fileURLToPath(new URL('../',import.meta.url)),pkg.directory);
-  else{
+  if(pkg.vendored){
+    // Vendored: no npm dependency; the faces, notice and PROVENANCE.json are files of this package.
+    assert.ok(!rootPackage.dependencies?.[pkg.name]&&!rootPackage.devDependencies?.[pkg.name],`${label}: a vendored pack must not also be a dependency`);
+    assert.match(pkg.directory,/^fonts\/[a-z0-9-]+(\/[a-z0-9-]+)*$/,`${label}: vendored directory must be under fonts/`);
+    assert.ok(rootPackage.files.includes('fonts'),`${label}: package.json files must include fonts`);
+    directory=path.join(repoRoot,pkg.directory);
+  }else{
     const pinned=(pkg.pack==='scripts'?rootPackage.devDependencies:rootPackage.dependencies)?.[pkg.name];
     assert.equal(pinned,pkg.version,`${label}: package.json must pin this exact version (no range)`);
     assert.match(pinned,/^\d+\.\d+\.\d+$/,`${label}: pin must be an exact version`);
-
     directory=path.dirname(require.resolve(`${pkg.name}/package.json`));
     const installed=JSON.parse(await readFile(path.join(directory,'package.json'),'utf8'));
     assert.equal(installed.version,pkg.version,`${label}: installed version differs from the manifest`);
