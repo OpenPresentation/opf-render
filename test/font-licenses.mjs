@@ -9,7 +9,7 @@ import {createHash} from 'node:crypto';
 import {createRequire} from 'node:module';
 import path from 'node:path';
 import {BUNDLED_FONT_MANIFEST} from '../src/font-manifest.js';
-import {ALLOWED_FONT_LICENSES,copyrightLine,detectLicense,detectLicenses,reservedFontNames,upstreamUrl} from '../scripts/font-license.mjs';
+import {ALLOWED_FONT_LICENSES,RFN_PENDING_UNMODIFIED_UPSTREAM,copyrightLine,declaresReservedFontName,detectLicense,detectLicenses,isUnmodifiedUpstreamUrl,reservedFontNames,upstreamUrl} from '../scripts/font-license.mjs';
 
 const require=createRequire(import.meta.url),hash=data=>createHash('sha256').update(data).digest('hex');
 const rootPackage=JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8'));
@@ -40,10 +40,21 @@ assert.deepEqual(reservedFontNames(`Copyright 2020 The Y Authors (https://exampl
 assert.equal(upstreamUrl('Copyright 2011 The Roboto Project Authors (https://github.com/googlefonts/roboto-classic)\n'),'https://github.com/googlefonts/roboto-classic');
 assert.equal(copyrightLine('\n  Copyright 2011 A\nrest'),'Copyright 2011 A');
 
+assert.ok(declaresReservedFontName(fixtures['OFL-1.1']));
+assert.ok(!declaresReservedFontName(`Copyright 2020 The Y Authors
+
+${oflDivider}"Reserved Font Name" refers to any names specified as such after the copyright statement(s).
+`));
+const pinnedRaw='https://raw.githubusercontent.com/google/fonts/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/carlito/Carlito-Regular.ttf';
+assert.ok(isUnmodifiedUpstreamUrl(pinnedRaw));
+assert.ok(!isUnmodifiedUpstreamUrl(pinnedRaw.replace('23e54b51ddffbc7713c583748e3bd86f62b1fa4a','main')),'a branch name is not a pin');
+assert.ok(!isUnmodifiedUpstreamUrl(pinnedRaw.replace('/google/fonts/','/someone/else/')),'repository must be allowlisted');
+assert.ok(!isUnmodifiedUpstreamUrl('https://www.npmjs.com/package/@fontsource/raleway/v/5.3.0'),'a repackaged npm file is not upstream');
+
 // Manifest checks against the installed packages.
 const packages=BUNDLED_FONT_MANIFEST.packages;
 assert.ok(packages.length>0,'the manifest bundles at least one font package');
-const rows=[];
+const rows=[],rfnPackages=[];
 for(const pkg of packages){
   const label=`${pkg.name}@${pkg.version}`;
   for(const field of ['name','version','pack','source','license','licenseFile','licenseSha256','reservedFontNames','upstream','copyright'])
@@ -70,6 +81,16 @@ for(const pkg of packages){
   assert.equal(copyrightLine(licenseText),pkg.copyright,`${label}: copyright differs from ${pkg.licenseFile}`);
   assert.equal(upstreamUrl(licenseText),pkg.upstream,`${label}: upstream differs from ${pkg.licenseFile}`);
 
+  // RFN rule (owner decision 2026-09-29): a family that declares a Reserved Font Name ships the unmodified upstream files.
+  const declaresRfn=declaresReservedFontName(licenseText);
+  assert.ok(!declaresRfn||pkg.reservedFontNames.length>0,`${label}: the license declares a Reserved Font Name that could not be parsed`);
+  if(pkg.reservedFontNames.length>0){
+    rfnPackages.push(pkg.name);
+    const proven=pkg.faces.every(face=>face.upstreamFile&&isUnmodifiedUpstreamUrl(face.upstreamFile.url)&&face.upstreamFile.sha256===face.sha256);
+    if(proven)assert.ok(!(pkg.name in RFN_PENDING_UNMODIFIED_UPSTREAM),`${label}: ships unmodified upstream files now; remove it from RFN_PENDING_UNMODIFIED_UPSTREAM`);
+    else assert.ok(pkg.name in RFN_PENDING_UNMODIFIED_UPSTREAM,`${label} declares Reserved Font Name ${pkg.reservedFontNames.join(', ')}: every face needs upstreamFile { url, sha256 } with a pinned URL from an allowlisted upstream repository and a sha256 equal to the face's own (byte-identical, not subsetted, instanced or converted)`);
+  }else assert.ok(!(pkg.name in RFN_PENDING_UNMODIFIED_UPSTREAM),`${label}: declares no Reserved Font Name; remove it from RFN_PENDING_UNMODIFIED_UPSTREAM`);
+
   assert.ok(pkg.faces.length>0,`${label}: no faces listed`);
   for(const face of pkg.faces){
     assert.ok(!path.isAbsolute(face.file)&&!face.file.split(/[\\/]/).includes('..'),`${label}: face path must stay inside the package: ${face.file}`);
@@ -78,5 +99,6 @@ for(const pkg of packages){
   }
 }
 assert.equal(new Set(packages.map(pkg=>pkg.name)).size,packages.length,'each package appears once in the manifest');
-console.log(`Font licenses verified for ${packages.length} packages, ${rows.length} faces.`);
+for(const name of Object.keys(RFN_PENDING_UNMODIFIED_UPSTREAM))assert.ok(packages.some(pkg=>pkg.name===name),`${name} is in RFN_PENDING_UNMODIFIED_UPSTREAM but not in the manifest`);
+console.log(`Font licenses verified for ${packages.length} packages, ${rows.length} faces. Reserved Font Names: ${rfnPackages.length} packages, all ${rfnPackages.length===Object.keys(RFN_PENDING_UNMODIFIED_UPSTREAM).length?'pending a switch to unmodified upstream files':'with proven or pending upstream files'}.`);
 if(process.argv.includes('--table'))for(const row of rows)console.log(`${row.face}\t${row.label}\tdeclared ${row.declared}\tdetected ${row.detected}\tRFN ${row.rfn}`);

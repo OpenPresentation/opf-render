@@ -54,3 +54,37 @@ export function upstreamUrl(text) {
 export function copyrightLine(text) {
   return text.split(/\r?\n/).map(line => line.trim()).find(Boolean) ?? null;
 }
+
+/** True when the copyright block says "with Reserved Font Name", however the names are quoted. Catches what reservedFontNames() cannot parse. */
+export function declaresReservedFontName(text) {
+  return /with\s+Reserved\s+Font\s+Names?/i.test(licenseHeader(text));
+}
+
+/**
+ * A family whose license declares a Reserved Font Name must be bundled as the unmodified files its copyright holder
+ * released (owner decision, 2026-09-29): a subset, instance, conversion or edit is a modified version and may not carry the
+ * name. A face proves this with `upstreamFile: { url, sha256 }`, where `sha256` equals the face's own sha256 (byte-identical)
+ * and `url` is one of these pinned sources.
+ */
+/** Repositories whose files count as the copyright holder's release. Adding one is a reviewed change. */
+export const UNMODIFIED_UPSTREAM_REPOSITORIES = Object.freeze(['google/fonts']);
+
+/** A pinned raw file (commit sha in the URL) or a release asset of an allowlisted repository. */
+export function isUnmodifiedUpstreamUrl(url) {
+  const match = /^https:\/\/raw\.githubusercontent\.com\/([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)\/[0-9a-f]{40}\/\S+\.(?:ttf|otf)$/.exec(url) ?? /^https:\/\/github\.com\/([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)\/releases\/download\/\S+\.(?:ttf|otf)$/.exec(url);
+  return Boolean(match) && UNMODIFIED_UPSTREAM_REPOSITORIES.includes(match[1]);
+}
+
+/**
+ * Packages that declare a Reserved Font Name but do not yet ship unmodified upstream files, each with why. The renderer's
+ * @expo-google-fonts files are the Google Fonts API distribution (Carlito: 2532 glyphs against 2783 in the google/fonts
+ * file, so it is a subset) or static instances of a variable font (Noto Sans CJK: 5.4 MB against a 9.6 MB variable file).
+ * This list may only shrink: test/font-licenses.mjs fails on a stale entry and on any new RFN package that is not listed.
+ */
+export const RFN_PENDING_UNMODIFIED_UPSTREAM = Object.freeze({
+  '@expo-google-fonts/carlito': 'Google Fonts API subset of the google/fonts Carlito files (fewer glyphs); switch to the google/fonts TTFs.',
+  '@expo-google-fonts/noto-sans-jp': 'Static instances generated from the google/fonts variable font; upstream ships only NotoSansJP[wght].ttf.',
+  '@expo-google-fonts/noto-sans-sc': 'Static instances generated from the google/fonts variable font; upstream ships only NotoSansSC[wght].ttf.',
+  '@expo-google-fonts/noto-sans-tc': 'Static instances generated from the google/fonts variable font; upstream ships only NotoSansTC[wght].ttf.',
+  '@expo-google-fonts/noto-sans-kr': 'Static instances generated from the google/fonts variable font; upstream ships only NotoSansKR[wght].ttf.',
+});
