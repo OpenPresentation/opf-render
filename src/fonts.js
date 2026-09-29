@@ -68,7 +68,9 @@ export function createFontRegistry(entries, options = {}) {
     const format = signature === "OTTO" ? "otf" : signature === "wOFF" ? "woff" : signature === "wOF2" ? "woff2" : "ttf";
     // Script replacement faces (FF-19) declare the ISO 15924 scripts they serve.
     const scripts = Array.isArray(entry.scripts) && entry.scripts.length ? Object.freeze(entry.scripts.map(String)) : undefined;
-    return {family,familyGroup,fontFace,weight,italic,font,data,format,license:entry.license,scripts,cache:new Map()};
+    // "used": a bundled face is embedded in an SVG only when the slide's text names its family.
+    if (entry.embed !== undefined && entry.embed !== "always" && entry.embed !== "used") throw new OPFFontError("invalid-font-embed", "Font embed must be 'always' or 'used'.");
+    return {family,familyGroup,fontFace,weight,italic,font,data,format,license:entry.license,embed:entry.embed,scripts,cache:new Map()};
   };
   const faces = [], duplicates = new Set(), familySlots = new Map();
   // Adds faces atomically: every check runs before any face is registered.
@@ -225,6 +227,8 @@ export function createFontRegistry(entries, options = {}) {
     describeFaces: ()=>faces.map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.scripts?{scripts:[...face.scripts]}:{})})),
     /** Embedded faces for which `predicate({family,weight,italic,scripts})` holds; large script faces can be left to raster fontFiles. */
     selectEmbeddedFonts: predicate=>embedded(predicate),
+    /** True when a loaded script-pack face has a glyph for the character (FF-19 glyph fallback planning). */
+    scriptFacesCover: character => faces.some(face => face.scripts && face.font.hasGlyphForCodePoint(character.codePointAt(0))),
     /**
      * Register more faces in this registry (FF-19: script faces are added once a document needs
      * them). Atomic: on an error no face is added. Returns the added faces' metadata. Text
@@ -235,8 +239,9 @@ export function createFontRegistry(entries, options = {}) {
       const made = added.map(makeFace);
       register(made);
       buildAliases();
+      substitutions.clear();
       return made.map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.scripts?{scripts:[...face.scripts]}:{})}));
     },
   };
-  function embedded(predicate) { return faces.filter(face=>predicate({family:face.family,weight:face.weight,italic:face.italic,scripts:face.scripts})).map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.license ? {license:face.license} : {}),dataUrl:`data:font/${face.format};base64,${base64(face.data)}`})); }
+  function embedded(predicate) { return faces.filter(face=>predicate({family:face.family,weight:face.weight,italic:face.italic,scripts:face.scripts})).map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.license ? {license:face.license} : {}),...(face.embed==="used" ? {embed:"used"} : {}),dataUrl:`data:font/${face.format};base64,${base64(face.data)}`})); }
 }

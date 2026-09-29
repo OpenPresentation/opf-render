@@ -15,12 +15,15 @@ export interface BrowserFontInput extends Omit<FontFaceInput, "data"> {
 export interface BrowserFontRegistry extends FontRegistry {
   dispose(): void;
   /** Load script faces for ISO 15924 codes (or "all") from `scriptBaseUrl`. Resolves with the newly loaded package names. */
-  loadScripts(scripts: ScriptSelection): Promise<string[]>;
+  loadScripts(scripts: ScriptSelection, options?: { signal?: AbortSignal }): Promise<string[]>;
   /**
    * Load the script faces the presentation's text needs, once each (FF-19). Cheap when nothing new is
-   * needed. Call it after edits and render again afterwards: measurements planned earlier do not know the new faces.
+   * needed. Also loads the CJK face a glyph fallback needs for drawn characters the loaded faces lack. Call it after
+   * edits and render again afterwards: measurements planned earlier do not know the new faces. `signal` belongs to
+   * this call only. A failed call (fetch, hash, FontFace load) leaves nothing loaded and can be retried; after
+   * `dispose()` it rejects with `font-registry-disposed`.
    */
-  ensureScripts(presentation: unknown): Promise<AutoScriptSelection & { loaded: string[] }>;
+  ensureScripts(presentation: unknown, options?: { signal?: AbortSignal }): Promise<AutoScriptSelection & { loaded: string[] }>;
   /** Synchronous: package names the presentation needs that are not loaded yet. Empty means `ensureScripts` fetches nothing, so a host can render immediately. */
   pendingScripts(presentation: unknown): string[];
   /** Names of the script-pack packages loaded so far. */

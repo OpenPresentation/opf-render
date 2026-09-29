@@ -1,5 +1,5 @@
 import { createFontRegistry, OPFFontError } from "./fonts.js";
-import { autoScriptSelection, scriptFontPackages, scriptPackageEntries } from "./script-font-pack.js";
+import { analyzePresentationScripts, nextFallbackPackage, scriptFontPackages, scriptPackageEntries, scriptSelectionOf } from "./script-font-pack.js";
 export { autoScriptSelection, detectPresentationScripts, scriptFontEntries, scriptFontPackages } from "./script-font-pack.js";
 
 async function verifyDigest(entry, data, subtle) {
@@ -27,7 +27,7 @@ export async function loadBrowserFontRegistry(entries, options = {}) {
     );
   const fetcher = options.fetch ?? globalThis.fetch;
   const subtle = options.crypto?.subtle ?? globalThis.crypto?.subtle;
-  const fetchFaces = (list) => Promise.all(
+  const fetchFaces = (list, signal) => Promise.all(
     list.map(async (entry) => {
       let loaded = entry;
       if (!entry.data) {
@@ -36,7 +36,7 @@ export async function loadBrowserFontRegistry(entries, options = {}) {
             "invalid-font-source",
             "Supply font bytes or a font-file URL.",
           );
-        const response = await fetcher(entry.url, { signal: options.signal });
+        const response = await fetcher(entry.url, { signal });
         if (!response.ok)
           throw new OPFFontError(
             "font-fetch-failed",
@@ -50,7 +50,7 @@ export async function loadBrowserFontRegistry(entries, options = {}) {
       return loaded;
     }),
   );
-  const faces = await fetchFaces(entries);
+  const faces = await fetchFaces(entries, options.signal);
   const registry = createFontRegistry(faces, options),
     loaded = [];
   // Normalize family names using the registry's parsed font metadata.
@@ -86,42 +86,74 @@ export async function loadBrowserFontRegistry(entries, options = {}) {
 
   // Script faces (FF-19) are loaded lazily, once a document needs them, and only for the scripts it uses.
   const scriptPackages = new Set();
-  let queue = Promise.resolve();
+  let queue = Promise.resolve(), disposed = false;
+  const gone = () => new OPFFontError("font-registry-disposed", "The font registry was disposed.");
   const baseUrl = () => {
     if (typeof options.scriptBaseUrl !== "string" || !options.scriptBaseUrl)
       throw new OPFFontError("invalid-font-source", "Loading script fonts requires scriptBaseUrl, where the host serves the installed @expo-google-fonts packages.");
     return options.scriptBaseUrl;
   };
-  const loadScriptPackages = (scripts) => {
-    const wanted = scriptFontPackages(scripts).filter((item) => !scriptPackages.has(item.name));
+  // Loads whole packages. Order matters: fetch and verify, load every FontFace (not yet visible to the document),
+  // then register them with the document and add them to the registry atomically. Nothing is half loaded: on any
+  // failure (fetch, hash, FontFace.load, registry) the document and registry are unchanged and the packages stay
+  // pending, so the next call retries. `signal` belongs to this call only.
+  const loadPackageList = (packages, { signal } = {}) => {
     const result = queue.then(async () => {
-      const pending = wanted.filter((item) => !scriptPackages.has(item.name));
+      if (disposed) throw gone();
+      signal?.throwIfAborted?.();
+      const pending = packages.filter((item) => !scriptPackages.has(item.name));
       if (!pending.length) return [];
-      const root = baseUrl();
-      const fetched = await fetchFaces(scriptPackageEntries(pending, { baseUrl: root }));
-      const descriptors = registry.addFaces(fetched);
+      const fetched = await fetchFaces(scriptPackageEntries(pending, { baseUrl: baseUrl() }), signal);
+      let browserFaces;
+      try {
+        browserFaces = await Promise.all(fetched.map(async (entry) => {
+          const face = new FontFaceRef(entry.family, entry.data.slice().buffer, { weight: String(entry.weight ?? 400), style: entry.italic ? "italic" : "normal" });
+          await face.load();
+          return face;
+        }));
+      } catch (error) { throw new OPFFontError("font-load-failed", error.message); }
+      if (disposed) throw gone();
+      const shown = [];
+      try {
+        for (const face of browserFaces) { documentRef.fonts.add(face); shown.push(face); }
+        registry.addFaces(fetched);
+      } catch (error) {
+        for (const face of shown) documentRef.fonts.delete(face);
+        throw error;
+      }
+      loaded.push(...browserFaces);
       for (const item of pending) scriptPackages.add(item.name);
-      await registerBrowserFaces(fetched, descriptors);
+      try { await documentRef.fonts.ready; } catch { /* the faces are loaded and registered */ }
       return pending.map((item) => item.name);
     });
     queue = result.catch(() => {});
     return result;
   };
+  const covers = (character) => registry.scriptFacesCover(character);
   Object.assign(registry, {
-    /** Load the script faces for explicit ISO 15924 codes (or 'all'). Resolves with the newly loaded package names. */
-    loadScripts: (scripts) => loadScriptPackages(scripts),
+    /** Load the script faces for explicit ISO 15924 codes (or 'all'). Resolves with the newly loaded package names. `signal` aborts this call's fetches. */
+    loadScripts: (scripts, callOptions) => loadPackageList(scriptFontPackages(scripts), callOptions),
     /**
-     * Load the script faces the presentation's text needs, once each (FF-19). Cheap when nothing new is
-     * needed; call it after edits and render again afterwards. Resolves with the detected scripts, the
-     * packages loaded by this call and the scripts no pinned font serves.
+     * Load the script faces the presentation's text needs, once each (FF-19), then any CJK face the glyph fallback
+     * needs for characters the loaded faces lack. Cheap when nothing new is needed; call it after edits and render
+     * again afterwards. Resolves with the detected scripts, the packages loaded by this call and the scripts no
+     * pinned font serves. `signal` aborts this call's fetches; a failed call leaves nothing loaded and can be retried.
      */
-    async ensureScripts(presentation) {
-      const selection = autoScriptSelection(presentation);
-      const loadedNow = selection.scripts.length ? await loadScriptPackages(selection.scripts) : [];
+    async ensureScripts(presentation, callOptions) {
+      const analysis = analyzePresentationScripts(presentation), selection = scriptSelectionOf(analysis);
+      const loadedNow = selection.scripts.length ? await loadPackageList(scriptFontPackages(selection.scripts), callOptions) : [];
+      for (let next = nextFallbackPackage(analysis, { covers, loaded: scriptPackages }); next; next = nextFallbackPackage(analysis, { covers, loaded: scriptPackages }))
+        loadedNow.push(...(await loadPackageList([next], callOptions)));
       return { ...selection, loaded: loadedNow };
     },
     /** Synchronous: script-pack packages the presentation needs that are not loaded yet. Empty means `ensureScripts` would fetch nothing. */
-    pendingScripts: (presentation) => scriptFontPackages(autoScriptSelection(presentation).scripts).map((item) => item.name).filter((name) => !scriptPackages.has(name)),
+    pendingScripts(presentation) {
+      const analysis = analyzePresentationScripts(presentation);
+      const primary = scriptFontPackages(scriptSelectionOf(analysis).scripts).map((item) => item.name).filter((name) => !scriptPackages.has(name));
+      if (primary.length) return primary;
+      const next = nextFallbackPackage(analysis, { covers, loaded: scriptPackages });
+      return next ? [next.name] : [];
+    },
   });
   /** Names of the script-pack packages loaded so far. */
   Object.defineProperty(registry, "loadedScriptPackages", { get: () => [...scriptPackages], enumerable: true });
@@ -129,9 +161,9 @@ export async function loadBrowserFontRegistry(entries, options = {}) {
     if (options.scripts === "auto") {
       if (options.presentation === null || typeof options.presentation !== "object")
         throw new OPFFontError("invalid-font-scripts", "scripts: 'auto' needs the presentation whose text decides the scripts.", { scripts: options.scripts });
-      await registry.ensureScripts(options.presentation);
+      await registry.ensureScripts(options.presentation, { signal: options.signal });
     } else if (options.scripts !== undefined && !(Array.isArray(options.scripts) && !options.scripts.length)) {
-      await registry.loadScripts(options.scripts);
+      await registry.loadScripts(options.scripts, { signal: options.signal });
     }
   } catch (error) {
     for (const face of loaded) documentRef.fonts.delete(face);
@@ -139,6 +171,7 @@ export async function loadBrowserFontRegistry(entries, options = {}) {
   }
   return Object.assign(registry, {
     dispose() {
+      disposed = true;
       for (const face of loaded) documentRef.fonts.delete(face);
     },
   });

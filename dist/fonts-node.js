@@ -5,8 +5,10 @@ import { createHash } from "node:crypto";
 import { createFontRegistry, OPFFontError } from "./fonts.js";
 import { BUNDLED_FONT_MANIFEST } from "./font-manifest.js";
 export { BUNDLED_FONT_MANIFEST } from "./font-manifest.js";
-import { autoScriptSelection, scriptFontPackages } from "./script-font-pack.js";
+import { analyzePresentationScripts, nextFallbackPackage, scriptFontPackages, scriptSelectionOf } from "./script-font-pack.js";
 export { autoScriptSelection, detectPresentationScripts, scriptFontPackages } from "./script-font-pack.js";
+// Script faces are embedded in a standalone SVG only when the slide's text uses their family.
+const embedUsed = entries => entries.map(entry => ({...entry, embed: "used"}));
 const require = createRequire(import.meta.url);
 
 async function verifiedFile(file, expected, details) {
@@ -54,15 +56,40 @@ async function withScripts(loaded, scripts, {presentation, onDiagnostic} = {}) {
   if (scripts === undefined || (Array.isArray(scripts) && !scripts.length)) return loaded;
   if (scripts !== "auto") {
     const extra = await loadPackages(scriptFontPackages(scripts));
-    return {entries:[...loaded.entries, ...extra.entries], fontFiles:[...loaded.fontFiles, ...extra.fontFiles]};
+    return {entries:[...loaded.entries, ...embedUsed(extra.entries)], fontFiles:[...loaded.fontFiles, ...extra.fontFiles]};
   }
   if (presentation === null || typeof presentation !== "object") throw new OPFFontError("invalid-font-scripts", "scripts: 'auto' needs the presentation whose text decides the scripts.", {scripts});
-  const selection = autoScriptSelection(presentation), skipped = [];
+  const selection = scriptSelectionOf(analyzePresentationScripts(presentation)), skipped = [];
   const extra = await loadPackages(scriptFontPackages(selection.scripts), skipped);
   for (const script of selection.unavailable) onDiagnostic?.({code: "script-font-unavailable", script, message: `No pinned open font serves script '${script}'; that text uses the design font.`});
   for (const item of skipped) onDiagnostic?.({code: "script-font-not-installed", package: item.package, scripts: item.scripts, message: `Install ${item.package}@${item.version} to preview ${item.scripts.join(", ")} text with its designated open font.`});
-  return {entries:[...loaded.entries, ...extra.entries], fontFiles:[...loaded.fontFiles, ...extra.fontFiles],
+  return {entries:[...loaded.entries, ...embedUsed(extra.entries)], fontFiles:[...loaded.fontFiles, ...extra.fontFiles],
     selection:{...selection, packages: scriptFontPackages(selection.scripts).map(item => item.name).filter(name => !skipped.some(item => item.package === name)), notInstalled: skipped.map(item => item.package)}};
+}
+
+/**
+ * scripts: 'auto' with glyph fallback (FF-19): a drawn Han, kana or Hangul character that no loaded script face
+ * has (Japanese-only kanji in a Simplified Chinese run, hanja) needs the next CJK face along the fallback chain.
+ * Adds those packages to the registry and its fontFiles until every such character is covered or the chain ends.
+ */
+async function completeFallback(registry, presentation, loaded, onDiagnostic) {
+  const selection = loaded.selection;
+  if (!selection) return;
+  const seen = new Set(selection.packages);
+  for (;;) {
+    const next = nextFallbackPackage(analyzePresentationScripts(presentation), {covers: character => registry.scriptFacesCover(character), loaded: seen});
+    if (!next) return;
+    seen.add(next.name);
+    const skipped = [], extra = await loadPackages([next], skipped);
+    if (skipped.length) {
+      selection.notInstalled.push(next.name);
+      onDiagnostic?.({code: "script-font-not-installed", package: next.name, scripts: [...next.scripts], message: `Install ${next.name}@${next.version} for glyphs the loaded CJK faces lack.`});
+      continue;
+    }
+    registry.addFaces(embedUsed(extra.entries));
+    loaded.fontFiles.push(...extra.fontFiles);
+    selection.packages.push(next.name);
+  }
 }
 
 /** FF-31: caller-supplied faces, for example the caller's own licensed Aptos files. Plain
@@ -92,7 +119,9 @@ async function withFaces(loaded, faces) {
 /** Bundled, openly licensed faces. No system font discovery or network requests. */
 export async function loadBundledFontRegistry({scripts, faces, presentation, onDiagnostic, ...options} = {}) {
   const {entries, fontFiles, selection} = await withFaces(await withScripts(await loadPack("base"), scripts, {presentation, onDiagnostic}), faces);
-  return Object.assign(createFontRegistry(entries,options),{fontFiles, ...(selection ? {scriptSelection: selection} : {})});
+  const registry = Object.assign(createFontRegistry(entries,options),{fontFiles, ...(selection ? {scriptSelection: selection} : {})});
+  await completeFallback(registry, presentation, {fontFiles, selection}, onDiagnostic);
+  return registry;
 }
 
 /** Six pinned open-source Office substitutes, optionally alongside the base Roboto pack. */
@@ -104,7 +133,9 @@ export async function loadOfficeFontRegistry({scripts, faces, presentation, onDi
     entries.push(...base.entries);
   }
   const loaded = await withFaces(await withScripts({entries, fontFiles}, scripts, {presentation, onDiagnostic}), faces);
-  return Object.assign(createFontRegistry(loaded.entries,{substitutionPolicy:"metric",...options}),{fontFiles:loaded.fontFiles, ...(loaded.selection ? {scriptSelection: loaded.selection} : {})});
+  const registry = Object.assign(createFontRegistry(loaded.entries,{substitutionPolicy:"metric",...options}),{fontFiles:loaded.fontFiles, ...(loaded.selection ? {scriptSelection: loaded.selection} : {})});
+  await completeFallback(registry, presentation, loaded, onDiagnostic);
+  return registry;
 }
 
 /** One set of verified font inputs for layout, SVG, editor, PPTX, and Node raster export. */
