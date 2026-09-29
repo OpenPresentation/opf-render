@@ -10,16 +10,20 @@ import {renderSvgDeck,svgToPng} from '../dist/index.js';
 import {loadBundledFontRegistry,loadOfficeFontRegistry,prepareNodeFonts,detectPresentationScripts,autoScriptSelection,scriptFontPackages} from '../dist/fonts-node.js';
 import {detectScripts} from '../dist/fonts.js';
 import {loadBrowserFontRegistry} from '../dist/fonts-browser.js';
+import * as fontsModule from '../dist/fonts.js';
 
 const deck=(title,text='Body',extra={})=>({$schema:'https://openpresentation.org/schema/opf/v1',name:'Auto script fonts',slides:[{title,text}],...extra});
 const short=name=>name.replace('@expo-google-fonts/','');
 // The document language decides Han text only when the installed core resolves it (resolveScriptFonts, as the renderer does);
 // otherwise the renderer ignores the language and so does detection: Han is Simplified Chinese.
 const hasCore=typeof core.resolveScriptFonts==='function';
+// A renderer with per-character glyph fallback draws Greek and Cyrillic a Latin face lacks with Noto Sans, so auto loads it then.
+const hasFallback=typeof fontsModule.glyphFallbackFamilies==='function';
 const han=(withCore,without='Hans')=>hasCore?withCore:without;
 
 // Detection: text decides. Latin, Greek and Cyrillic need no script face.
-for(const title of ['Quarterly review 12%','Ελληνικά Τριμηνιαία','Квартальный обзор','Café Übersicht, naïve — “quotes” …',''])assert.deepEqual(detectPresentationScripts(deck(title)),[],title);
+for(const title of ['Quarterly review 12%','Café Übersicht, naïve — “quotes” …',''])assert.deepEqual(detectPresentationScripts(deck(title)),[],title);
+for(const title of ['Ελληνικά Τριμηνιαία','Квартальный обзор'])assert.deepEqual(detectPresentationScripts(deck(title)),hasFallback?['Latn']:[],title);
 assert.deepEqual(detectPresentationScripts(deck('Review',['Q1','Q2'])),[]);
 // Languages name the script only where text is ambiguous (Han).
 const expected=[
@@ -59,7 +63,7 @@ const scriptFaces=registry=>registry.describeFaces().filter(face=>face.scripts).
 
 // Latin-only deck: no script face is loaded or read.
 for(const load of [loadBundledFontRegistry,loadOfficeFontRegistry]){
-  const latin=await load({scripts:'auto',presentation:deck('Quarterly review','Ελληνικά и русский')});
+  const latin=await load({scripts:'auto',presentation:deck('Quarterly review','Only Latin text, café and naïve')});
   assert.equal(scriptFaces(latin),0);
   assert.deepEqual(latin.scriptSelection,{detected:[],scripts:[],unavailable:[],packages:[],notInstalled:[]});
   const plain=await load();
@@ -159,10 +163,11 @@ assert.deepEqual(partial.scriptSelection.scripts,['Hans']);
     assert.equal(run.status,0,run.stderr);
     const result=JSON.parse(run.stdout);
     assert.deepEqual(result.selection.notInstalled,['@expo-google-fonts/noto-sans-jp']);
-    assert.deepEqual(result.selection.packages.map(short),['noto-sans-hebrew','noto-serif-hebrew']);
+    // Without the Japanese package, a renderer with glyph fallback draws the kanji and kana with the next CJK face, so auto loads it.
+    assert.deepEqual(result.selection.packages.map(short),hasFallback?['noto-sans-hebrew','noto-serif-hebrew','noto-sans-sc']:['noto-sans-hebrew','noto-serif-hebrew']);
     assert.deepEqual(result.diagnostics.map(value=>value.code),['script-font-not-installed']);
     assert.match(result.diagnostics[0].message,/Install @expo-google-fonts\/noto-sans-jp@\d+\.\d+\.\d+/);
-    assert.deepEqual(result.scripts,['Hebr']);
+    assert.deepEqual(result.scripts,hasFallback?['Hebr','Hans']:['Hebr']);
     assert.equal(result.explicit,'font-resource-unavailable','an explicit request for a missing package still fails');
   } finally { await rm(temp,{recursive:true,force:true}); }
 }
@@ -189,7 +194,7 @@ assert.deepEqual(partial.scriptSelection.scripts,['Hans']);
   const fresh=(options={})=>{const document=makeDocument();return loadBrowserFontRegistry(base,{document,fetch,substitutionPolicy:'visual',fallbackFamily:'Roboto',scriptBaseUrl:'https://fonts.test/pack/',...options}).then(registry=>({registry,document}));};
 
   // Latin-only deck: nothing is fetched beyond the supplied faces.
-  let {registry,document}=await fresh({scripts:'auto',presentation:deck('Quarterly review','Привет Ελληνικά')});
+  let {registry,document}=await fresh({scripts:'auto',presentation:deck('Quarterly review','Latin only, café')});
   assert.equal(scriptRequests().length,0);
   assert.deepEqual(registry.loadedScriptPackages,[]);
   assert.equal(document.fonts.size,1);

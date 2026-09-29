@@ -51,7 +51,7 @@ const decode=text=>text.replace(/<[^>]+>/g,'').replace(/&(?:#x([0-9a-f]+)|#(\d+)
 const drawnScripts=(presentation,svgs)=>{
   const profile=hasCore?core.resolveScriptFonts(presentation):{};
   const found=new Set();
-  for(const svg of svgs)for(const [,content] of svg.matchAll(/<text\b[^>]*>([\s\S]*?)<\/text>/g))for(const script of scriptsOfText(decode(content),profile))found.add(script);
+  for(const svg of svgs)for(const [,content] of svg.matchAll(/<text\b[^>]*>([\s\S]*?)<\/text>/g)){const text=decode(content);if(/^[•\u2022\d.\s]*$/.test(text))continue;for(const script of scriptsOfText(text,profile))found.add(script);}
   return [...found];
 };
 const mixed={$schema:'https://openpresentation.org/schema/opf/v1',name:'Parity',language:'ja',design:{footer:{center:{text:'フッターです “x”'}}},

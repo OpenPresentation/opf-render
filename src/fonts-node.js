@@ -75,7 +75,7 @@ async function withScripts(loaded, scripts, {presentation, onDiagnostic} = {}) {
 async function completeFallback(registry, presentation, loaded, onDiagnostic) {
   const selection = loaded.selection;
   if (!selection) return;
-  const seen = new Set(selection.packages);
+  const seen = new Set([...selection.packages, ...selection.notInstalled]);
   for (;;) {
     const next = nextFallbackPackage(analyzePresentationScripts(presentation), {covers: character => registry.scriptFacesCover(character), loaded: seen});
     if (!next) return;
