@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import {create} from 'fontkit';
 import {loadOfficeFontRegistry} from '../dist/fonts-node.js';
+import {renderSvg} from '../dist/index.js';
 import {createFontRegistry, FONT_COMPATIBILITY, fontPolicyFor} from '../dist/fonts.js';
 const registry=await loadOfficeFontRegistry({substitutionPolicy:"visual"});
 const pairs={Calibri:'Carlito',Cambria:'Caladea',Arial:'Arimo','Times New Roman':'Tinos','Courier New':'Cousine',Georgia:'Gelasio'};
@@ -7,10 +9,10 @@ for(const [fontFamily,substitute] of Object.entries(pairs)) for(const fontWeight
   const style={fontFamily,fontWeight,italic,path:'slides.0.text'};
   const resolved=registry.resolveFont(style);
   assert.equal(resolved.resolvedFamily,substitute);
-  // FF-31: tiers come from the OPF font policy. Georgia->Gelasio (ligature runs up to 1.02% off)
-  // and Cambria->Caladea (2.7% mean) are visual; the other four are metric.
+  // FF-31: tiers come from the OPF font policy. Cambria->Caladea (2.7% mean) is visual; the other
+  // five are metric, Georgia->Gelasio only because Gelasio is shaped with liga and clig off (below).
   assert.equal(resolved.compatibility,fontPolicyFor(fontFamily).replacement.compatibility);
-  assert.equal(resolved.compatibility,['Georgia','Cambria'].includes(fontFamily)?'visual':'metric');
+  assert.equal(resolved.compatibility,fontFamily==='Cambria'?'visual':'metric');
   assert.equal(resolved.substitute,true);
   assert.equal(resolved.path,style.path);
   assert.ok(registry.textMeasurement.measure('AVATAR office 1234',25,style)>0);
@@ -25,7 +27,33 @@ assert.equal(alias.resolveFont({fontFamily:'Calibri Light',fontWeight:300}).comp
 assert.equal(alias.resolveFont({fontFamily:'Aptos',fontWeight:400}).compatibility,'visual');
 assert.equal(alias.resolveFont({fontFamily:'Calibri',fontWeight:500}).compatibility,'visual');
 const metricOnly=createFontRegistry(entries,{substitutionPolicy:'metric'});
-assert.throws(()=>metricOnly.resolveFont({fontFamily:'Georgia',fontWeight:400}),{code:'font-unavailable',message:/Gelasio is visual only/});
+// Georgia -> Gelasio is metric at 400/700, so metric-mode registries use it, reported as metric.
+for(const fontWeight of [400,700])for(const italic of [false,true]){
+  const georgia=metricOnly.resolveFont({fontFamily:'Georgia',fontWeight,italic});
+  assert.deepEqual([georgia.resolvedFamily,georgia.resolvedWeight,georgia.italic,georgia.compatibility,georgia.substitute],['Gelasio',fontWeight,italic,'metric',true]);
+}
+for(const fontWeight of [300,500]) assert.throws(()=>metricOnly.resolveFont({fontFamily:'Georgia',fontWeight}),{code:'font-unavailable'},`Georgia ${fontWeight}`);
+// Gelasio ligates fi/fl/ffi/ffl and Georgia does not. The metric claim holds with liga and clig off, so
+// measurement (and SVG drawing) shape Gelasio without them, for Georgia and for Gelasio by name.
+{const sample='office affine fi fl ffi ffl ff',size=100;
+for(const [weight,italic,name] of [[400,false,'Regular'],[700,false,'Bold'],[400,true,'Regular_Italic'],[700,true,'Bold_Italic']]){
+  const entry=entries.find(face=>face.family==='Gelasio'&&face.weight===weight&&face.italic===italic);
+  const font=create(entry.data),total=run=>run.positions.reduce((sum,position)=>sum+position.xAdvance,0)/font.unitsPerEm*size;
+  const unligated=total(font.layout(sample,{liga:false,clig:false})),ligated=total(font.layout(sample));
+  assert.ok(ligated<unligated-1,`default Gelasio ligates ${name}`);
+  for(const fontFamily of ['Georgia','Gelasio']) assert.equal(metricOnly.textMeasurement.measure(sample,size,{fontFamily,fontWeight:weight,italic}),unligated,`${fontFamily} ${name} is measured without ligatures`);
+  // Other faces keep default shaping.
+  const carlito=create(entries.find(face=>face.family==='Carlito'&&face.weight===weight&&face.italic===italic).data);
+  assert.equal(metricOnly.textMeasurement.measure(sample,size,{fontFamily:'Calibri',fontWeight:weight,italic}),carlito.layout(sample).positions.reduce((sum,position)=>sum+position.xAdvance,0)/carlito.unitsPerEm*size);
+}
+// The SVG says the same to browsers, only on text drawn with Gelasio.
+const deck=family=>({design:{fontScheme:{major:family,minor:family,code:{family:'Cousine'}}},slides:[{title:'Office affine',text:'A finite field of flat office files. '.repeat(4)}]});
+const svgOf=family=>renderSvg(deck(family),{textMeasurement:metricOnly.textMeasurement});
+const georgia=svgOf('Georgia'),calibri=svgOf('Calibri');
+assert.match(georgia,/<text[^>]*font-family="Gelasio, [a-z-]+"[^>]*style="[^"]*font-variant-ligatures:none;font-feature-settings:'liga' 0,'clig' 0"/);
+assert.doesNotMatch(georgia,/font-family="Georgia/);
+assert.doesNotMatch(calibri,/font-variant-ligatures|font-feature-settings/);
+assert.deepEqual(georgia,svgOf('Georgia'));}
 // FF-31: Cambria was metric at 400/700 (upright and italic) before; its policy decision keeps
 // metric-mode registries previewing exactly those styles with Caladea, now reported as visual.
 for(const fontWeight of [400,700])for(const italic of [false,true]){

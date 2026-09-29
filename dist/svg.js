@@ -8,6 +8,7 @@ import {
 // still loads; resolveScriptFonts ships with core FF-18.
 import * as opfCore from "@openpresentation/opf";
 import { createScriptFonts } from "./script-fonts.js";
+import { disabledFeaturesStyle } from "./font-compatibility.js";
 
 export const packageName = "@openpresentation/opf-render";
 
@@ -1694,7 +1695,16 @@ function escapeAttr(value) {
   return escapeText(value).replaceAll('"', "&quot;");
 }
 
+// FF-31: text drawn with a face whose features the font policy turns off (Gelasio for Georgia) says so, so
+// browsers do not ligate what the measurement did not. Only text or tspan elements that name such a family.
+function withPolicyFeatures(name, attrs) {
+  const family = (name === "text" || name === "tspan") && typeof attrs["font-family"] === "string" ? attrs["font-family"].split(",")[0].trim() : undefined;
+  const features = family && disabledFeaturesStyle(family);
+  return features ? { ...attrs, style: attrs.style ? `${attrs.style};${features}` : features } : attrs;
+}
+
 function tag(name, attrs = {}, children = "") {
+  attrs = withPolicyFeatures(name, attrs);
   const serializedAttrs = Object.keys(attrs)
     .filter((key) => attrs[key] !== undefined && attrs[key] !== null && attrs[key] !== false)
     .sort()
