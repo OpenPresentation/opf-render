@@ -19,7 +19,7 @@ const decode = face => new Uint8Array(Buffer.from(face.dataUrl.split(',')[1], 'b
 
 // ---- the lazy set ----
 const {registry: office, options} = await prepareNodeFonts({pack: 'office', substitutionPolicy: 'visual'});
-const vendored = BUNDLED_FONT_MANIFEST.packages.filter(pkg => pkg.vendored);
+const vendored = BUNDLED_FONT_MANIFEST.packages.filter(pkg => pkg.vendored && (pkg.pack === 'open' || pkg.embed === 'used'));
 const lazyCount = vendored.reduce((sum, pkg) => sum + pkg.faces.length, 0);
 assert.ok(vendored.some(pkg => pkg.name === 'intos'));
 assert.equal(office.lazyFonts.length, lazyCount, 'the office registry lists every vendored face');

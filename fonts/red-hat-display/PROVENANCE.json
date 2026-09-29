@@ -1,9 +1,7 @@
 {
   "upstream": {
-    "repository": "https://github.com/RedHatOfficial/RedHatFont",
+    "source": "https://github.com/RedHatOfficial/RedHatFont/tree/6bb1048a6402b0076ea04f42951ec66263cd1437/fonts/Proportional/RedHatDisplay/ttf",
     "commit": "6bb1048a6402b0076ea04f42951ec66263cd1437",
-    "release": "1.030",
-    "source": "https://github.com/RedHatOfficial/RedHatFont/tree/6bb1048a6402b0076ea04f42951ec66263cd1437",
     "licenseUrl": "https://raw.githubusercontent.com/RedHatOfficial/RedHatFont/6bb1048a6402b0076ea04f42951ec66263cd1437/OFL.txt"
   },
   "license": "OFL-1.1",

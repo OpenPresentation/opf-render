@@ -6,9 +6,9 @@ import { OPFFontError } from "./fonts.js";
 
 /** Every vendored face: family, style, its file relative to the package root, its pinned sha256 and its package. */
 export function lazyFontList(manifest = BUNDLED_FONT_MANIFEST) {
-  return Object.freeze(manifest.packages.filter(pkg => pkg.vendored).flatMap(pkg => pkg.faces.map(face => Object.freeze({
+  return Object.freeze(manifest.packages.filter(pkg => pkg.vendored && (pkg.pack === "open" || pkg.embed === "used")).flatMap(pkg => pkg.faces.map(face => Object.freeze({
     package: pkg.name, family: face.family, weight: face.weight, italic: face.italic,
-    file: `${pkg.directory}/${face.file}`, sha256: face.sha256, license: pkg.license,
+    file: `${pkg.vendored}/${face.file}`, sha256: face.sha256, license: pkg.license,
     ...(pkg.renamedFrom ? { renamedFrom: pkg.renamedFrom } : {}),
   }))));
 }

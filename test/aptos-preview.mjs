@@ -17,13 +17,17 @@ const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const pkg = BUNDLED_FONT_MANIFEST.packages.find(item => item.name === 'intos');
 
 // Manifest: a vendored, hash-pinned OFL-1.1 package with no Reserved Font Name.
-assert.ok(pkg && pkg.vendored === true && pkg.pack === 'office' && pkg.directory === 'fonts/intos');
+assert.ok(pkg && pkg.vendored === 'fonts/intos' && pkg.pack === 'office' && pkg.embed === 'used');
 assert.equal(pkg.license, 'OFL-1.1');
 assert.deepEqual(pkg.reservedFontNames, []);
 assert.equal(pkg.upstream, 'https://github.com/muglug/intos');
 assert.match(pkg.copyright, /^Copyright .* The Intos Project Authors/);
-assert.match(pkg.commit, /^[0-9a-f]{40}$/);
-assert.equal(pkg.source, `https://github.com/muglug/intos/tree/${pkg.commit}`);
+// The entry follows the vendoring schema: version is the pinned upstream commit, every face is the byte-identical upstream file (Git LFS, so a media URL).
+const commit = pkg.version;
+assert.match(commit, /^[0-9a-f]{40}$/);
+assert.equal(pkg.source, `https://github.com/muglug/intos/tree/${commit}/fonts`);
+assert.equal(pkg.upstreamLicenseUrl, `https://raw.githubusercontent.com/muglug/intos/${commit}/LICENSE.txt`);
+for (const face of pkg.faces) assert.deepEqual(face.upstreamFile, {url: `https://media.githubusercontent.com/media/muglug/intos/${commit}/fonts/${face.file}`, sha256: face.sha256});
 assert.equal(pkg.faces.length, 16);
 assert.deepEqual([...new Set(pkg.faces.map(face => face.family))].sort(), ['Intos', 'Intos Display', 'Intos Narrow', 'Intos Serif']);
 for (const family of ['Intos', 'Intos Display', 'Intos Narrow', 'Intos Serif']) {
@@ -44,7 +48,7 @@ assert.doesNotMatch(license.toString('utf8'), /with Reserved Font Name/);
 for (const file of vendoredFiles) assert.equal(hash(await readFile(file)), pkg.faces.find(face => face.file === path.basename(file)).sha256, path.basename(file));
 const notice = (await readFile(path.join(path.dirname(vendoredFiles[0]), pkg.noticeFile))).toString('utf8');
 assert.equal(hash(Buffer.from(notice)), pkg.noticeSha256);
-assert.ok(notice.includes(pkg.commit) && notice.includes('Inter Project Authors') && notice.includes('Gelasio Project Authors'));
+assert.ok(notice.includes(commit) && notice.includes('Inter Project Authors') && notice.includes('Gelasio Project Authors'));
 // Embedded SVG licenses carry the license and the notice.
 const intosEmbedded = options.embeddedFonts.filter(face => /^Intos/.test(face.family));
 assert.equal(intosEmbedded.length, 16);
@@ -78,17 +82,32 @@ for (const [family, weight, italic, expected] of [
 // Real Aptos is never bundled or embedded: the source family stays the requested one.
 assert.ok(registry.embeddedFonts.every(face => !/aptos/i.test(face.family)));
 
-// Rendering: the default (Aptos) scheme measures and draws with Intos, and the SVG embeds only the Intos
-// families its text names, not the unused Narrow and Serif families. The eager npm faces are embedded as before.
+// Weights outside the metric claim (400 and 700) behave as Calibri's do. Under the default metric policy they are refused
+// (main refused every Aptos weight there, since Aptos had no metric replacement); under visual policy the nearest Intos face
+// draws and is reported visual, so a deck that previews on main under visual policy still previews.
+const visualPolicy = (await prepareNodeFonts({pack: 'office', substitutionPolicy: 'visual'})).registry;
+for (const [family, calibri] of [['Aptos', 'Calibri']]) for (const weight of [300, 500, 600, 800]) {
+  const metricCode = (() => { try { registry.resolveFont({fontFamily: family, fontWeight: weight}); return 'resolved'; } catch (error) { return error.code; } })();
+  const calibriCode = (() => { try { registry.resolveFont({fontFamily: calibri, fontWeight: weight}); return 'resolved'; } catch (error) { return error.code; } })();
+  assert.equal(metricCode, calibriCode, `Aptos at ${weight} follows Calibri under metric policy`);
+  const drawn = visualPolicy.resolveFont({fontFamily: family, fontWeight: weight});
+  assert.deepEqual([drawn.resolvedFamily, drawn.compatibility, drawn.substitute], ['Intos', 'visual', true], `Aptos at ${weight} previews with Intos under visual policy`);
+  assert.ok([400, 700].includes(drawn.resolvedWeight));
+}
+for (const family of ['Aptos Display', 'Aptos Narrow', 'Aptos Serif']) assert.equal(visualPolicy.resolveFont({fontFamily: family, fontWeight: 600}).resolvedFamily.startsWith('Intos'), true, family);
+
+// Rendering: the default (Aptos) scheme measures and draws with Intos, and a standalone SVG embeds only the Intos faces
+// its text draws (family, weight and style): Intos regular for the body and Intos Display bold for the title, not the other
+// six styles of those families and not the unused Narrow and Serif families. The eager npm faces are embedded as before.
 const deck = {name: 'Aptos preview', slides: [{id: 'a', title: 'Quarterly operating review', text: 'Revenue grew in every region.'}]};
 const source = JSON.stringify(deck);
 const svg = renderSvg(deck, options);
 assert.equal(JSON.stringify(deck), source);
 const drawn = [...new Set([...svg.matchAll(/font-family="([^"]+)"/g)].map(match => match[1]))].sort();
 assert.deepEqual(drawn, ['Intos Display, sans-serif', 'Intos, sans-serif']);
-const embedded = [...svg.matchAll(/@font-face\{font-family:"([^"]+)"/g)].map(match => match[1]);
-assert.equal(embedded.filter(family => family === 'Intos').length, 4);
-assert.equal(embedded.filter(family => family === 'Intos Display').length, 4);
+const faces = [...svg.matchAll(/@font-face\{font-family:"([^"]+)";font-weight:(\d+);font-style:(\w+)/g)].map(match => `${match[1]} ${match[2]} ${match[3]}`);
+const embedded = faces.map(face => face.replace(/ \d+ \w+$/, ''));
+assert.deepEqual(faces.filter(face => /^Intos/.test(face)).sort(), ['Intos 400 normal', 'Intos Display 700 normal']);
 assert.ok(!embedded.includes('Intos Narrow') && !embedded.includes('Intos Serif'), 'unused Intos families stay out of the SVG');
 assert.ok(embedded.includes('Roboto') && embedded.includes('Carlito'), 'the eager npm faces are embedded in every SVG, as before');
 const baseSvg = renderSvg({name: 'Roboto', design: {fontScheme: 'roboto'}, slides: [{id: 'r', title: 'Title', text: 'Body'}]}, (await prepareNodeFonts()).options);
@@ -128,4 +147,4 @@ if (existsSync(new URL('../dist/fonts-node.js', import.meta.url))) {
     await isolated.prepareNodeFonts({pack: 'base'});
   } finally { await rm(temporary, {recursive: true, force: true}); }
 }
-console.log(JSON.stringify({test: 'aptos-preview', commit: pkg.commit, faces: pkg.faces.length, embeddedInAptosSlide: embedded.filter(family => /^Intos/.test(family)).length, svgBytes: svg.length}));
+console.log(JSON.stringify({test: 'aptos-preview', commit, faces: pkg.faces.length, embeddedIntosFaces: faces.filter(face => /^Intos/.test(face)).length, svgBytes: svg.length}));

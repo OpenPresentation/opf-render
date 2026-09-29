@@ -1,6 +1,5 @@
-# Vendored fonts (FF-31): binaries and license notices stay byte-exact, with no eol conversion.
-*.ttf binary
-fonts/**/OFL.txt -text
-fonts/intos/LICENSE.txt -text
+# Vendored upstream font files are hashed byte for byte (src/font-manifest.js): never convert line endings.
+fonts/**/*.ttf binary
+fonts/**/*.txt -text
 fonts/intos/NOTICE.md -text
 fonts/**/PROVENANCE.json text eol=lf

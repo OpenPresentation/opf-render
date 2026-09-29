@@ -4,202 +4,6 @@ export const BUNDLED_FONT_MANIFEST=freeze({
   "version": 1,
   "packages": [
     {
-      "name": "intos",
-      "version": "1.000",
-      "pack": "office",
-      "vendored": true,
-      "directory": "fonts/intos",
-      "commit": "fef9315c14da9e4b23b4c3cac8e718998d4e4736",
-      "source": "https://github.com/muglug/intos/tree/fef9315c14da9e4b23b4c3cac8e718998d4e4736",
-      "license": "OFL-1.1",
-      "licenseFile": "LICENSE.txt",
-      "licenseSha256": "3b4a605d1a6305360d8dbabf203465bee9b1287f9fba97718e5f3d260813801e",
-      "noticeFile": "NOTICE.md",
-      "noticeSha256": "3e1241892bf385141df55d9762612505cd47ce8fd046438e2d4babb3d3c0fcf7",
-      "upstreamLicenseUrl": "https://raw.githubusercontent.com/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/LICENSE.txt",
-      "reservedFontNames": [],
-      "upstream": "https://github.com/muglug/intos",
-      "copyright": "Copyright 2013 The Intos Project Authors (https://github.com/muglug/intos)",
-      "faces": [
-        {
-          "file": "Intos-Regular.ttf",
-          "family": "Intos",
-          "weight": 400,
-          "italic": false,
-          "sha256": "4de204b6414d30f9f49b9375dc9b71ccea1683e55ac37de6c8d541abbc760eea",
-          "upstreamFile": {
-            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/Intos-Regular.ttf",
-            "sha256": "4de204b6414d30f9f49b9375dc9b71ccea1683e55ac37de6c8d541abbc760eea"
-          }
-        },
-        {
-          "file": "Intos-Italic.ttf",
-          "family": "Intos",
-          "weight": 400,
-          "italic": true,
-          "sha256": "8ca602e312af876190610b0416fdfc67f58ee38bcf9e01ce2f0fcc1094d8fbe4",
-          "upstreamFile": {
-            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/Intos-Italic.ttf",
-            "sha256": "8ca602e312af876190610b0416fdfc67f58ee38bcf9e01ce2f0fcc1094d8fbe4"
-          }
-        },
-        {
-          "file": "Intos-Bold.ttf",
-          "family": "Intos",
-          "weight": 700,
-          "italic": false,
-          "sha256": "8afd148fff67d6426d0d6906d4c6232886aedc81a7832544806e6c93c44340ab",
-          "upstreamFile": {
-            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/Intos-Bold.ttf",
-            "sha256": "8afd148fff67d6426d0d6906d4c6232886aedc81a7832544806e6c93c44340ab"
-          }
-        },
-        {
-          "file": "Intos-BoldItalic.ttf",
-          "family": "Intos",
-          "weight": 700,
-          "italic": true,
-          "sha256": "dec13afb35718df39f5a422d7ecb2f69bd719c9ae3196508c17021a428578a11",
-          "upstreamFile": {
-            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/Intos-BoldItalic.ttf",
-            "sha256": "dec13afb35718df39f5a422d7ecb2f69bd719c9ae3196508c17021a428578a11"
-          }
-        },
-        {
-          "file": "IntosDisplay-Regular.ttf",
-          "family": "Intos Display",
-          "weight": 400,
-          "italic": false,
-          "sha256": "b652fdab5e8939540f084529a507ddd158629985b8eee1b553ef05c46d131877",
-          "upstreamFile": {
-            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosDisplay-Regular.ttf",
-            "sha256": "b652fdab5e8939540f084529a507ddd158629985b8eee1b553ef05c46d131877"
-          }
-        },
-        {
-          "file": "IntosDisplay-Italic.ttf",
-          "family": "Intos Display",
-          "weight": 400,
-          "italic": true,
-          "sha256": "2741bd21a8904acf3ce28aff7a896c0c87777e3d459e1e10ffe085057471bc28",
-          "upstreamFile": {
-            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosDisplay-Italic.ttf",
-            "sha256": "2741bd21a8904acf3ce28aff7a896c0c87777e3d459e1e10ffe085057471bc28"
-          }
-        },
-        {
-          "file": "IntosDisplay-Bold.ttf",
-          "family": "Intos Display",
-          "weight": 700,
-          "italic": false,
-          "sha256": "5055714a7215331b7786b10538138baa4dc969a8afe018bbf459f8b5395026d8",
-          "upstreamFile": {
-            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosDisplay-Bold.ttf",
-            "sha256": "5055714a7215331b7786b10538138baa4dc969a8afe018bbf459f8b5395026d8"
-          }
-        },
-        {
-          "file": "IntosDisplay-BoldItalic.ttf",
-          "family": "Intos Display",
-          "weight": 700,
-          "italic": true,
-          "sha256": "1d9e18845be66b00793b8142581898b70ca72425f4d9f498fe4c35f88c39014d",
-          "upstreamFile": {
-            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosDisplay-BoldItalic.ttf",
-            "sha256": "1d9e18845be66b00793b8142581898b70ca72425f4d9f498fe4c35f88c39014d"
-          }
-        },
-        {
-          "file": "IntosNarrow-Regular.ttf",
-          "family": "Intos Narrow",
-          "weight": 400,
-          "italic": false,
-          "sha256": "ea91acdb933f2f1919df688f154140b851191adf4ecb77f7d931724198ea23c1",
-          "upstreamFile": {
-            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosNarrow-Regular.ttf",
-            "sha256": "ea91acdb933f2f1919df688f154140b851191adf4ecb77f7d931724198ea23c1"
-          }
-        },
-        {
-          "file": "IntosNarrow-Italic.ttf",
-          "family": "Intos Narrow",
-          "weight": 400,
-          "italic": true,
-          "sha256": "f2b4745a51b0c0c13d9768caf14017014c299e11a19031f83c1d8c77f4e23c6b",
-          "upstreamFile": {
-            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosNarrow-Italic.ttf",
-            "sha256": "f2b4745a51b0c0c13d9768caf14017014c299e11a19031f83c1d8c77f4e23c6b"
-          }
-        },
-        {
-          "file": "IntosNarrow-Bold.ttf",
-          "family": "Intos Narrow",
-          "weight": 700,
-          "italic": false,
-          "sha256": "59fd6e53b61ae483809ce1d8fc396357ec33d7beedef2e81f87da11551a99e51",
-          "upstreamFile": {
-            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosNarrow-Bold.ttf",
-            "sha256": "59fd6e53b61ae483809ce1d8fc396357ec33d7beedef2e81f87da11551a99e51"
-          }
-        },
-        {
-          "file": "IntosNarrow-BoldItalic.ttf",
-          "family": "Intos Narrow",
-          "weight": 700,
-          "italic": true,
-          "sha256": "6e1cb55b955539301ffc51b1a602a3fb9c8411b9082383fd29f555492eb9d079",
-          "upstreamFile": {
-            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosNarrow-BoldItalic.ttf",
-            "sha256": "6e1cb55b955539301ffc51b1a602a3fb9c8411b9082383fd29f555492eb9d079"
-          }
-        },
-        {
-          "file": "IntosSerif-Regular.ttf",
-          "family": "Intos Serif",
-          "weight": 400,
-          "italic": false,
-          "sha256": "56351ac7a9d0b66a5d9a0b6c656cefa6fa5cf9fb5e3ee7e44bd1e4e327828d35",
-          "upstreamFile": {
-            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosSerif-Regular.ttf",
-            "sha256": "56351ac7a9d0b66a5d9a0b6c656cefa6fa5cf9fb5e3ee7e44bd1e4e327828d35"
-          }
-        },
-        {
-          "file": "IntosSerif-Italic.ttf",
-          "family": "Intos Serif",
-          "weight": 400,
-          "italic": true,
-          "sha256": "eed3fa7449ce0fc31fe51569ce056ce483e25ce8f6e2fdda16d6cd36ff231327",
-          "upstreamFile": {
-            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosSerif-Italic.ttf",
-            "sha256": "eed3fa7449ce0fc31fe51569ce056ce483e25ce8f6e2fdda16d6cd36ff231327"
-          }
-        },
-        {
-          "file": "IntosSerif-Bold.ttf",
-          "family": "Intos Serif",
-          "weight": 700,
-          "italic": false,
-          "sha256": "ad994397ce37c29f8881e9fe6e7fcdc743b643465a96ab4d1e2a02d95784a79f",
-          "upstreamFile": {
-            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosSerif-Bold.ttf",
-            "sha256": "ad994397ce37c29f8881e9fe6e7fcdc743b643465a96ab4d1e2a02d95784a79f"
-          }
-        },
-        {
-          "file": "IntosSerif-BoldItalic.ttf",
-          "family": "Intos Serif",
-          "weight": 700,
-          "italic": true,
-          "sha256": "f99eb0845ab26e305ffe58f3baa9c920d676d2204a222d925d4fa001573f53f2",
-          "upstreamFile": {
-            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosSerif-BoldItalic.ttf",
-            "sha256": "f99eb0845ab26e305ffe58f3baa9c920d676d2204a222d925d4fa001573f53f2"
-          }
-        }
-      ]
-    },
-    {
       "name": "@expo-google-fonts/roboto",
       "version": "0.4.3",
       "pack": "base",
@@ -291,12 +95,13 @@ export const BUNDLED_FONT_MANIFEST=freeze({
       ]
     },
     {
-      "name": "@expo-google-fonts/carlito",
-      "version": "0.4.1",
+      "name": "carlito",
+      "vendored": "fonts/carlito",
+      "version": "23e54b51ddffbc7713c583748e3bd86f62b1fa4a",
       "pack": "office",
-      "source": "https://www.npmjs.com/package/@expo-google-fonts/carlito/v/0.4.1",
+      "source": "https://github.com/google/fonts/tree/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/carlito",
       "license": "OFL-1.1",
-      "licenseFile": "LICENSE_FONT",
+      "licenseFile": "OFL.txt",
       "licenseSha256": "58402f82a7c332a700294988fe7554fbb0a63a8d27ccc1ee3bbc640311990a00",
       "reservedFontNames": [
         "Carlito"
@@ -305,32 +110,48 @@ export const BUNDLED_FONT_MANIFEST=freeze({
       "copyright": "Copyright 2013 The Carlito Project Authors (https://github.com/googlefonts/carlito), with Reserved Font Name \"Carlito\"",
       "faces": [
         {
-          "file": "400Regular/Carlito_400Regular.ttf",
+          "file": "Carlito-Regular.ttf",
           "family": "Carlito",
           "weight": 400,
           "italic": false,
-          "sha256": "ca019755404c45627a8566915df99068949dc32ee2bce48d6aeee7542d2a0a89"
+          "sha256": "f6418f708baede9789daef5d458c0f53d2a888af9820e8062934e504fedc6595",
+          "upstreamFile": {
+            "url": "https://raw.githubusercontent.com/google/fonts/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/carlito/Carlito-Regular.ttf",
+            "sha256": "f6418f708baede9789daef5d458c0f53d2a888af9820e8062934e504fedc6595"
+          }
         },
         {
-          "file": "400Regular_Italic/Carlito_400Regular_Italic.ttf",
+          "file": "Carlito-Italic.ttf",
           "family": "Carlito",
           "weight": 400,
           "italic": true,
-          "sha256": "074cd1b89d53765d90d0ed3b4bfe49523efaaf4f3f430c006bc3233778b0ebb5"
+          "sha256": "0b019225e58d702bfedcbd35c21696769f8ee115cb6343f84c2f240312450d1c",
+          "upstreamFile": {
+            "url": "https://raw.githubusercontent.com/google/fonts/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/carlito/Carlito-Italic.ttf",
+            "sha256": "0b019225e58d702bfedcbd35c21696769f8ee115cb6343f84c2f240312450d1c"
+          }
         },
         {
-          "file": "700Bold/Carlito_700Bold.ttf",
+          "file": "Carlito-Bold.ttf",
           "family": "Carlito",
           "weight": 700,
           "italic": false,
-          "sha256": "51edbfa32d8af939913ae1f4ad0a5173e32083499218c133384638090295f0b0"
+          "sha256": "bb5d20f79b82599ec72983597437373a80f2d2085fa91fc144fd74e876a594db",
+          "upstreamFile": {
+            "url": "https://raw.githubusercontent.com/google/fonts/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/carlito/Carlito-Bold.ttf",
+            "sha256": "bb5d20f79b82599ec72983597437373a80f2d2085fa91fc144fd74e876a594db"
+          }
         },
         {
-          "file": "700Bold_Italic/Carlito_700Bold_Italic.ttf",
+          "file": "Carlito-BoldItalic.ttf",
           "family": "Carlito",
           "weight": 700,
           "italic": true,
-          "sha256": "25f5672c1985d168d6bc2973864fc5a7e374bb95fe8d0f91cff47ae17fa67691"
+          "sha256": "b32928186c119599e03ca6a1ffc680fdcb7fac95772f4b95d989cf6cd3861517",
+          "upstreamFile": {
+            "url": "https://raw.githubusercontent.com/google/fonts/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/carlito/Carlito-BoldItalic.ttf",
+            "sha256": "b32928186c119599e03ca6a1ffc680fdcb7fac95772f4b95d989cf6cd3861517"
+          }
         }
       ]
     },
@@ -545,11 +366,205 @@ export const BUNDLED_FONT_MANIFEST=freeze({
       ]
     },
     {
+      "name": "intos",
+      "vendored": "fonts/intos",
+      "version": "fef9315c14da9e4b23b4c3cac8e718998d4e4736",
+      "pack": "office",
+      "embed": "used",
+      "source": "https://github.com/muglug/intos/tree/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts",
+      "license": "OFL-1.1",
+      "licenseFile": "OFL.txt",
+      "licenseSha256": "3b4a605d1a6305360d8dbabf203465bee9b1287f9fba97718e5f3d260813801e",
+      "noticeFile": "NOTICE.md",
+      "noticeSha256": "3e1241892bf385141df55d9762612505cd47ce8fd046438e2d4babb3d3c0fcf7",
+      "upstreamLicenseUrl": "https://raw.githubusercontent.com/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/LICENSE.txt",
+      "reservedFontNames": [],
+      "upstream": "https://github.com/muglug/intos",
+      "copyright": "Copyright 2013 The Intos Project Authors (https://github.com/muglug/intos)",
+      "faces": [
+        {
+          "file": "Intos-Regular.ttf",
+          "family": "Intos",
+          "weight": 400,
+          "italic": false,
+          "sha256": "4de204b6414d30f9f49b9375dc9b71ccea1683e55ac37de6c8d541abbc760eea",
+          "upstreamFile": {
+            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/Intos-Regular.ttf",
+            "sha256": "4de204b6414d30f9f49b9375dc9b71ccea1683e55ac37de6c8d541abbc760eea"
+          }
+        },
+        {
+          "file": "Intos-Italic.ttf",
+          "family": "Intos",
+          "weight": 400,
+          "italic": true,
+          "sha256": "8ca602e312af876190610b0416fdfc67f58ee38bcf9e01ce2f0fcc1094d8fbe4",
+          "upstreamFile": {
+            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/Intos-Italic.ttf",
+            "sha256": "8ca602e312af876190610b0416fdfc67f58ee38bcf9e01ce2f0fcc1094d8fbe4"
+          }
+        },
+        {
+          "file": "Intos-Bold.ttf",
+          "family": "Intos",
+          "weight": 700,
+          "italic": false,
+          "sha256": "8afd148fff67d6426d0d6906d4c6232886aedc81a7832544806e6c93c44340ab",
+          "upstreamFile": {
+            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/Intos-Bold.ttf",
+            "sha256": "8afd148fff67d6426d0d6906d4c6232886aedc81a7832544806e6c93c44340ab"
+          }
+        },
+        {
+          "file": "Intos-BoldItalic.ttf",
+          "family": "Intos",
+          "weight": 700,
+          "italic": true,
+          "sha256": "dec13afb35718df39f5a422d7ecb2f69bd719c9ae3196508c17021a428578a11",
+          "upstreamFile": {
+            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/Intos-BoldItalic.ttf",
+            "sha256": "dec13afb35718df39f5a422d7ecb2f69bd719c9ae3196508c17021a428578a11"
+          }
+        },
+        {
+          "file": "IntosDisplay-Regular.ttf",
+          "family": "Intos Display",
+          "weight": 400,
+          "italic": false,
+          "sha256": "b652fdab5e8939540f084529a507ddd158629985b8eee1b553ef05c46d131877",
+          "upstreamFile": {
+            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosDisplay-Regular.ttf",
+            "sha256": "b652fdab5e8939540f084529a507ddd158629985b8eee1b553ef05c46d131877"
+          }
+        },
+        {
+          "file": "IntosDisplay-Italic.ttf",
+          "family": "Intos Display",
+          "weight": 400,
+          "italic": true,
+          "sha256": "2741bd21a8904acf3ce28aff7a896c0c87777e3d459e1e10ffe085057471bc28",
+          "upstreamFile": {
+            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosDisplay-Italic.ttf",
+            "sha256": "2741bd21a8904acf3ce28aff7a896c0c87777e3d459e1e10ffe085057471bc28"
+          }
+        },
+        {
+          "file": "IntosDisplay-Bold.ttf",
+          "family": "Intos Display",
+          "weight": 700,
+          "italic": false,
+          "sha256": "5055714a7215331b7786b10538138baa4dc969a8afe018bbf459f8b5395026d8",
+          "upstreamFile": {
+            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosDisplay-Bold.ttf",
+            "sha256": "5055714a7215331b7786b10538138baa4dc969a8afe018bbf459f8b5395026d8"
+          }
+        },
+        {
+          "file": "IntosDisplay-BoldItalic.ttf",
+          "family": "Intos Display",
+          "weight": 700,
+          "italic": true,
+          "sha256": "1d9e18845be66b00793b8142581898b70ca72425f4d9f498fe4c35f88c39014d",
+          "upstreamFile": {
+            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosDisplay-BoldItalic.ttf",
+            "sha256": "1d9e18845be66b00793b8142581898b70ca72425f4d9f498fe4c35f88c39014d"
+          }
+        },
+        {
+          "file": "IntosNarrow-Regular.ttf",
+          "family": "Intos Narrow",
+          "weight": 400,
+          "italic": false,
+          "sha256": "ea91acdb933f2f1919df688f154140b851191adf4ecb77f7d931724198ea23c1",
+          "upstreamFile": {
+            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosNarrow-Regular.ttf",
+            "sha256": "ea91acdb933f2f1919df688f154140b851191adf4ecb77f7d931724198ea23c1"
+          }
+        },
+        {
+          "file": "IntosNarrow-Italic.ttf",
+          "family": "Intos Narrow",
+          "weight": 400,
+          "italic": true,
+          "sha256": "f2b4745a51b0c0c13d9768caf14017014c299e11a19031f83c1d8c77f4e23c6b",
+          "upstreamFile": {
+            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosNarrow-Italic.ttf",
+            "sha256": "f2b4745a51b0c0c13d9768caf14017014c299e11a19031f83c1d8c77f4e23c6b"
+          }
+        },
+        {
+          "file": "IntosNarrow-Bold.ttf",
+          "family": "Intos Narrow",
+          "weight": 700,
+          "italic": false,
+          "sha256": "59fd6e53b61ae483809ce1d8fc396357ec33d7beedef2e81f87da11551a99e51",
+          "upstreamFile": {
+            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosNarrow-Bold.ttf",
+            "sha256": "59fd6e53b61ae483809ce1d8fc396357ec33d7beedef2e81f87da11551a99e51"
+          }
+        },
+        {
+          "file": "IntosNarrow-BoldItalic.ttf",
+          "family": "Intos Narrow",
+          "weight": 700,
+          "italic": true,
+          "sha256": "6e1cb55b955539301ffc51b1a602a3fb9c8411b9082383fd29f555492eb9d079",
+          "upstreamFile": {
+            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosNarrow-BoldItalic.ttf",
+            "sha256": "6e1cb55b955539301ffc51b1a602a3fb9c8411b9082383fd29f555492eb9d079"
+          }
+        },
+        {
+          "file": "IntosSerif-Regular.ttf",
+          "family": "Intos Serif",
+          "weight": 400,
+          "italic": false,
+          "sha256": "56351ac7a9d0b66a5d9a0b6c656cefa6fa5cf9fb5e3ee7e44bd1e4e327828d35",
+          "upstreamFile": {
+            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosSerif-Regular.ttf",
+            "sha256": "56351ac7a9d0b66a5d9a0b6c656cefa6fa5cf9fb5e3ee7e44bd1e4e327828d35"
+          }
+        },
+        {
+          "file": "IntosSerif-Italic.ttf",
+          "family": "Intos Serif",
+          "weight": 400,
+          "italic": true,
+          "sha256": "eed3fa7449ce0fc31fe51569ce056ce483e25ce8f6e2fdda16d6cd36ff231327",
+          "upstreamFile": {
+            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosSerif-Italic.ttf",
+            "sha256": "eed3fa7449ce0fc31fe51569ce056ce483e25ce8f6e2fdda16d6cd36ff231327"
+          }
+        },
+        {
+          "file": "IntosSerif-Bold.ttf",
+          "family": "Intos Serif",
+          "weight": 700,
+          "italic": false,
+          "sha256": "ad994397ce37c29f8881e9fe6e7fcdc743b643465a96ab4d1e2a02d95784a79f",
+          "upstreamFile": {
+            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosSerif-Bold.ttf",
+            "sha256": "ad994397ce37c29f8881e9fe6e7fcdc743b643465a96ab4d1e2a02d95784a79f"
+          }
+        },
+        {
+          "file": "IntosSerif-BoldItalic.ttf",
+          "family": "Intos Serif",
+          "weight": 700,
+          "italic": true,
+          "sha256": "f99eb0845ab26e305ffe58f3baa9c920d676d2204a222d925d4fa001573f53f2",
+          "upstreamFile": {
+            "url": "https://media.githubusercontent.com/media/muglug/intos/fef9315c14da9e4b23b4c3cac8e718998d4e4736/fonts/IntosSerif-BoldItalic.ttf",
+            "sha256": "f99eb0845ab26e305ffe58f3baa9c920d676d2204a222d925d4fa001573f53f2"
+          }
+        }
+      ]
+    },
+    {
       "name": "@expo-google-fonts/open-sans",
+      "vendored": "fonts/open-sans",
       "version": "0.4.2",
       "pack": "open",
-      "vendored": true,
-      "directory": "fonts/open/open-sans",
       "source": "https://www.npmjs.com/package/@expo-google-fonts/open-sans/v/0.4.2",
       "license": "OFL-1.1",
       "licenseFile": "OFL.txt",
@@ -596,10 +611,9 @@ export const BUNDLED_FONT_MANIFEST=freeze({
     },
     {
       "name": "@expo-google-fonts/montserrat",
+      "vendored": "fonts/montserrat",
       "version": "0.4.2",
       "pack": "open",
-      "vendored": true,
-      "directory": "fonts/open/montserrat",
       "source": "https://www.npmjs.com/package/@expo-google-fonts/montserrat/v/0.4.2",
       "license": "OFL-1.1",
       "licenseFile": "OFL.txt",
@@ -654,10 +668,9 @@ export const BUNDLED_FONT_MANIFEST=freeze({
     },
     {
       "name": "@expo-google-fonts/poppins",
+      "vendored": "fonts/poppins",
       "version": "0.4.1",
       "pack": "open",
-      "vendored": true,
-      "directory": "fonts/open/poppins",
       "source": "https://www.npmjs.com/package/@expo-google-fonts/poppins/v/0.4.1",
       "license": "OFL-1.1",
       "licenseFile": "OFL.txt",
@@ -704,10 +717,9 @@ export const BUNDLED_FONT_MANIFEST=freeze({
     },
     {
       "name": "@expo-google-fonts/bebas-neue",
+      "vendored": "fonts/bebas-neue",
       "version": "0.4.1",
       "pack": "open",
-      "vendored": true,
-      "directory": "fonts/open/bebas-neue",
       "source": "https://www.npmjs.com/package/@expo-google-fonts/bebas-neue/v/0.4.1",
       "license": "OFL-1.1",
       "licenseFile": "OFL.txt",
@@ -730,12 +742,10 @@ export const BUNDLED_FONT_MANIFEST=freeze({
     },
     {
       "name": "pt-serif",
-      "version": "1.000",
+      "vendored": "fonts/pt-serif",
+      "version": "23e54b51ddffbc7713c583748e3bd86f62b1fa4a",
       "pack": "open",
-      "vendored": true,
-      "directory": "fonts/open/pt-serif",
-      "commit": "23e54b51ddffbc7713c583748e3bd86f62b1fa4a",
-      "source": "https://github.com/google/fonts/tree/23e54b51ddffbc7713c583748e3bd86f62b1fa4a",
+      "source": "https://github.com/google/fonts/tree/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/ptserif",
       "license": "OFL-1.1",
       "licenseFile": "OFL.txt",
       "licenseSha256": "ddf311c28ddf5a5ad9747649837346b67bed9d356789c3072bb27dbce49e514d",
@@ -796,12 +806,10 @@ export const BUNDLED_FONT_MANIFEST=freeze({
     },
     {
       "name": "lora",
-      "version": "3.021",
+      "vendored": "fonts/lora",
+      "version": "0caf2e6389163dd49e5f973d7ed8bf42e60d83a2",
       "pack": "open",
-      "vendored": true,
-      "directory": "fonts/open/lora",
-      "commit": "0caf2e6389163dd49e5f973d7ed8bf42e60d83a2",
-      "source": "https://github.com/cyrealtype/Lora-Cyrillic/tree/0caf2e6389163dd49e5f973d7ed8bf42e60d83a2",
+      "source": "https://github.com/cyrealtype/Lora-Cyrillic/tree/0caf2e6389163dd49e5f973d7ed8bf42e60d83a2/fonts/ttf",
       "license": "OFL-1.1",
       "licenseFile": "OFL.txt",
       "licenseSha256": "1d9a970809ac804b582a6ce7f0ebc4e7fefcbfd7ff6299cad35ee656a21be716",
@@ -860,12 +868,10 @@ export const BUNDLED_FONT_MANIFEST=freeze({
     },
     {
       "name": "merriweather-sans",
-      "version": "2.001",
+      "vendored": "fonts/merriweather-sans",
+      "version": "bb6bd99bf9eb756723f2428629659a638702d335",
       "pack": "open",
-      "vendored": true,
-      "directory": "fonts/open/merriweather-sans",
-      "commit": "bb6bd99bf9eb756723f2428629659a638702d335",
-      "source": "https://github.com/SorkinType/Merriweather-Sans/tree/bb6bd99bf9eb756723f2428629659a638702d335",
+      "source": "https://github.com/SorkinType/Merriweather-Sans/tree/bb6bd99bf9eb756723f2428629659a638702d335/fonts/ttf",
       "license": "OFL-1.1",
       "licenseFile": "OFL.txt",
       "licenseSha256": "c487138e4ea4688386abfaf72ab2cbc72a7c8c358cca19bd70095e0d07d8d9f2",
@@ -924,12 +930,10 @@ export const BUNDLED_FONT_MANIFEST=freeze({
     },
     {
       "name": "source-sans-3",
-      "version": "3.052",
+      "vendored": "fonts/source-sans-3",
+      "version": "ed1808970eb3c7301c9a523bee26473ba0bb62fa",
       "pack": "open",
-      "vendored": true,
-      "directory": "fonts/open/source-sans-3",
-      "commit": "ed1808970eb3c7301c9a523bee26473ba0bb62fa",
-      "source": "https://github.com/adobe-fonts/source-sans/tree/ed1808970eb3c7301c9a523bee26473ba0bb62fa",
+      "source": "https://github.com/adobe-fonts/source-sans/tree/ed1808970eb3c7301c9a523bee26473ba0bb62fa/TTF",
       "license": "OFL-1.1",
       "licenseFile": "OFL.txt",
       "licenseSha256": "89ad2c4f66dd29127527493e729c31e731f111cf10faf5774c3db9275ed0c22c",
@@ -989,12 +993,10 @@ export const BUNDLED_FONT_MANIFEST=freeze({
     },
     {
       "name": "red-hat-display",
-      "version": "1.030",
+      "vendored": "fonts/red-hat-display",
+      "version": "6bb1048a6402b0076ea04f42951ec66263cd1437",
       "pack": "open",
-      "vendored": true,
-      "directory": "fonts/open/red-hat-display",
-      "commit": "6bb1048a6402b0076ea04f42951ec66263cd1437",
-      "source": "https://github.com/RedHatOfficial/RedHatFont/tree/6bb1048a6402b0076ea04f42951ec66263cd1437",
+      "source": "https://github.com/RedHatOfficial/RedHatFont/tree/6bb1048a6402b0076ea04f42951ec66263cd1437/fonts/Proportional/RedHatDisplay/ttf",
       "license": "OFL-1.1",
       "licenseFile": "OFL.txt",
       "licenseSha256": "4f1417e27511207cd217656c964f1b0d8b0c4a30156a1a699cf16dc5eba0dff6",
@@ -1040,12 +1042,10 @@ export const BUNDLED_FONT_MANIFEST=freeze({
     },
     {
       "name": "red-hat-text",
-      "version": "1.030",
+      "vendored": "fonts/red-hat-text",
+      "version": "6bb1048a6402b0076ea04f42951ec66263cd1437",
       "pack": "open",
-      "vendored": true,
-      "directory": "fonts/open/red-hat-text",
-      "commit": "6bb1048a6402b0076ea04f42951ec66263cd1437",
-      "source": "https://github.com/RedHatOfficial/RedHatFont/tree/6bb1048a6402b0076ea04f42951ec66263cd1437",
+      "source": "https://github.com/RedHatOfficial/RedHatFont/tree/6bb1048a6402b0076ea04f42951ec66263cd1437/fonts/Proportional/RedHatText/ttf",
       "license": "OFL-1.1",
       "licenseFile": "OFL.txt",
       "licenseSha256": "4f1417e27511207cd217656c964f1b0d8b0c4a30156a1a699cf16dc5eba0dff6",
