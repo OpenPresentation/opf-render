@@ -3,12 +3,26 @@ import type {
   FontRegistry,
   FontRegistryOptions,
 } from "./fonts.js";
-import type { BundledFontPackage, ScriptSelection } from "./fonts-node.js";
+import type { AutoScriptSelection, BundledFontPackage, ScriptSelection } from "./fonts-node.js";
+export type { AutoScriptSelection } from "./fonts-node.js";
+export { detectPresentationScripts, autoScriptSelection } from "./fonts-node.js";
 export interface BrowserFontInput extends Omit<FontFaceInput, "data"> {
   data?: Uint8Array;
   url?: string;
   /** Reviewed SHA-256 (hex); verified with Web Crypto before the face is used. */
   sha256?: string;
+}
+export interface BrowserFontRegistry extends FontRegistry {
+  dispose(): void;
+  /** Load script faces for ISO 15924 codes (or "all") from `scriptBaseUrl`. Resolves with the newly loaded package names. */
+  loadScripts(scripts: ScriptSelection): Promise<string[]>;
+  /**
+   * Load the script faces the presentation's text needs, once each (FF-19). Cheap when nothing new is
+   * needed. Call it after edits and render again afterwards: measurements planned earlier do not know the new faces.
+   */
+  ensureScripts(presentation: unknown): Promise<AutoScriptSelection & { loaded: string[] }>;
+  /** Names of the script-pack packages loaded so far. */
+  readonly loadedScriptPackages: string[];
 }
 export declare function loadBrowserFontRegistry(
   entries: BrowserFontInput[],
@@ -17,8 +31,14 @@ export declare function loadBrowserFontRegistry(
     fetch?: typeof fetch;
     signal?: AbortSignal;
     crypto?: { subtle: SubtleCrypto };
+    /** Script faces to load once the registry exists: "auto" (with `presentation`), "all" or ISO 15924 codes. Needs `scriptBaseUrl`. */
+    scripts?: ScriptSelection | "auto";
+    /** The presentation whose text decides `scripts: "auto"`. */
+    presentation?: unknown;
+    /** Where the host serves the installed `@expo-google-fonts/*` packages; script faces are fetched from here, hash-verified. */
+    scriptBaseUrl?: string;
   },
-): Promise<FontRegistry & { dispose(): void }>;
+): Promise<BrowserFontRegistry>;
 export declare function scriptFontPackages(scripts: ScriptSelection): BundledFontPackage[];
 /** Hash-pinned browser entries for the script pack, served by the host from `baseUrl`. */
 export declare function scriptFontEntries(

@@ -199,16 +199,20 @@ export function itemizeScripts(text, profile) {
   return runs;
 }
 
-/** Script keys (as used by the script font pack) present in the strings of any JSON value. */
-export function detectScripts(value, profile) {
-  const scripts = new Set();
+/**
+ * Script keys (as used by the script font pack) present in the strings of any JSON value.
+ * The profile's own script is included too, unless `includeLanguage` is false (then only
+ * text decides). `ignoreKeys` names object keys whose values are not visited.
+ */
+export function detectScripts(value, profile, { includeLanguage = true, ignoreKeys = [] } = {}) {
+  const scripts = new Set(), ignored = new Set(ignoreKeys);
   const visit = item => {
     if (typeof item === "string") { if (!latinOnly.test(item)) for (const run of itemizeScripts(item, profile)) if (run.script !== "Latn") scripts.add(run.script); }
     else if (Array.isArray(item)) item.forEach(visit);
-    else if (item && typeof item === "object") Object.values(item).forEach(visit);
+    else if (item && typeof item === "object") for (const [key, child] of Object.entries(item)) if (!ignored.has(key)) visit(child);
   };
   visit(value);
-  if (profile?.script && !latinGroup.has(profile.script)) scripts.add(fontKey(profile.script, "", profile));
+  if (includeLanguage && profile?.script && !latinGroup.has(profile.script)) scripts.add(fontKey(profile.script, "", profile));
   return [...scripts].sort();
 }
 

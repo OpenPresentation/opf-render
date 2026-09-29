@@ -5,8 +5,8 @@ import { createHash } from "node:crypto";
 import { createFontRegistry, OPFFontError } from "./fonts.js";
 import { BUNDLED_FONT_MANIFEST } from "./font-manifest.js";
 export { BUNDLED_FONT_MANIFEST } from "./font-manifest.js";
-import { scriptFontPackages } from "./script-font-pack.js";
-export { scriptFontPackages } from "./script-font-pack.js";
+import { autoScriptSelection, scriptFontPackages } from "./script-font-pack.js";
+export { autoScriptSelection, detectPresentationScripts, scriptFontPackages } from "./script-font-pack.js";
 const require = createRequire(import.meta.url);
 
 async function verifiedFile(file, expected, details) {
@@ -18,7 +18,8 @@ async function verifiedFile(file, expected, details) {
   return bytes;
 }
 
-async function loadPackages(packages) {
+// `skipped`: an optional package that is not installed is recorded there instead of failing (scripts: 'auto').
+async function loadPackages(packages, skipped) {
   const entries = [], fontFiles = [];
   for (const pkg of packages) {
     let manifestPath, installed;
@@ -26,6 +27,7 @@ async function loadPackages(packages) {
       manifestPath = require.resolve(`${pkg.name}/package.json`);
       installed = JSON.parse(await readFile(manifestPath, "utf8"));
     } catch (error) {
+      if (skipped) { skipped.push({package: pkg.name, version: pkg.version, scripts: [...pkg.scripts]}); continue; }
       throw new OPFFontError("font-resource-unavailable", `Install ${pkg.name}@${pkg.version} to use this offline font pack.`, {package:pkg.name, cause:error.code});
     }
     if (installed.version !== pkg.version) throw new OPFFontError("font-version-mismatch", `Expected ${pkg.name}@${pkg.version}; reinstall the pinned package.`, {package:pkg.name, expected:pkg.version, actual:installed.version});
@@ -43,10 +45,24 @@ async function loadPackages(packages) {
 
 const loadPack = pack => loadPackages(BUNDLED_FONT_MANIFEST.packages.filter(item => item.pack === pack));
 
-async function withScripts(loaded, scripts) {
+/**
+ * Adds the script pack. `scripts` is 'all', ISO 15924 codes, or 'auto' (FF-19): detect the scripts the
+ * `presentation` draws and load only their faces. Auto never fails on a missing optional package or a
+ * script no pinned font serves; it reports them through `onDiagnostic` and `selection`.
+ */
+async function withScripts(loaded, scripts, {presentation, onDiagnostic} = {}) {
   if (scripts === undefined || (Array.isArray(scripts) && !scripts.length)) return loaded;
-  const extra = await loadPackages(scriptFontPackages(scripts));
-  return {entries:[...loaded.entries, ...extra.entries], fontFiles:[...loaded.fontFiles, ...extra.fontFiles]};
+  if (scripts !== "auto") {
+    const extra = await loadPackages(scriptFontPackages(scripts));
+    return {entries:[...loaded.entries, ...extra.entries], fontFiles:[...loaded.fontFiles, ...extra.fontFiles]};
+  }
+  if (presentation === null || typeof presentation !== "object") throw new OPFFontError("invalid-font-scripts", "scripts: 'auto' needs the presentation whose text decides the scripts.", {scripts});
+  const selection = autoScriptSelection(presentation), skipped = [];
+  const extra = await loadPackages(scriptFontPackages(selection.scripts), skipped);
+  for (const script of selection.unavailable) onDiagnostic?.({code: "script-font-unavailable", script, message: `No pinned open font serves script '${script}'; that text uses the design font.`});
+  for (const item of skipped) onDiagnostic?.({code: "script-font-not-installed", package: item.package, scripts: item.scripts, message: `Install ${item.package}@${item.version} to preview ${item.scripts.join(", ")} text with its designated open font.`});
+  return {entries:[...loaded.entries, ...extra.entries], fontFiles:[...loaded.fontFiles, ...extra.fontFiles],
+    selection:{...selection, packages: scriptFontPackages(selection.scripts).map(item => item.name).filter(name => !skipped.some(item => item.package === name)), notInstalled: skipped.map(item => item.package)}};
 }
 
 /** FF-31: caller-supplied faces, for example the caller's own licensed Aptos files. Plain
@@ -70,25 +86,25 @@ async function callerFaces(faces = []) {
 async function withFaces(loaded, faces) {
   if (!faces?.length) return loaded;
   const own = await callerFaces(faces);
-  return {entries:[...own.entries, ...loaded.entries], fontFiles:[...own.fontFiles, ...loaded.fontFiles]};
+  return {...loaded, entries:[...own.entries, ...loaded.entries], fontFiles:[...own.fontFiles, ...loaded.fontFiles]};
 }
 
 /** Bundled, openly licensed faces. No system font discovery or network requests. */
-export async function loadBundledFontRegistry({scripts, faces, ...options} = {}) {
-  const {entries, fontFiles} = await withFaces(await withScripts(await loadPack("base"), scripts), faces);
-  return Object.assign(createFontRegistry(entries,options),{fontFiles});
+export async function loadBundledFontRegistry({scripts, faces, presentation, onDiagnostic, ...options} = {}) {
+  const {entries, fontFiles, selection} = await withFaces(await withScripts(await loadPack("base"), scripts, {presentation, onDiagnostic}), faces);
+  return Object.assign(createFontRegistry(entries,options),{fontFiles, ...(selection ? {scriptSelection: selection} : {})});
 }
 
 /** Six pinned open-source Office substitutes, optionally alongside the base Roboto pack. */
-export async function loadOfficeFontRegistry({scripts, faces, ...options} = {}) {
+export async function loadOfficeFontRegistry({scripts, faces, presentation, onDiagnostic, ...options} = {}) {
   const {entries, fontFiles} = await loadPack("office");
   if (options.includeBaseFonts !== false) {
     const base = await loadPack("base");
     fontFiles.push(...base.fontFiles);
     entries.push(...base.entries);
   }
-  const loaded = await withFaces(await withScripts({entries, fontFiles}, scripts), faces);
-  return Object.assign(createFontRegistry(loaded.entries,{substitutionPolicy:"metric",...options}),{fontFiles:loaded.fontFiles});
+  const loaded = await withFaces(await withScripts({entries, fontFiles}, scripts, {presentation, onDiagnostic}), faces);
+  return Object.assign(createFontRegistry(loaded.entries,{substitutionPolicy:"metric",...options}),{fontFiles:loaded.fontFiles, ...(loaded.selection ? {scriptSelection: loaded.selection} : {})});
 }
 
 /** One set of verified font inputs for layout, SVG, editor, PPTX, and Node raster export. */
