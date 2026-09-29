@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import * as core from '@openpresentation/opf';
 import {renderSvg, renderSvgDeck, svgToPng} from '../dist/index.js';
 import {prepareNodeFonts} from '../dist/fonts-node.js';
-import {createScriptFonts, createScriptTextMeasurement, glyphFallbackFamilies, designatedFamilies} from '../dist/fonts.js';
+import {createScriptFonts, createScriptTextMeasurement, glyphFallbackFamilies, designatedFamilies, requiredFallbackScripts} from '../dist/fonts.js';
 
 assert.equal(typeof core.resolveScriptFonts, 'function', 'the linked core exports resolveScriptFonts');
 const fonts = await prepareNodeFonts({pack: 'office', substitutionPolicy: 'visual', scripts: 'all'});
@@ -148,6 +148,96 @@ function designatedFamiliesAll() {
   assert.deepEqual(png, await svgToPng(renderSvg(document, measured), {...measured, scale: 0.25}), 'deterministic raster');
   const without = await svgToPng(renderSvg(document, measured), {...measured, fontFiles: measured.fontFiles.filter((file) => !/NotoSans_/.test(file)), scale: 0.25});
   assert.notDeepEqual(png, without, 'the raster uses the Noto Sans face');
+}
+
+// 8a. Strict mode set on the wrapper alone is not undone by the renderer's own (undefined) option.
+{
+  const document = deck('greek', 'georgia', TEXT.greek.title, TEXT.greek.body);
+  const strict = createScriptTextMeasurement(raw, core.resolveScriptFonts(document), {glyphFallback: 'none'});
+  assert.throws(() => renderSvg(document, {...fonts.options, textMeasurement: strict}), {code: 'missing-glyph'}, 'the wrapper strict mode holds');
+  assert.throws(() => renderSvg(document, {...fonts.options, textMeasurement: strict, glyphFallback: undefined}), {code: 'missing-glyph'});
+  assert.doesNotThrow(() => renderSvg(document, {...fonts.options, textMeasurement: strict, glyphFallback: 'chain'}), 'an explicit render option overrides');
+  assert.throws(() => renderSvg(document, {...fonts.options, textMeasurement: strict, glyphFallback: 'none'}), {code: 'missing-glyph'});
+}
+
+// 8b. Combining marks: coverage is checked per grapheme cluster, so a base and a mark the chosen face lacks move together.
+{
+  const marks = Array.from({length: 0x70}, (_, index) => String.fromCodePoint(0x300 + index));
+  const style = {fontFamily: 'Carlito', fontWeight: 400};
+  const lacking = marks.filter((mark) => !strictCovers('Carlito', mark) && strictCovers('Noto Sans', mark));
+  assert.ok(lacking.length > 0, 'Carlito lacks a combining mark that Noto Sans has');
+  const mark = lacking[0];
+  const document = deck('english', 'calibri', 'Title', 'Body');
+  const planner = createScriptFonts(core.resolveScriptFonts(document), raw);
+  const runs = planner.plan(`Nice e${mark} word`, style);
+  assert.deepEqual(runs.map((run) => [run.family, run.text]), [['Carlito', 'Nice '], ['Noto Sans', `e${mark} `], ['Carlito', 'word']], 'the base and its mark are one cluster in one face; only their word moves');
+  for (const run of runs) assert.ok(strictCovers(run.family, run.text), `${run.family} has every glyph of its run`);
+  const measurement = createScriptTextMeasurement(raw, core.resolveScriptFonts(document));
+  assert.ok(measurement.measure(`Nice e${mark} word`, 20, style) > 0, 'measures without missing-glyph');
+  // NFD Vietnamese and NFD Cyrillic (breve U+0306) render without missing-glyph, in every registry font.
+  for (const [language, scheme, text] of [['vietnamese', 'calibri', 'Vie\u0323\u0302t Nam'.normalize('NFD') + ' Tie\u0302\u0301ng Vie\u0323\u0302t'], ['russian', 'georgia', 'Кра\u0306й и\u0306 ё'.normalize('NFD')], ['russian', 'roboto', 'Кра\u0306й и\u0306'.normalize('NFD')], ['greek', 'georgia', 'ά'.normalize('NFD') + ' ώ'.normalize('NFD')]]) {
+    const value = {$schema: 'https://openpresentation.org/schema/opf/v1', name: 'nfd', language: language === 'vietnamese' ? 'english' : language, design: {fontScheme: scheme}, slides: [{id: 'a', title: text, text}]};
+    const {svg} = assertDrawable(`NFD ${language} ${scheme}`, value);
+    for (const [family, run] of drawnRuns(svg)) for (const cluster of run.normalize('NFD').match(/\P{M}\p{M}*/gu) ?? []) assert.ok(strictCovers(family, cluster), `NFD ${language} ${scheme}: ${family} has the whole cluster ${JSON.stringify(cluster)}`);
+  }
+}
+
+// 8c. Default registry: Noto Sans is bundled with the office pack as the Latin, Cyrillic and Greek fallback, so Georgia with
+// Russian text previews without the scripts option; CJK fallback faces come from the scripts a document needs.
+{
+  const bare = await prepareNodeFonts({pack: 'office', substitutionPolicy: 'visual'});
+  const bareMeasurement = bare.registry.textMeasurement;
+  for (const [scheme, language] of [['georgia', 'russian'], ['georgia', 'greek'], ['constantia', 'russian']]) {
+    const document = deck(language, scheme, TEXT[language].title, TEXT[language].body);
+    const notes = [];
+    const svg = renderSvg(document, {...bare.options, textMeasurement: createScriptTextMeasurement(bareMeasurement, core.resolveScriptFonts(document)), onDiagnostic: (item) => notes.push(item)});
+    assert.ok(notes.some((note) => note.code === 'font-glyph-fallback' && note.fallbackFamily === 'Noto Sans'), `${scheme} + ${language} previews with the default registry`);
+    assert.ok(drawnRuns(svg).some(([family]) => family === 'Noto Sans'));
+    assert.ok(!bare.options.embeddedFonts.some((face) => face.family === 'Noto Sans'), 'the fallback face is not embedded in SVG');
+    assert.ok(bare.options.fontFiles.some((file) => /NotoSans_400Regular\.ttf$/.test(file)), 'the raster reads it from fontFiles');
+  }
+  // Italic and bold styles exist for the fallback, and other families preview exactly as before.
+  const italic = bare.registry.resolveFont({fontFamily: 'Noto Sans', fontWeight: 700, italic: true});
+  assert.deepEqual([italic.resolvedFamily, italic.resolvedWeight, italic.italic], ['Noto Sans', 700, true]);
+  // With the script pack requested explicitly, Noto Sans is loaded once.
+  const all = await prepareNodeFonts({pack: 'office', substitutionPolicy: 'visual', scripts: ['Latn', 'Jpan']});
+  assert.equal(all.registry.describeFaces().filter((face) => face.family === 'Noto Sans').length, 4);
+  // CJK fallback faces for the auto script-pack selection.
+  const cjk = {slides: [{title: 'Revenue 収益 성장'}]};
+  assert.deepEqual(requiredFallbackScripts(cjk), ['Hans', 'Hant', 'Jpan', 'Kore'], 'Han text can fall back to every CJK face');
+  assert.deepEqual(requiredFallbackScripts(cjk, bare.registry), ['Hans', 'Hant', 'Jpan', 'Kore'], 'none is loaded in the bare registry');
+  assert.deepEqual(requiredFallbackScripts(cjk, all.registry), ['Hans', 'Hant', 'Kore'], 'only what is not loaded yet');
+  assert.deepEqual(requiredFallbackScripts({slides: [{title: TEXT.greek.title}]}), ['Latn']);
+  assert.deepEqual(requiredFallbackScripts({slides: [{title: TEXT.greek.title}]}, bare.registry), [], 'Noto Sans is already loaded by default');
+  assert.deepEqual(requiredFallbackScripts({slides: [{title: 'Plain ASCII'}]}), []);
+  assert.deepEqual(requiredFallbackScripts({slides: [{title: 'Plain ASCII'}]}, ['Noto Sans JP']), []);
+  assert.deepEqual(requiredFallbackScripts(cjk, ['Noto Sans JP', 'Noto Sans SC', 'Noto Sans TC', 'Noto Sans KR']), [], 'accepts family names');
+  // Using the helper's answer loads exactly the faces the document needs: kanji beside Hangul renders on a bare office registry.
+  const needed = await prepareNodeFonts({pack: 'office', substitutionPolicy: 'visual', scripts: requiredFallbackScripts(cjk)});
+  const document = deck('english', 'calibri', 'Revenue 収益 성장', 'Revenue grew');
+  assert.doesNotThrow(() => renderSvg(document, {...needed.options, textMeasurement: createScriptTextMeasurement(needed.registry.textMeasurement, core.resolveScriptFonts(document))}));
+}
+
+// 8d. Notes: one per path (a cached plan still reports its own path), the face actually drawn, and copied arrays.
+{
+  const document = deck('greek', 'georgia', TEXT.greek.title, TEXT.greek.body);
+  const notes = [];
+  const planner = createScriptFonts(core.resolveScriptFonts(document), raw, {onFallback: (note) => notes.push(note)});
+  planner.plan('Τριμηνιαία', {fontFamily: 'Gelasio', fontWeight: 400, path: 'slides.0.title'});
+  planner.plan('Τριμηνιαία', {fontFamily: 'Gelasio', fontWeight: 400, path: 'slides.1.title'});
+  assert.deepEqual(notes.map((note) => note.path), ['slides.0.title', 'slides.1.title']);
+  assert.ok(notes.every((note) => note.fontFamily === 'Gelasio' && note.fallbackFamily === 'Noto Sans'));
+  const bold = createScriptFonts(core.resolveScriptFonts(document), raw, {onFallback: (note) => notes.push(note)});
+  bold.plan('Τριμηνιαία', {fontFamily: 'Gelasio', fontWeight: 700, path: 'slides.0.title'});
+  assert.equal(notes.at(-1).fallbackFamily, 'Noto Sans', 'the resolved face is reported');
+  const diagnostics = [];
+  renderSvg(document, {...fonts.options, textMeasurement: createScriptTextMeasurement(raw, core.resolveScriptFonts(document)), onDiagnostic: (item) => diagnostics.push(item)});
+  const first = diagnostics.find((item) => item.code === 'font-glyph-fallback');
+  const characters = [...first.characters];
+  first.characters.push('#'); first.scripts.push('#');
+  const again = [];
+  renderSvg(document, {...fonts.options, textMeasurement: createScriptTextMeasurement(raw, core.resolveScriptFonts(document)), onDiagnostic: (item) => again.push(item)});
+  assert.deepEqual(again.find((item) => item.code === 'font-glyph-fallback').characters, characters, 'diagnostic arrays are copies');
 }
 
 // 8. Without a fallback face loaded, the error is unchanged.

@@ -1,5 +1,5 @@
 import type { TextMeasurement, TextStyle } from "@openpresentation/opf/composition";
-export interface FontFaceInput { data: Uint8Array; family?: string; weight?: number; italic?: boolean; postscriptName?: string; license?: string; /** ISO 15924 scripts a designated script replacement face serves (FF-19). */ scripts?: string[] }
+export interface FontFaceInput { data: Uint8Array; family?: string; weight?: number; italic?: boolean; postscriptName?: string; license?: string; /** ISO 15924 scripts a designated script replacement face serves (FF-19). */ scripts?: string[]; /** Serves glyph fallback and requests by its own family only; never a replacement for another family. */ fallbackOnly?: boolean }
 export interface EmbeddedFont { family: string; weight: number; italic?: boolean; dataUrl: string; license?: string }
 export type FontCompatibility = "exact" | "metric" | "visual" | "generic";
 export interface FontReplacementMeasurement { replacement:string; meanAbsWidthDelta:number; meanWidthDelta:number; maxAbsWidthDelta:number; styles:number; reference:string }
@@ -89,6 +89,8 @@ export interface ScriptFontsOptions {
   onFallback?: (note: GlyphFallbackNote) => void;
 }
 export declare function createScriptFonts(profile?: ScriptFontProfile, measurement?: TextMeasurement, options?: ScriptFontsOptions): ScriptFonts;
+/** Script packs (ISO 15924 codes) the text of a presentation may need as glyph fallback faces; with a registry or family names, only those not loaded yet. */
+export declare function requiredFallbackScripts(value: unknown, registry?: { describeFaces(): { family: string }[] } | Iterable<string>, profile?: ScriptFontProfile): string[];
 /** Designated open families a preview tries, in order, for a character its face lacks (own script, deck script, Noto Sans, other CJK, other Noto scripts). */
 export declare function glyphFallbackFamilies(character: string, profile?: ScriptFontProfile, serif?: boolean): string[];
 /** Wrap a measurement so pagination, the renderer and the editor itemize script runs identically. */

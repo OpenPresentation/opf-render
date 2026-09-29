@@ -18,7 +18,7 @@ async function verifiedFile(file, expected, details) {
   return bytes;
 }
 
-async function loadPackages(packages) {
+async function loadPackages(packages, {fallbackOnly = false} = {}) {
   const entries = [], fontFiles = [];
   for (const pkg of packages) {
     let manifestPath, installed;
@@ -35,18 +35,19 @@ async function loadPackages(packages) {
       const file = path.join(directory, face.file);
       const data = await verifiedFile(file, face.sha256, {package:pkg.name, file:face.file});
       fontFiles.push(file);
-      entries.push({data:new Uint8Array(data), family:face.family, weight:face.weight, italic:face.italic, license, ...(pkg.scripts ? {scripts:[...pkg.scripts]} : {})});
+      entries.push({data:new Uint8Array(data), family:face.family, weight:face.weight, italic:face.italic, license, ...(pkg.scripts ? {scripts:[...pkg.scripts]} : {}), ...(fallbackOnly ? {fallbackOnly:true} : {})});
     }
   }
-  return {entries, fontFiles};
+  return {entries, fontFiles, packages:packages.map(pkg => pkg.name)};
 }
 
 const loadPack = pack => loadPackages(BUNDLED_FONT_MANIFEST.packages.filter(item => item.pack === pack));
 
 async function withScripts(loaded, scripts) {
   if (scripts === undefined || (Array.isArray(scripts) && !scripts.length)) return loaded;
-  const extra = await loadPackages(scriptFontPackages(scripts));
-  return {entries:[...loaded.entries, ...extra.entries], fontFiles:[...loaded.fontFiles, ...extra.fontFiles]};
+  // A package that is already loaded (the default Noto Sans fallback) is never loaded twice.
+  const extra = await loadPackages(scriptFontPackages(scripts).filter(pkg => !loaded.packages?.includes(pkg.name)));
+  return {entries:[...loaded.entries, ...extra.entries], fontFiles:[...loaded.fontFiles, ...extra.fontFiles], packages:[...(loaded.packages ?? []), ...extra.packages]};
 }
 
 /** FF-31: caller-supplied faces, for example the caller's own licensed Aptos files. Plain
@@ -70,7 +71,7 @@ async function callerFaces(faces = []) {
 async function withFaces(loaded, faces) {
   if (!faces?.length) return loaded;
   const own = await callerFaces(faces);
-  return {entries:[...own.entries, ...loaded.entries], fontFiles:[...own.fontFiles, ...loaded.fontFiles]};
+  return {entries:[...own.entries, ...loaded.entries], fontFiles:[...own.fontFiles, ...loaded.fontFiles], packages:loaded.packages};
 }
 
 /** Bundled, openly licensed faces. No system font discovery or network requests. */
@@ -81,13 +82,23 @@ export async function loadBundledFontRegistry({scripts, faces, ...options} = {})
 
 /** Six pinned open-source Office substitutes, optionally alongside the base Roboto pack. */
 export async function loadOfficeFontRegistry({scripts, faces, ...options} = {}) {
-  const {entries, fontFiles} = await loadPack("office");
+  const {entries, fontFiles, packages} = await loadPack("office");
   if (options.includeBaseFonts !== false) {
     const base = await loadPack("base");
     fontFiles.push(...base.fontFiles);
     entries.push(...base.entries);
+    packages.push(...base.packages);
   }
-  const loaded = await withFaces(await withScripts({entries, fontFiles}, scripts), faces);
+  // Noto Sans (regular, bold, italic, bold italic) is the default Latin, Cyrillic and Greek
+  // fallback face (glyph fallback), so Georgia with Russian text previews without the scripts option.
+  // It is a script face: raster output reads it from fontFiles and SVG does not embed it.
+  // Unless the caller asked for it with scripts, it is fallback-only, so no other family's preview changes.
+  const requested = scripts === undefined || (Array.isArray(scripts) && !scripts.length) ? [] : scriptFontPackages(scripts).map(pkg => pkg.name);
+  const fallback = await loadPackages(scriptFontPackages(["Latn"]).filter(pkg => !requested.includes(pkg.name)), {fallbackOnly:true});
+  fontFiles.push(...fallback.fontFiles);
+  entries.push(...fallback.entries);
+  packages.push(...fallback.packages);
+  const loaded = await withFaces(await withScripts({entries, fontFiles, packages}, scripts), faces);
   return Object.assign(createFontRegistry(loaded.entries,{substitutionPolicy:"metric",...options}),{fontFiles:loaded.fontFiles});
 }
 

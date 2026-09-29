@@ -1,11 +1,11 @@
 import { create } from "fontkit";
-import { FONT_COMPATIBILITY } from "./font-compatibility.js";
+import { FONT_COMPATIBILITY, disabledFeaturesFor } from "./font-compatibility.js";
 import { openTypeLanguage, scriptFontAliases } from "./script-fonts.js";
 import { fontPolicyFor } from "./font-policy.js";
 import { BUNDLED_FONT_MANIFEST } from "./font-manifest.js";
-export { FONT_COMPATIBILITY, EXPERIMENTAL_FONT_CANDIDATES } from "./font-compatibility.js";
+export { FONT_COMPATIBILITY, EXPERIMENTAL_FONT_CANDIDATES, disabledFeaturesFor } from "./font-compatibility.js";
 export { FONT_POLICY, FONT_POLICY_DECISIONS, FONT_POLICY_SOURCE, fontPolicyFor } from "./font-policy.js";
-export { SCRIPT_FONT_FAMILIES, SCRIPT_FONT_REPLACEMENTS, createScriptFonts, createScriptTextMeasurement, designatedFamilies, glyphFallbackFamilies, detectScripts, itemizeScripts, openTypeLanguage, scriptFontAliases, scriptFontRole, scriptOfCharacter, textRole } from "./script-fonts.js";
+export { SCRIPT_FONT_FAMILIES, SCRIPT_FONT_REPLACEMENTS, createScriptFonts, createScriptTextMeasurement, designatedFamilies, glyphFallbackFamilies, requiredFallbackScripts, detectScripts, itemizeScripts, openTypeLanguage, scriptFontAliases, scriptFontRole, scriptOfCharacter, textRole } from "./script-fonts.js";
 
 export class OPFFontError extends Error {
   constructor(code, message, details = {}) { super(message); this.name = "OPFFontError"; this.code = code; this.details = details; }
@@ -68,7 +68,9 @@ export function createFontRegistry(entries, options = {}) {
     const format = signature === "OTTO" ? "otf" : signature === "wOFF" ? "woff" : signature === "wOF2" ? "woff2" : "ttf";
     // Script replacement faces (FF-19) declare the ISO 15924 scripts they serve.
     const scripts = Array.isArray(entry.scripts) && entry.scripts.length ? Object.freeze(entry.scripts.map(String)) : undefined;
-    return {family,familyGroup,fontFace,weight,italic,font,data,format,license:entry.license,scripts,cache:new Map()};
+    // A fallback-only face (the default Noto Sans) serves glyph fallback and explicit requests by its own name,
+    // but never stands in for another family, so loading it does not change what any other font previews with.
+    return {family,familyGroup,fontFace,weight,italic,font,data,format,license:entry.license,scripts,fallbackOnly:entry.fallbackOnly===true,cache:new Map()};
   });
   const duplicates = new Set();
   for (const face of faces) {
@@ -85,7 +87,7 @@ export function createFontRegistry(entries, options = {}) {
   const substitutions = new Map();
   // Loaded script replacement faces stand in for the proprietary script fonts
   // they replace (Meiryo -> Noto Sans JP). Caller aliases take precedence.
-  const scriptAliases = scriptFontAliases(new Set(faces.filter(face=>face.scripts).map(face=>face.family)));
+  const scriptAliases = scriptFontAliases(new Set(faces.filter(face=>face.scripts&&!face.fallbackOnly).map(face=>face.family)));
   const aliases = new Map(Object.entries({...scriptAliases,...options.aliases}).map(([from,to])=>[validFamily(from).toLowerCase(),validFamily(to)]));
   const policy = options.substitutionPolicy ?? "none";
   if (!["none","metric","visual"].includes(policy)) throw new OPFFontError("invalid-font-policy", "substitutionPolicy must be none, metric, or visual.");
@@ -125,7 +127,7 @@ export function createFontRegistry(entries, options = {}) {
           const substituteTier = index===0 ? tier : "visual";
           if (substituteTier==="visual" && !(policy==="visual" || metricFallback && index===0)) continue;
           const exactWeight = substituteTier==="metric" || policy!=="visual";
-          const faces = findFamily(substitute).filter(face=>!exactWeight || face.weight===weight);
+          const faces = findFamily(substitute).filter(face=>!face.fallbackOnly && (!exactWeight || face.weight===weight));
           let available = faces.filter(face=>face.italic===!!style.italic);
           // Visual replacements without the requested style draw the other one and say so.
           if (!available.length && substituteTier==="visual" && policy==="visual" && faces.length) { available = faces.filter(face=>!face.italic); styleFallback = available.length>0; }
@@ -175,7 +177,10 @@ export function createFontRegistry(entries, options = {}) {
       }
     }
     if(value===undefined||includeOutline&&!Object.hasOwn(value,'outline')) {
-      const shape=features=>language?face.font.layout(text,features,undefined,language):features?face.font.layout(text,features):face.font.layout(text);
+      // FF-31: features a policy row turns off in its replacement (Gelasio for Georgia: liga, clig), the
+      // same ones the SVG output turns off, so measured and drawn advances agree.
+      const off=disabledFeaturesFor(face.family),policyFeatures=off&&Object.fromEntries(off.map(tag=>[tag,false]));
+      const shape=extra=>{const features=policyFeatures||extra?{...policyFeatures,...extra}:undefined;return language?face.font.layout(text,features,undefined,language):features?face.font.layout(text,features):face.font.layout(text);};
       let run;
       try { run=shape(); }
       catch (error) {
@@ -211,7 +216,7 @@ export function createFontRegistry(entries, options = {}) {
     get substitutions() { return [...substitutions.values()]; },
     get embeddedFonts() { return embedded(()=>true); },
     /** Parsed face metadata in entry order, without encoding font bytes. */
-    describeFaces: ()=>faces.map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.scripts?{scripts:[...face.scripts]}:{})})),
+    describeFaces: ()=>faces.map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.scripts?{scripts:[...face.scripts]}:{}),...(face.fallbackOnly?{fallbackOnly:true}:{})})),
     /** Embedded faces for which `predicate({family,weight,italic,scripts})` holds; large script faces can be left to raster fontFiles. */
     selectEmbeddedFonts: predicate=>embedded(predicate),
   };

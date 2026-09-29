@@ -220,6 +220,30 @@ export function detectScripts(value, profile) {
   return [...scripts].sort();
 }
 
+/**
+ * Script packs a presentation's text may need as glyph fallback faces, as ISO 15924 codes that
+ * `scriptFontPackages`, `prepareNodeFonts({scripts})` and auto script-pack selection accept.
+ * Beyond the scripts the text is written in (`detectScripts`): any Han or other CJK text can fall
+ * back to every CJK face (Japanese, Simplified, Traditional, Korean), and Latin-group text with
+ * Cyrillic, Greek or other non-ASCII letters falls back to Noto Sans (`Latn`).
+ *
+ * `registry` is optional: a font registry (`describeFaces()`) or an iterable of loaded family
+ * names. With it, scripts whose designated face is already loaded are left out, so the result is
+ * exactly what still has to be loaded. `profile` is core `resolveScriptFonts` output, as for `detectScripts`.
+ */
+export function requiredFallbackScripts(value, registry, profile) {
+  const needed = new Set(detectScripts(value, profile));
+  const visit = item => {
+    if (typeof item === "string") { if (!/^[\u0000-\u007F]*$/.test(item) && latinOnly.test(item)) needed.add("Latn"); else if (!latinOnly.test(item) && itemizeScripts(item, profile).some(run => run.script === "Latn" && !/^[\u0000-\u007F]*$/.test(run.text))) needed.add("Latn"); }
+    else if (Array.isArray(item)) item.forEach(visit);
+    else if (item && typeof item === "object") Object.values(item).forEach(visit);
+  };
+  visit(value);
+  if ([...needed].some(script => hanKeys.includes(script))) for (const script of hanKeys) needed.add(script);
+  const loaded = registry === undefined ? undefined : new Set((typeof registry.describeFaces === "function" ? registry.describeFaces().map(face => face.family) : [...registry]).map(family => String(family).toLowerCase()));
+  return [...needed].filter(script => !loaded || !designatedFamilies(script).some(family => loaded.has(family.toLowerCase()))).sort();
+}
+
 /** Designated open families for a script key, preferring the serif face for serif schemes. */
 export function designatedFamilies(script, serif = false) {
   const entry = SCRIPT_FONT_FAMILIES[script];
@@ -334,7 +358,8 @@ export function createScriptFonts(profile = {}, measurement, options = {}) {
   const wrapped = measurement?.[scriptMeasurement];
   const inner = wrapped?.inner ?? measurement;
   // Glyph fallback is on unless `glyphFallback: "none"` (strict faces); a wrapped measurement keeps its options.
-  options = {...wrapped?.options, ...options};
+  // Only defined keys override: a caller passing `glyphFallback: undefined` must not undo a wrapper's `"none"`.
+  options = {...wrapped?.options, ...Object.fromEntries(Object.entries(options ?? {}).filter(([, value]) => value !== undefined))};
   const fallbackEnabled = options.glyphFallback !== "none";
   const fallbackNotes = new Map();
   const measured = typeof inner?.measure === "function";
@@ -432,7 +457,7 @@ export function createScriptFonts(profile = {}, measurement, options = {}) {
       const own = resolveName(style.fontFamily, style);
       if (own === null || covers(own, text, style)) return [{text, family: style.fontFamily, own: true}];
     }
-    const cacheKey = `${style.fontFamily}\u0000${style.fontWeight ?? 400}\u0000${!!style.italic}\u0000${textRole(style) ?? ""}\u0000${text}`;
+    const cacheKey = `${style.fontFamily}\u0000${style.fontWeight ?? 400}\u0000${!!style.italic}\u0000${textRole(style) ?? ""}\u0000${style.path ?? ""}\u0000${text}`;
     const cached = plans.get(cacheKey);
     if (cached) return cached;
     const slots = slotsFor(style);
@@ -456,33 +481,38 @@ export function createScriptFonts(profile = {}, measurement, options = {}) {
         push(run.text, whole);
         continue;
       }
-      // No single candidate covers the run. Split it into script segments (common characters
-      // and combining marks stay with their neighbours) and give each segment the first face
-      // that covers all of its letters: the chosen face, the previous fallback face, the other
-      // candidates, then the fallback chain. A word is never drawn in two faces when one face
-      // has all of it (Greek beside a Latin serif, a kanji run beside Hangul). A character that
-      // face still lacks (or a segment no face covers) is chosen alone along the same order.
+      // No single candidate covers the run. Split it into grapheme clusters (a base character with
+      // the combining marks and joiners that follow it) and group those into script segments
+      // (common characters stay with their neighbours; white space ends a word). Each segment takes the first face that
+      // covers all of its letters and marks: the chosen face, the previous fallback face, the
+      // other candidates, then the fallback chain. A word is never drawn in two faces when one
+      // face has all of it (Greek beside a Latin serif, a kanji run beside Hangul). A cluster
+      // that face still lacks, mark included, moves whole to the first face that has the cluster,
+      // so a base and its mark are never split across faces.
       const primary = chosen ?? style.fontFamily;
-      let previous = primary, sticky = null;
+      let sticky = null;
       const choose = (subject, sample) => unique([run.candidates[0], ...(sticky ? [sticky] : []), ...run.candidates, ...global, ...(fallbackEnabled ? chainFor(sample) : [])]).find(name => covers(name, subject, style));
       const segments = [];
       for (const character of run.text) {
-        const script = scriptOfCharacter(character), weak = script === "Zyyy" || script === "Zinh", last = segments.at(-1);
-        if (last && (weak || last.script === undefined || last.script === script)) { last.text += character; if (!weak) { last.script = script; last.letters.push(character); } }
-        else segments.push({text: character, script: weak ? undefined : script, letters: weak ? [] : [character]});
+        const script = scriptOfCharacter(character), last = segments.at(-1)?.clusters.at(-1);
+        if (script === "Zinh" && last) { last.text += character; continue; }
+        const weak = script === "Zyyy" || script === "Zinh", segment = segments.at(-1);
+        const cluster = {text: character, base: character, weak};
+        // A segment is one script and one word: white space closes it, so a single lacking mark
+        // moves its word to another face, not the whole sentence.
+        if (segment && !(segment.closed && !weak) && (weak || segment.script === undefined || segment.script === script)) {
+          segment.clusters.push(cluster);
+          if (!weak) segment.script = script; else if (/^\s/.test(character)) segment.closed = true;
+        } else segments.push({script: weak ? undefined : script, clusters: [cluster]});
       }
       for (const segment of segments) {
-        const face = segment.letters.length ? choose(segment.letters.join(""), segment.letters[0]) : undefined;
-        for (const character of segment.text) {
-          const script = scriptOfCharacter(character);
-          let family = previous;
-          if (script !== "Zinh") {
-            family = face && covers(face, character, style) ? face : choose(character, character) ?? primary;
-            if (family !== primary && family !== chosen) sticky = family;
-            if (chosen !== null && family !== chosen && covers(family, character, style)) noteFallback(pending, chosen, family, [character]);
-          }
-          push(character, family);
-          previous = family;
+        const strong = segment.clusters.filter(cluster => !cluster.weak);
+        const face = strong.length ? choose(strong.map(cluster => cluster.text).join(""), strong[0].base) : undefined;
+        for (const cluster of segment.clusters) {
+          const family = face && covers(face, cluster.text, style) ? face : choose(cluster.text, cluster.base) ?? choose(cluster.base, cluster.base) ?? primary;
+          if (family !== primary && family !== chosen) sticky = family;
+          if (chosen !== null && family !== chosen && covers(family, cluster.text, style)) noteFallback(pending, chosen, family, [...cluster.text]);
+          push(cluster.text, family);
         }
       }
     }
