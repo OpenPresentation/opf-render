@@ -20,6 +20,8 @@ export type BundledFontPackage = Readonly<{
   license:string; licenseFile:string; licenseSha256:string;
   /** Whether the shipped notice declares a Reserved Font Name, and which (read from the notice, never assumed). */
   hasReservedFontName:boolean; reservedFontNames:readonly string[];
+  /** The family this package is the renamed successor of; requests for the old name draw these faces, reported visual. */
+  renamedFrom?:string;
   faces:readonly Readonly<{file:string; family:string; weight:number; italic:boolean; sha256:string}>[];
 }>;
 export interface BundledFontManifest {

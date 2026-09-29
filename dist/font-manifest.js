@@ -708,45 +708,46 @@ export const BUNDLED_FONT_MANIFEST=freeze({
       ]
     },
     {
-      "name": "source-sans-pro",
-      "version": "3.6.0",
+      "name": "source-sans",
+      "version": "3.52.0",
       "pack": "open",
-      "source": "https://www.npmjs.com/package/source-sans-pro/v/3.6.0",
+      "source": "https://www.npmjs.com/package/source-sans/v/3.52.0",
       "license": "OFL-1.1",
       "licenseFile": "LICENSE.md",
-      "licenseSha256": "e1d1fdcefb57985226c06fa9500d29caacfa2b1f8b8c74db911f13c6cad186a1",
+      "licenseSha256": "56af9b9c6715597e458284a474dc118a50a4150e9d547c70f7b4a33c3e6a9328",
       "hasReservedFontName": true,
       "reservedFontNames": [
         "Source"
       ],
+      "renamedFrom": "Source Sans Pro",
       "faces": [
         {
-          "file": "TTF/SourceSansPro-Regular.ttf",
-          "family": "Source Sans Pro",
+          "file": "TTF/SourceSans3-Regular.ttf",
+          "family": "Source Sans 3",
           "weight": 400,
           "italic": false,
-          "sha256": "30e35dda7a179dadec11c58e89835b5006ee69d3bd43b55a91dd52f1f02a8cac"
+          "sha256": "4644c81b86ec9caaa76b634889968ed3c4f4f52f054855933acc7c2b21e53b0f"
         },
         {
-          "file": "TTF/SourceSansPro-It.ttf",
-          "family": "Source Sans Pro",
+          "file": "TTF/SourceSans3-It.ttf",
+          "family": "Source Sans 3",
           "weight": 400,
           "italic": true,
-          "sha256": "e487c1ba98e11ff1c3f8aa885f7c6c1fc4ebd5bceba8bc9e65af8dbec767a4e4"
+          "sha256": "192afd78f0f54a3c69eaf02d43f4d9a821e9d6110e41d3d25d61a7385cd580e4"
         },
         {
-          "file": "TTF/SourceSansPro-Bold.ttf",
-          "family": "Source Sans Pro",
+          "file": "TTF/SourceSans3-Bold.ttf",
+          "family": "Source Sans 3",
           "weight": 700,
           "italic": false,
-          "sha256": "471d4577c2f9714cd508e49fb1c050b654ac0c006c0a9f70f7ef9b7cf10c6eef"
+          "sha256": "9214b9d95e4231c609802815c2646c98174e2102d0d37f88978a7f8e71006e6a"
         },
         {
-          "file": "TTF/SourceSansPro-BoldIt.ttf",
-          "family": "Source Sans Pro",
+          "file": "TTF/SourceSans3-BoldIt.ttf",
+          "family": "Source Sans 3",
           "weight": 700,
           "italic": true,
-          "sha256": "2f7e5767d45d080c388c788fa8fa99d304c659784a1aa701171c79578a82ee27"
+          "sha256": "7978291fc1bf314db887e0366853b33c5cf2e964c7b95cfb9ce403a6ec46a842"
         }
       ]
     },

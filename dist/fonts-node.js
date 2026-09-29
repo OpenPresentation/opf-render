@@ -41,6 +41,9 @@ async function loadPackages(packages) {
   return {entries, fontFiles};
 }
 
+// A package that is the renamed successor of a family (Source Sans 3, formerly Source Sans Pro) answers to the
+// old name through a built-in alias, reported visual like other aliases; it is not a claim of the old face.
+const renamedAliases = () => Object.fromEntries(BUNDLED_FONT_MANIFEST.packages.filter(item => item.pack === "open" && item.renamedFrom).map(item => [item.renamedFrom, item.faces[0].family]));
 const loadPack = pack => loadPackages(BUNDLED_FONT_MANIFEST.packages.filter(item => item.pack === pack));
 
 async function withScripts(loaded, scripts) {
@@ -79,7 +82,7 @@ export async function loadBundledFontRegistry({scripts, faces, ...options} = {})
   return Object.assign(createFontRegistry(entries,options),{fontFiles});
 }
 
-/** Six pinned open-source Office substitutes plus the open families that font schemes select (FF-31),
+/** Office substitutes plus the open families that font schemes select (FF-31),
  * optionally alongside the base Roboto pack. `includeOpenFonts: false` leaves the open families out. */
 export async function loadOfficeFontRegistry({scripts, faces, ...options} = {}) {
   const {entries, fontFiles} = await loadPack("office");
@@ -90,7 +93,8 @@ export async function loadOfficeFontRegistry({scripts, faces, ...options} = {}) 
     entries.push(...extra.entries);
   }
   const loaded = await withFaces(await withScripts({entries, fontFiles}, scripts), faces);
-  return Object.assign(createFontRegistry(loaded.entries,{substitutionPolicy:"metric",...options}),{fontFiles:loaded.fontFiles});
+  const aliases = options.includeOpenFonts === false ? options.aliases : {...renamedAliases(), ...options.aliases};
+  return Object.assign(createFontRegistry(loaded.entries,{substitutionPolicy:"metric",...options,...(aliases?{aliases}:{})}),{fontFiles:loaded.fontFiles});
 }
 
 /** One set of verified font inputs for layout, SVG, editor, PPTX, and Node raster export. */
