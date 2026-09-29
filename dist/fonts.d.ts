@@ -66,6 +66,8 @@ export interface PlannedRun { text: string; family: string; own: boolean; stack?
 export interface ScriptFonts {
   readonly profile: ScriptFontProfile;
   readonly rtl: boolean;
+  /** Glyph fallback notes recorded so far. */
+  readonly fallbacks: readonly GlyphFallbackNote[];
   /** Font runs for text drawn in a resolved latin style. */
   plan(text: string, style: TextStyle): PlannedRun[];
   runWidths(runs: PlannedRun[], size: number, style: TextStyle): number[] | undefined;
@@ -80,9 +82,17 @@ export declare function itemizeScripts(text: string, profile?: ScriptFontProfile
 export declare function detectScripts(value: unknown, profile?: ScriptFontProfile): string[];
 export declare function designatedFamilies(script: string, serif?: boolean): string[];
 export declare function scriptFontAliases(families: Iterable<string>): Record<string, string>;
-export declare function createScriptFonts(profile?: ScriptFontProfile, measurement?: TextMeasurement): ScriptFonts;
+export interface GlyphFallbackNote { fontFamily: string; fallbackFamily: string; scripts: string[]; characters: string[]; path?: string }
+export interface ScriptFontsOptions {
+  /** `"chain"` (default) draws and measures a character the face lacks with the first bundled face that has it; `"none"` keeps exact faces and a missing glyph raises `missing-glyph`. */
+  glyphFallback?: "chain" | "none";
+  onFallback?: (note: GlyphFallbackNote) => void;
+}
+export declare function createScriptFonts(profile?: ScriptFontProfile, measurement?: TextMeasurement, options?: ScriptFontsOptions): ScriptFonts;
+/** Designated open families a preview tries, in order, for a character its face lacks (own script, deck script, Noto Sans, other CJK, other Noto scripts). */
+export declare function glyphFallbackFamilies(character: string, profile?: ScriptFontProfile, serif?: boolean): string[];
 /** Wrap a measurement so pagination, the renderer and the editor itemize script runs identically. */
-export declare function createScriptTextMeasurement(measurement: TextMeasurement, profile: ScriptFontProfile): TextMeasurement;
+export declare function createScriptTextMeasurement(measurement: TextMeasurement, profile: ScriptFontProfile, options?: ScriptFontsOptions): TextMeasurement;
 export declare function openTypeLanguage(tag: string | undefined): string | undefined;
 /** Heading or body role of a style from its OPF path; undefined without a slide path. */
 export declare function textRole(style: { path?: string } | undefined): "heading" | "body" | undefined;

@@ -141,6 +141,8 @@ The SVG root carries `lang` and `xml:lang` from the document's `language`. Measu
 
 When the installed core has no `resolveScriptFonts` (published core 0.11.0 and earlier) and the document names a `language`, the renderer reports `language-preview-unavailable` once through `onDiagnostic`. The preview then uses the design font for every script, sets no `lang` and lays out every paragraph left to right. If the resolver throws, the renderer falls back the same way and reports `language-preview-unresolved`.
 
+A face that lacks a character never fails a preview. As in a browser or PowerPoint font linking, each character the resolved face lacks is measured and drawn with the first loaded face that has it, along a fixed chain (`glyphFallbackFamilies(character, profile)`): the character's own script face, the deck language's script face, Noto Sans (Latin, Cyrillic and Greek), the other CJK faces (Japanese, Simplified, Traditional, Korean), then every other Noto script face. A Greek or Cyrillic word under Georgia (Gelasio), Constantia (Caladea) or a script scheme's face, Greek under Meiryo, Yu Gothic, Microsoft YaHei or Malgun Gothic, Japanese-only kanji beside Hangul, and Simplified-only hanzi in a Japanese deck therefore draw with Noto Sans or the CJK face that has them, and each word stays in one face when one has all of it. Each substitution is reported once per family pair and path as a `font-glyph-fallback` diagnostic through `onDiagnostic` (`fontFamily`, `fallbackFamily`, `scripts`, `characters`); it is a note, not an error. Pass `glyphFallback: 'none'` to `renderSvg` or `createScriptTextMeasurement` to keep exact faces, so a missing glyph raises `missing-glyph` again. Without a registry, a Greek or Cyrillic run names `Noto Sans` after the design font in its font stack. A character that no loaded face has still raises `missing-glyph`. The PPTX export is unchanged: it names the chosen font and PowerPoint links its own fallback fonts.
+
 Characters are assigned to slots following PowerPoint where its rules are known:
 
 - Letters take their script's slot.
@@ -156,7 +158,7 @@ Limits:
 - Per-run language (`lang` on individual runs) is not modelled. Han text uses kana or Hangul context, then the document language, and defaults to Simplified Chinese.
 - Faces have no italics, so italic script text uses upright advances. Browsers may slant it synthetically.
 - Serif CJK replacements (Noto Serif JP/SC/TC/KR) are designated but not pinned; serif CJK requests use the sans face unless you supply the serif face.
-- Shaping uses fontkit. An offline Chromium check keeps 27 runs across 26 scripts within 0.1 px of HarfBuzz advances (`npm run test:script-fonts-browser`). Other texts, fonts and PowerPoint's own shaping are not certified.
+- Shaping uses fontkit. An offline Chromium check keeps 37 runs across 28 cases within 0.1 px of HarfBuzz advances (`npm run test:script-fonts-browser`). Other texts, fonts and PowerPoint's own shaping are not certified.
 - Estimated (unmeasured) rich text keeps logical fragment order and relies on the browser's bidi algorithm.
 
 These browser entrypoints are included in the published package. For coordinated development, the sibling OPF repository's `pnpm pack:ecosystem` prepares local npm tarballs. See the core repository's [live editor guide](https://github.com/OpenPresentation/opf/blob/main/docs/live-editor.md) for installation and the fidelity contract. Identical SVG geometry does not guarantee identical raster pixels across browser engines or PowerPoint.

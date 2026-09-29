@@ -5,7 +5,7 @@ import { fontPolicyFor } from "./font-policy.js";
 import { BUNDLED_FONT_MANIFEST } from "./font-manifest.js";
 export { FONT_COMPATIBILITY, EXPERIMENTAL_FONT_CANDIDATES } from "./font-compatibility.js";
 export { FONT_POLICY, FONT_POLICY_DECISIONS, FONT_POLICY_SOURCE, fontPolicyFor } from "./font-policy.js";
-export { SCRIPT_FONT_FAMILIES, SCRIPT_FONT_REPLACEMENTS, createScriptFonts, createScriptTextMeasurement, designatedFamilies, detectScripts, itemizeScripts, openTypeLanguage, scriptFontAliases, scriptFontRole, scriptOfCharacter, textRole } from "./script-fonts.js";
+export { SCRIPT_FONT_FAMILIES, SCRIPT_FONT_REPLACEMENTS, createScriptFonts, createScriptTextMeasurement, designatedFamilies, glyphFallbackFamilies, detectScripts, itemizeScripts, openTypeLanguage, scriptFontAliases, scriptFontRole, scriptOfCharacter, textRole } from "./script-fonts.js";
 
 export class OPFFontError extends Error {
   constructor(code, message, details = {}) { super(message); this.name = "OPFFontError"; this.code = code; this.details = details; }
