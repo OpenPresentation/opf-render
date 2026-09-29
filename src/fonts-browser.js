@@ -120,6 +120,8 @@ export async function loadBrowserFontRegistry(entries, options = {}) {
       const loadedNow = selection.scripts.length ? await loadScriptPackages(selection.scripts) : [];
       return { ...selection, loaded: loadedNow };
     },
+    /** Synchronous: script-pack packages the presentation needs that are not loaded yet. Empty means `ensureScripts` would fetch nothing. */
+    pendingScripts: (presentation) => scriptFontPackages(autoScriptSelection(presentation).scripts).map((item) => item.name).filter((name) => !scriptPackages.has(name)),
   });
   /** Names of the script-pack packages loaded so far. */
   Object.defineProperty(registry, "loadedScriptPackages", { get: () => [...scriptPackages], enumerable: true });

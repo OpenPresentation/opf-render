@@ -148,7 +148,8 @@ registry.scriptSelection; // { detected, scripts, unavailable, packages, notInst
 // Browser: script faces are fetched lazily, once each, hash-verified, from where the host serves the
 // installed @expo-google-fonts packages. Call ensureScripts after every edit and render again afterwards.
 const fonts = await loadBrowserFontRegistry(baseEntries, { substitutionPolicy: 'visual', fallbackFamily: 'Roboto', scriptBaseUrl: '/script-fonts/' });
-await fonts.ensureScripts(presentation); // resolves { detected, scripts, unavailable, loaded }
+if (fonts.pendingScripts(presentation).length) await fonts.ensureScripts(presentation); // resolves { detected, scripts, unavailable, loaded }
+// pendingScripts is synchronous: empty means nothing is missing, so render at once.
 ```
 
 `loadBrowserFontRegistry` also accepts `scripts: 'auto'` with `presentation` (loads on creation), and `fonts.loadScripts(['Arab'])` for explicit scripts. A registry grows in place: `registry.addFaces(entries)` registers faces atomically and refreshes the script aliases (Meiryo resolves to Noto Sans JP once its face exists), so hosts keep one `textMeasurement`. Faces are never unloaded before `dispose()`. Measurements planned before a face was added (for example a long-lived `createScriptTextMeasurement` wrapper) do not know it; call `ensureScripts` before creating them. Sizes: one CJK package is 10.4 (Japanese), 20.1 (Simplified Chinese), 13.6 (Traditional Chinese) or 11.8 MiB (Korean); the three Arabic packages total 1.8 MiB and each other script under 1.5 MiB. A Latin-only deck downloads nothing extra.

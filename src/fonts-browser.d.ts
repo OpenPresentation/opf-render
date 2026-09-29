@@ -21,6 +21,8 @@ export interface BrowserFontRegistry extends FontRegistry {
    * needed. Call it after edits and render again afterwards: measurements planned earlier do not know the new faces.
    */
   ensureScripts(presentation: unknown): Promise<AutoScriptSelection & { loaded: string[] }>;
+  /** Synchronous: package names the presentation needs that are not loaded yet. Empty means `ensureScripts` fetches nothing, so a host can render immediately. */
+  pendingScripts(presentation: unknown): string[];
   /** Names of the script-pack packages loaded so far. */
   readonly loadedScriptPackages: string[];
 }
