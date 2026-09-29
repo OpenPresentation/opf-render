@@ -20,11 +20,27 @@ for(const [fontFamily,substitute] of Object.entries(pairs)) for(const fontWeight
   assert.equal(resolved.path,style.path);
   assert.ok(registry.textMeasurement.measure('AVATAR office 1234',25,style)>0);
 }
-// 24 office and base faces plus the four default Noto Sans fallback faces (regular, bold, italic, bold italic).
-assert.equal(registry.embeddedFonts.length,37);
+// FF-31: the unmodified upstream Carlito measures U+00A0 like a space in every style. The Google Fonts API subset it
+// replaces (@expo-google-fonts/carlito 0.4.1) failed here with font-shaping-failed: fontkit could not read its no-break space glyph.
+for(const fontWeight of [400,700]) for(const italic of [false,true]) {
+  const style={fontFamily:'Carlito',fontWeight,italic};
+  const withNbsp = 'Price:' + String.fromCharCode(0xa0) + '$5', withSpace = 'Price: $5';
+  assert.equal(withNbsp.charCodeAt(6), 0xa0, 'the probe string really contains U+00A0');
+  assert.equal(withSpace.charCodeAt(6), 0x20);
+  const nbsp = registry.textMeasurement.measure(withNbsp, 20, style), space = registry.textMeasurement.measure(withSpace, 20, style);
+  assert.ok(space > 0);
+  assert.equal(nbsp, space, 'Carlito U+00A0 advance equals a normal space in ' + fontWeight + (italic ? ' italic' : ''));
+  // Alone, a no-break space also measures like a space (not zero, not a shaping failure).
+  assert.equal(registry.textMeasurement.measure(String.fromCharCode(0xa0), 20, style), registry.textMeasurement.measure(' ', 20, style));
+  assert.ok(registry.textMeasurement.measure(String.fromCharCode(0xa0), 20, style) > 0);
+}
+assert.equal(registry.embeddedFonts.length,33);
 {
+  // The default Noto Sans fallback (four styles) is loaded but embed "used": not in the eager list above.
   const notoSans=registry.describeFaces().filter(face=>face.family==='Noto Sans');
   assert.deepEqual(notoSans.map(face=>[face.weight,face.italic,face.fallbackOnly,face.scripts.join()]).sort(),[[400,false,true,'Latn,Cyrl,Grek'],[400,true,true,'Latn,Cyrl,Grek'],[700,false,true,'Latn,Cyrl,Grek'],[700,true,true,'Latn,Cyrl,Grek']].sort(),'Noto Sans is loaded by default as a fallback-only face');
+  assert.ok(!registry.embeddedFonts.some(face=>face.family==='Noto Sans'));
+  assert.ok(registry.selectEmbeddedFonts(()=>true).filter(face=>face.family==='Noto Sans').every(face=>face.embed==='used'));
   // Fallback-only: it never stands in for another family (Ebrima previews as it did before), but is found by its own name.
   assert.equal(registry.resolveFont({fontFamily:'Ebrima',fontWeight:400}).resolvedFamily,'Arimo');
   assert.equal(registry.resolveFont({fontFamily:'Noto Sans',fontWeight:400,italic:true}).resolvedFamily,'Noto Sans');

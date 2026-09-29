@@ -193,7 +193,13 @@ function designatedFamiliesAll() {
     const svg = renderSvg(document, {...bare.options, textMeasurement: createScriptTextMeasurement(bareMeasurement, core.resolveScriptFonts(document)), onDiagnostic: (item) => notes.push(item)});
     assert.ok(notes.some((note) => note.code === 'font-glyph-fallback' && note.fallbackFamily === 'Noto Sans'), `${scheme} + ${language} previews with the default registry`);
     assert.ok(drawnRuns(svg).some(([family]) => family === 'Noto Sans'));
-    assert.ok(!bare.options.embeddedFonts.some((face) => face.family === 'Noto Sans'), 'the fallback face is not embedded in SVG');
+    // Noto Sans is embed "used": offered to the renderer, embedded only in an SVG whose text draws it.
+    const notoSans = bare.options.embeddedFonts.filter((face) => face.family === 'Noto Sans');
+    assert.ok(notoSans.length === 4 && notoSans.every((face) => face.embed === 'used'), 'the fallback faces are offered as embed "used"');
+    assert.ok(svg.includes('@font-face{font-family:"Noto Sans"'), `${scheme} + ${language}: the standalone SVG embeds the Noto Sans it draws`);
+    assert.ok(bare.registry.embeddedFonts.every((face) => face.family !== 'Noto Sans'), 'the eager embedded list stays the 33 office and base faces');
+    const english = deck('english', scheme, 'Quarterly review', 'Revenue grew');
+    assert.ok(!renderSvg(english, {...bare.options, textMeasurement: createScriptTextMeasurement(bareMeasurement, core.resolveScriptFonts(english))}).includes('font-family:"Noto Sans"'), 'a slide that does not draw Noto Sans does not embed it');
     assert.ok(bare.options.fontFiles.some((file) => /NotoSans_400Regular\.ttf$/.test(file)), 'the raster reads it from fontFiles');
   }
   // Italic and bold styles exist for the fallback, and other families preview exactly as before.

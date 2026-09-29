@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import { createFontRegistry, OPFFontError } from "./fonts.js";
 import { BUNDLED_FONT_MANIFEST } from "./font-manifest.js";
@@ -8,6 +9,8 @@ export { BUNDLED_FONT_MANIFEST } from "./font-manifest.js";
 import { scriptFontPackages } from "./script-font-pack.js";
 export { scriptFontPackages } from "./script-font-pack.js";
 const require = createRequire(import.meta.url);
+// dist/ (published) and src/ (checkout) both sit directly below the package root.
+const packageRoot = fileURLToPath(new URL("../", import.meta.url));
 
 async function verifiedFile(file, expected, details) {
   let bytes;
@@ -18,24 +21,34 @@ async function verifiedFile(file, expected, details) {
   return bytes;
 }
 
+// The default Latin, Cyrillic and Greek glyph-fallback face. Its faces are embed "used": an SVG embeds them only when its text draws them.
+const FALLBACK_PACKAGE = "@expo-google-fonts/noto-sans";
+
+// An npm font package, resolved from node_modules and checked against its pinned version.
+async function installedDirectory(pkg) {
+  let manifestPath, installed;
+  try {
+    manifestPath = require.resolve(`${pkg.name}/package.json`);
+    installed = JSON.parse(await readFile(manifestPath, "utf8"));
+  } catch (error) {
+    throw new OPFFontError("font-resource-unavailable", `Install ${pkg.name}@${pkg.version} to use this offline font pack.`, {package:pkg.name, cause:error.code});
+  }
+  if (installed.version !== pkg.version) throw new OPFFontError("font-version-mismatch", `Expected ${pkg.name}@${pkg.version}; reinstall the pinned package.`, {package:pkg.name, expected:pkg.version, actual:installed.version});
+  return path.dirname(manifestPath);
+}
+
+// A `vendored` entry (FF-31) ships inside this package, for example fonts/carlito: the unmodified
+// upstream files, which verifiedFile checks against the same reviewed SHA-256 pins.
 async function loadPackages(packages, {fallbackOnly = false} = {}) {
   const entries = [], fontFiles = [];
   for (const pkg of packages) {
-    let manifestPath, installed;
-    try {
-      manifestPath = require.resolve(`${pkg.name}/package.json`);
-      installed = JSON.parse(await readFile(manifestPath, "utf8"));
-    } catch (error) {
-      throw new OPFFontError("font-resource-unavailable", `Install ${pkg.name}@${pkg.version} to use this offline font pack.`, {package:pkg.name, cause:error.code});
-    }
-    if (installed.version !== pkg.version) throw new OPFFontError("font-version-mismatch", `Expected ${pkg.name}@${pkg.version}; reinstall the pinned package.`, {package:pkg.name, expected:pkg.version, actual:installed.version});
-    const directory = path.dirname(manifestPath);
+    const directory = pkg.vendored ? path.join(packageRoot, pkg.vendored) : await installedDirectory(pkg);
     const license = (await verifiedFile(path.join(directory, pkg.licenseFile), pkg.licenseSha256, {package:pkg.name, file:pkg.licenseFile})).toString("utf8");
     for (const face of pkg.faces) {
       const file = path.join(directory, face.file);
       const data = await verifiedFile(file, face.sha256, {package:pkg.name, file:face.file});
       fontFiles.push(file);
-      entries.push({data:new Uint8Array(data), family:face.family, weight:face.weight, italic:face.italic, license, ...(pkg.scripts ? {scripts:[...pkg.scripts]} : {}), ...(fallbackOnly ? {fallbackOnly:true} : {})});
+      entries.push({data:new Uint8Array(data), family:face.family, weight:face.weight, italic:face.italic, license, ...(pkg.scripts ? {scripts:[...pkg.scripts]} : {}), ...(fallbackOnly ? {fallbackOnly:true} : {}), ...(pkg.name === FALLBACK_PACKAGE ? {embed:"used"} : {})});
     }
   }
   return {entries, fontFiles, packages:packages.map(pkg => pkg.name)};
@@ -91,7 +104,7 @@ export async function loadOfficeFontRegistry({scripts, faces, ...options} = {}) 
   }
   // Noto Sans (regular, bold, italic, bold italic) is the default Latin, Cyrillic and Greek
   // fallback face (glyph fallback), so Georgia with Russian text previews without the scripts option.
-  // It is a script face: raster output reads it from fontFiles and SVG does not embed it.
+  // It is embedded in an SVG only when the slide's text draws it (embed "used"); raster output reads it from fontFiles.
   // Unless the caller asked for it with scripts, it is fallback-only, so no other family's preview changes.
   const requested = scripts === undefined || (Array.isArray(scripts) && !scripts.length) ? [] : scriptFontPackages(scripts).map(pkg => pkg.name);
   const fallback = await loadPackages(scriptFontPackages(["Latn"]).filter(pkg => !requested.includes(pkg.name)), {fallbackOnly:true});
@@ -108,7 +121,7 @@ export async function prepareNodeFonts({pack = "base", embedScriptFonts = false,
   const registry = await (pack === "base" ? loadBundledFontRegistry(options) : loadOfficeFontRegistry(options));
   // Script faces are large (CJK faces are 5-10 MB each). Raster output reads them
   // from fontFiles; embed them in standalone SVG only on request.
-  const embeddedFonts = registry.selectEmbeddedFonts(face => embedScriptFonts || !face.scripts);
+  const embeddedFonts = registry.selectEmbeddedFonts(face => embedScriptFonts || !face.scripts || face.embed === "used");
   return {
     registry,
     manifest:BUNDLED_FONT_MANIFEST,
