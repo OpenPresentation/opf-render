@@ -4,7 +4,7 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {chromium} from 'playwright';
 import {prepareNodeFonts} from '../dist/fonts-node.js';
-const prepared=await prepareNodeFonts({pack:'aptos'}),text='Quarterly AVATAR affine fi ffl 2026 — typography';
+const prepared=await prepareNodeFonts({pack:'office'}),text='Quarterly AVATAR affine fi ffl 2026 — typography';
 const cases=prepared.options.embeddedFonts.filter(face=>/^Intos/.test(face.family)).map(face=>({
   ...face,expected:prepared.registry.textMeasurement.measure(text,42,{fontFamily:face.family,fontWeight:face.weight,italic:face.italic}),
   fontSha256:createHash('sha256').update(Buffer.from(face.dataUrl.split(',')[1],'base64')).digest('hex'),
@@ -29,7 +29,7 @@ try{
     }
     return results;
   },{cases,text});
-  const report={node:process.version,browser:browser.version(),observations,errors,requests,scope:'Sixteen vendored Intos faces (the aptos pack), actual offline SVG font loading and shaped advances. Raster and native fidelity remain separate.'};
+  const report={node:process.version,browser:browser.version(),observations,errors,requests,scope:'Sixteen vendored Intos faces (the office pack), actual offline SVG font loading and shaped advances. Raster and native fidelity remain separate.'};
   if(process.argv[2]){await mkdir(path.dirname(path.resolve(process.argv[2])),{recursive:true});await writeFile(process.argv[2],JSON.stringify(report,null,2)+'\n');}
   for(const observation of observations){assert.equal(observation.text,text);assert.ok(Math.abs(observation.actual-observation.expected)<.1,`${observation.family}/${observation.weight}/${observation.italic}: browser advance differs`);}
   assert.deepEqual(errors,[]);assert.deepEqual(requests,[]);

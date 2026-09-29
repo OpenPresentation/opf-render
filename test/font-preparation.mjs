@@ -44,10 +44,13 @@ const aptosDeck={slides:[{title:'Explicit Office substitute',text:'The source fo
 const aptosSource=JSON.stringify(aptosDeck);
 renderSvg(aptosDeck,office.options);
 assert.equal(JSON.stringify(aptosDeck),aptosSource);
-// FF-31 (provisional, owner may revise): the font policy previews Aptos with Roboto.
-assert.ok(office.registry.substitutions.some(item=>item.requestedFamily==='Aptos'&&item.resolvedFamily==='Roboto'&&item.compatibility==='visual'&&item.substitute));
+// FF-31 (owner policy 2026-09-29): the font policy previews Aptos with the metric-compatible Intos.
+assert.ok(office.registry.substitutions.some(item=>item.requestedFamily==='Aptos'&&item.resolvedFamily==='Intos'&&item.compatibility==='metric'&&item.substitute));
 const metric=await prepareNodeFonts({pack:'office'});
-assert.throws(()=>renderSvg(aptosDeck,metric.options),{code:'font-unavailable'});
+assert.doesNotThrow(()=>renderSvg(aptosDeck,metric.options));
+assert.ok(metric.registry.substitutions.some(item=>item.requestedFamily==='Aptos'&&item.resolvedFamily==='Intos'&&item.compatibility==='metric'));
+const baseMetric=await prepareNodeFonts({pack:'base',substitutionPolicy:'metric'});
+assert.throws(()=>renderSvg(aptosDeck,baseMetric.options),{code:'font-unavailable'});
 await assert.rejects(prepareNodeFonts({pack:'unknown'}),{code:'invalid-font-pack'});
 assert.throws(()=>renderSvg({design:{fontScheme:'roboto'},slides:[{text:'你好'}]},options),{code:'missing-glyph'});
 

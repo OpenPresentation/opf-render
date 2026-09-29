@@ -44,7 +44,7 @@ async function loadPackages(packages) {
       const file = path.join(directory, face.file);
       const data = await verifiedFile(file, face.sha256, {package:pkg.name, file:face.file});
       fontFiles.push(file);
-      entries.push({data:new Uint8Array(data), family:face.family, weight:face.weight, italic:face.italic, license, ...(pkg.embed ? {embed:pkg.embed} : {}), ...(pkg.scripts ? {scripts:[...pkg.scripts]} : {})});
+      entries.push({data:new Uint8Array(data), family:face.family, weight:face.weight, italic:face.italic, license, embed:"used", ...(pkg.scripts ? {scripts:[...pkg.scripts]} : {})});
     }
   }
   return {entries, fontFiles};
@@ -88,7 +88,7 @@ export async function loadBundledFontRegistry({scripts, faces, ...options} = {})
   return Object.assign(createFontRegistry(entries,options),{fontFiles});
 }
 
-/** Six pinned open-source Office substitutes, optionally alongside the base Roboto pack. */
+/** Pinned open-source Office substitutes (Carlito, Caladea, Arimo, Tinos, Cousine, Gelasio and the vendored Intos family for Aptos), optionally alongside the base Roboto pack. */
 export async function loadOfficeFontRegistry({scripts, faces, ...options} = {}) {
   const {entries, fontFiles} = await loadPack("office");
   if (options.includeBaseFonts !== false) {
@@ -100,30 +100,10 @@ export async function loadOfficeFontRegistry({scripts, faces, ...options} = {}) 
   return Object.assign(createFontRegistry(loaded.entries,{substitutionPolicy:"metric",...options}),{fontFiles:loaded.fontFiles});
 }
 
-/**
- * Office pack plus the vendored Intos family (Aptos, Aptos Display, Aptos Narrow and Aptos Serif
- * metric-compatible replacements), optionally alongside the base Roboto pack. Metric substitution
- * policy is the default, so Aptos previews resolve to Intos without asking for visual mode.
- */
-export async function loadAptosFontRegistry({scripts, faces, ...options} = {}) {
-  const {entries, fontFiles} = await loadPack("aptos");
-  const office = await loadPack("office");
-  entries.push(...office.entries); fontFiles.push(...office.fontFiles);
-  if (options.includeBaseFonts !== false) {
-    const base = await loadPack("base");
-    fontFiles.push(...base.fontFiles);
-    entries.push(...base.entries);
-  }
-  // This pack is about 12 MB larger than the office pack: an SVG embeds only the families its text names.
-  for (const [index, entry] of entries.entries()) entries[index] = {...entry, embed: "used"};
-  const loaded = await withFaces(await withScripts({entries, fontFiles}, scripts), faces);
-  return Object.assign(createFontRegistry(loaded.entries,{substitutionPolicy:"metric",...options}),{fontFiles:loaded.fontFiles});
-}
-
 /** One set of verified font inputs for layout, SVG, editor, PPTX, and Node raster export. */
 export async function prepareNodeFonts({pack = "base", embedScriptFonts = false, ...options} = {}) {
-  if (pack !== "base" && pack !== "office" && pack !== "aptos") throw new OPFFontError("invalid-font-pack", "Choose the base, office or aptos font pack.", {pack});
-  const registry = await (pack === "base" ? loadBundledFontRegistry(options) : pack === "office" ? loadOfficeFontRegistry(options) : loadAptosFontRegistry(options));
+  if (pack !== "base" && pack !== "office") throw new OPFFontError("invalid-font-pack", "Choose the base or office font pack.", {pack});
+  const registry = await (pack === "base" ? loadBundledFontRegistry(options) : loadOfficeFontRegistry(options));
   // Script faces are large (CJK faces are 5-10 MB each). Raster output reads them
   // from fontFiles; embed them in standalone SVG only on request.
   const embeddedFonts = registry.selectEmbeddedFonts(face => embedScriptFonts || !face.scripts);

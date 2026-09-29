@@ -7,7 +7,7 @@ const SNAPSHOT=freeze({
   "aptos-preview": {
    "replacement": "Intos",
    "compatibility": "metric",
-   "note": "Owner policy 2026-09-29: a licensed font the user selects previews with an open replacement that looks similar and has the same size on screen; the PPTX keeps the selected name. Aptos previews with Intos (metric, OFL-1.1, vendored in opf-render); Roboto and Carlito are alternates when the aptos pack is not loaded."
+   "note": "Owner policy 2026-09-29: a licensed font the user selects previews with an open replacement that looks similar and has the same size on screen; the PPTX keeps the selected name. Aptos previews with Intos (metric, OFL-1.1, vendored in opf-render); Roboto and Carlito are alternates for registries built without the Intos faces (they are in the opf-render office pack)."
   },
   "segoe-ui-preview": {
    "replacement": "Red Hat Display",
@@ -23,7 +23,7 @@ const SNAPSHOT=freeze({
  },
  "source": {
   "path": "spec/reference/font-policy.json",
-  "sha256": "3ac21db442ac596709061170ac14bfa9cffc2bb1b27ca3f3245092d8db04db51"
+  "sha256": "cb629d7761d9697552809b1c36974e6c1b7cd05051092bec04527aafa950aaa9"
  },
  "families": [
   {

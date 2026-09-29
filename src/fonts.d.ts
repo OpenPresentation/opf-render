@@ -1,5 +1,5 @@
 import type { TextMeasurement, TextStyle } from "@openpresentation/opf/composition";
-export interface FontFaceInput { data: Uint8Array; family?: string; weight?: number; italic?: boolean; postscriptName?: string; license?: string; /** "used" embeds the face in an SVG only when the slide's text names its family (large vendored families). Default "always". */ embed?: "always" | "used"; /** ISO 15924 scripts a designated script replacement face serves (FF-19). */ scripts?: string[] }
+export interface FontFaceInput { data: Uint8Array; family?: string; weight?: number; italic?: boolean; postscriptName?: string; license?: string; /** "used" embeds the face in an SVG only when the slide's text names its family (every bundled pack face). Default "always". */ embed?: "always" | "used"; /** ISO 15924 scripts a designated script replacement face serves (FF-19). */ scripts?: string[] }
 export interface EmbeddedFont { family: string; weight: number; italic?: boolean; dataUrl: string; license?: string; embed?: "used" }
 export type FontCompatibility = "exact" | "metric" | "visual" | "generic";
 export interface FontReplacementMeasurement { replacement:string; meanAbsWidthDelta:number; meanWidthDelta:number; maxAbsWidthDelta:number; styles:number; reference:string }

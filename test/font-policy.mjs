@@ -4,12 +4,12 @@
 import assert from 'node:assert/strict';
 import {fileURLToPath} from 'node:url';
 import {BUNDLED_FONT_MANIFEST, prepareNodeFonts} from '../dist/fonts-node.js';
-import {EXPERIMENTAL_FONT_CANDIDATES, FONT_COMPATIBILITY, FONT_POLICY, FONT_POLICY_DECISIONS, FONT_POLICY_SOURCE, fontPolicyFor} from '../dist/fonts.js';
+import {createFontRegistry, EXPERIMENTAL_FONT_CANDIDATES, FONT_COMPATIBILITY, FONT_POLICY, FONT_POLICY_DECISIONS, FONT_POLICY_SOURCE, fontPolicyFor} from '../dist/fonts.js';
 
 // Snapshot shape and the provisional owner decisions (provisional, owner may revise).
 assert.ok(FONT_POLICY.length >= 150 && Object.isFrozen(FONT_POLICY) && /^[0-9a-f]{64}$/.test(FONT_POLICY_SOURCE.sha256));
 assert.match(FONT_POLICY_DECISIONS.status, /provisional, owner may revise/);
-// Owner policy 2026-09-29: Aptos previews with the metric-compatible Intos (aptos pack); Roboto and Carlito are the fallbacks.
+// Owner policy 2026-09-29: Aptos previews with the metric-compatible Intos (office pack); Roboto and Carlito are the fallbacks.
 assert.deepEqual([fontPolicyFor('aptos').replacement.family, fontPolicyFor('aptos').replacement.compatibility], ['Intos', 'metric']);
 assert.deepEqual(fontPolicyFor('aptos').alternates, ['Roboto', 'Carlito']);
 assert.equal(fontPolicyFor('Aptos').replacement.decision, 'aptos-preview');
@@ -40,9 +40,9 @@ for (const row of FONT_POLICY) {
 // With only the bundled base+office packs, every proprietary Latin text family resolves: to its
 // declared replacement when bundled, otherwise to its bundled alternate. Script families use the
 // FF-19 script pack and are covered by test/script-fonts.mjs.
-const bundled = new Set(BUNDLED_FONT_MANIFEST.packages.filter(pkg => pkg.pack === 'base' || pkg.pack === 'office' || pkg.pack === 'aptos').flatMap(pkg => pkg.faces.map(face => face.family.toLowerCase())));
+const bundled = new Set(BUNDLED_FONT_MANIFEST.packages.filter(pkg => pkg.pack === 'base' || pkg.pack === 'office').flatMap(pkg => pkg.faces.map(face => face.family.toLowerCase())));
 const isBundled = family => bundled.has(family.toLowerCase());
-const {registry} = await prepareNodeFonts({pack: 'aptos', substitutionPolicy: 'visual'});
+const {registry} = await prepareNodeFonts({pack: 'office', substitutionPolicy: 'visual'});
 const counts = {latin: 0, declared: 0, alternate: 0, unavailable: []};
 for (const row of FONT_POLICY) {
   if (row.licenseClass === 'open' || !row.replacement) continue;
@@ -69,9 +69,9 @@ assert.equal(aptos.decision, 'aptos-preview');
 assert.equal(aptos.measured.replacement, 'Intos');
 assert.deepEqual([aptos.resolvedFamily, aptos.compatibility, aptos.substitute], ['Intos', 'metric', true]);
 assert.ok(aptos.measured.meanAbsWidthDelta < 0.001 && aptos.measured.maxAbsWidthDelta <= 0.003);
-// Without the aptos pack the declared visual alternates take over, reported as visual.
-const officeOnly = await prepareNodeFonts({pack: 'office', substitutionPolicy: 'visual'});
-assert.deepEqual(['Aptos', 'Aptos Display', 'Aptos Narrow', 'Aptos Serif'].map(family => { const r = officeOnly.registry.resolveFont({fontFamily: family, fontWeight: 400}); return `${r.resolvedFamily}:${r.compatibility}`; }), ['Roboto:visual', 'Carlito:visual', 'Carlito:visual', 'Tinos:visual']);
+// Without the Intos faces the declared visual alternates take over, reported as visual.
+const withoutIntos = createFontRegistry(registry.embeddedFonts.filter(face => !/^Intos/.test(face.family)).map(face => ({family: face.family, weight: face.weight, italic: face.italic, data: new Uint8Array(Buffer.from(face.dataUrl.split(',')[1], 'base64'))})), {substitutionPolicy: 'visual'});
+assert.deepEqual(['Aptos', 'Aptos Display', 'Aptos Narrow', 'Aptos Serif'].map(family => { const r = withoutIntos.resolveFont({fontFamily: family, fontWeight: 400}); return `${r.resolvedFamily}:${r.compatibility}`; }), ['Roboto:visual', 'Carlito:visual', 'Carlito:visual', 'Tinos:visual']);
 assert.equal(registry.textMeasurement.resolveFont({fontFamily: 'Roboto', fontWeight: 700}).substitute, false);
 
 // A weight-named family selects its encoded weight in the replacement; bold still selects bold.
@@ -80,9 +80,10 @@ assert.equal(registry.resolveFont({fontFamily: 'Segoe UI Semibold', fontWeight: 
 
 // Strict mode never falls back silently: the error names the replacement, its tier and the hook.
 const strict = await prepareNodeFonts({pack: 'office', substitutionPolicy: 'metric'});
-// Strict metric mode resolves Aptos only when the aptos pack is loaded; otherwise it names the pack.
-assert.throws(() => strict.registry.resolveFont({fontFamily: 'Aptos', fontWeight: 400}), error => error.code === 'font-unavailable' && error.details.replacement === 'Intos' && error.details.replacementCompatibility === 'metric' && error.details.packs.includes('aptos') && /load the 'aptos'/.test(error.message));
-const strictAptos = await prepareNodeFonts({pack: 'aptos'});
+// Strict metric mode resolves the Aptos family with the office pack; with only the base pack it names the pack.
+const strictBase = await prepareNodeFonts({pack: 'base', substitutionPolicy: 'metric'});
+assert.throws(() => strictBase.registry.resolveFont({fontFamily: 'Aptos', fontWeight: 400}), error => error.code === 'font-unavailable' && error.details.replacement === 'Intos' && error.details.replacementCompatibility === 'metric' && error.details.packs.includes('office') && /load the 'office'/.test(error.message));
+const strictAptos = strict;
 for (const [family, resolved] of [['Aptos', 'Intos'], ['Aptos Display', 'Intos Display'], ['Aptos Narrow', 'Intos Narrow'], ['Aptos Serif', 'Intos Serif']]) for (const weight of [400, 700]) for (const italic of [false, true]) {
   const r = strictAptos.registry.resolveFont({fontFamily: family, fontWeight: weight, italic});
   assert.deepEqual([r.resolvedFamily, r.resolvedWeight, r.italic, r.compatibility, r.substitute], [resolved, weight, italic, 'metric', true], `${family} ${weight} ${italic}`);
@@ -91,7 +92,7 @@ for (const [family, resolved] of [['Aptos', 'Intos'], ['Aptos Display', 'Intos D
 assert.throws(() => strictAptos.registry.resolveFont({fontFamily: 'Aptos', fontWeight: 600}), {code: 'font-unavailable'});
 assert.equal(registry.resolveFont({fontFamily: 'Aptos', fontWeight: 600}).compatibility, 'visual');
 // A decision id and the caller hook reach the error, and the PPTX still names Aptos.
-assert.throws(() => strict.registry.resolveFont({fontFamily: 'Aptos', fontWeight: 400}), error => error.details.decision === 'aptos-preview' && /prepareNodeFonts\(\{faces\}\)/.test(error.message) && /PPTX names 'Aptos'/.test(error.message));
+assert.throws(() => strictBase.registry.resolveFont({fontFamily: 'Aptos', fontWeight: 400}), error => error.details.decision === 'aptos-preview' && /prepareNodeFonts\(\{faces\}\)/.test(error.message) && /PPTX names 'Aptos'/.test(error.message));
 assert.equal(strict.registry.resolveFont({fontFamily: 'Calibri', fontWeight: 700}).compatibility, 'metric');
 assert.equal(strict.registry.resolveFont({fontFamily: 'Cambria', fontWeight: 400}).compatibility, 'visual');
 assert.throws(() => strict.registry.resolveFont({fontFamily: 'Georgia', fontWeight: 400}), {code: 'font-unavailable'});

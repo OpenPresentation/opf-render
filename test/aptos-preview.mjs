@@ -1,7 +1,7 @@
 // FF-31 (owner policy 2026-09-29): the vendored Intos family is the metric-compatible preview for
 // Aptos, Aptos Display, Aptos Narrow and Aptos Serif. It ships inside this package, pinned by upstream
-// commit and per-file SHA-256, loads only through the opt-in `aptos` pack, and is embedded in an SVG
-// only when the slide names the family. No Aptos file is used here: the width constants below were
+// commit and per-file SHA-256, is part of the default office pack, and every bundled face is embedded
+// in an SVG only when the slide names its family. No Aptos file is used here: the width constants below were
 // measured once against Aptos 2.01 (aggregate numbers only) and lock the metric-compatibility claim.
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
@@ -17,9 +17,11 @@ const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const pkg = BUNDLED_FONT_MANIFEST.packages.find(item => item.name === 'intos');
 
 // Manifest: a vendored, hash-pinned OFL-1.1 package with no Reserved Font Name.
-assert.ok(pkg && pkg.vendored === true && pkg.pack === 'aptos' && pkg.directory === 'fonts/intos' && pkg.embed === 'used');
+assert.ok(pkg && pkg.vendored === true && pkg.pack === 'office' && pkg.directory === 'fonts/intos');
 assert.equal(pkg.license, 'OFL-1.1');
-assert.equal(pkg.reservedFontName, null);
+assert.deepEqual(pkg.reservedFontNames, []);
+assert.equal(pkg.upstream, 'https://github.com/muglug/intos');
+assert.match(pkg.copyright, /^Copyright .* The Intos Project Authors/);
 assert.match(pkg.commit, /^[0-9a-f]{40}$/);
 assert.equal(pkg.source, `https://github.com/muglug/intos/tree/${pkg.commit}`);
 assert.equal(pkg.faces.length, 16);
@@ -31,7 +33,7 @@ for (const face of pkg.faces) assert.match(face.sha256, /^[0-9a-f]{64}$/);
 // No replacement family name is a trademark of the font it replaces (owner rule): none contains "Aptos".
 assert.ok(pkg.faces.every(face => !/aptos/i.test(face.family)));
 
-const prepared = await prepareNodeFonts({pack: 'aptos'});
+const prepared = await prepareNodeFonts({pack: 'office'});
 const {registry, options} = prepared;
 const vendoredFiles = options.fontFiles.filter(file => path.basename(path.dirname(file)) === 'intos');
 assert.equal(vendoredFiles.length, 16);
@@ -46,10 +48,13 @@ assert.ok(notice.includes(pkg.commit) && notice.includes('Inter Project Authors'
 // Embedded SVG licenses carry the license and the notice.
 assert.ok(registry.embeddedFonts.filter(face => /^Intos/.test(face.family)).every(face => face.license.includes('SIL OPEN FONT LICENSE') && face.license.includes('Gelasio Project Authors')));
 
-// The aptos pack is base + office + Intos; the other packs never carry Intos.
+// The office pack is base + the six Office substitutes + Intos; the base pack never carries Intos.
 assert.equal(registry.embeddedFonts.length, 9 + 24 + 16);
-assert.ok(registry.embeddedFonts.every(face => face.embed === 'used'));
-for (const pack of ['base', 'office']) assert.ok(!(await prepareNodeFonts({pack})).registry.describeFaces().some(face => /^Intos/.test(face.family)), pack);
+assert.ok(registry.embeddedFonts.every(face => face.embed === 'used'), 'every bundled face is embedded only when used');
+assert.ok(!(await prepareNodeFonts({pack: 'base'})).registry.describeFaces().some(face => /^Intos/.test(face.family)));
+await assert.rejects(prepareNodeFonts({pack: 'aptos'}), {code: 'invalid-font-pack'});
+// The default strict (metric) office registry resolves the Aptos family without asking for visual mode.
+assert.equal((await prepareNodeFonts({pack: 'office', substitutionPolicy: 'metric'})).registry.resolveFont({fontFamily: 'Aptos', fontWeight: 400}).resolvedFamily, 'Intos');
 assert.equal(registry.textMeasurement.resolveFont({fontFamily: 'Intos', fontWeight: 400}).substitute, false);
 
 // Metric compatibility: the shaped width of one string, in thousandths of the font size, equals the
@@ -66,8 +71,8 @@ for (const [family, weight, italic, expected] of [
 // Real Aptos is never bundled or embedded: the source family stays the requested one.
 assert.ok(registry.embeddedFonts.every(face => !/aptos/i.test(face.family)));
 
-// Rendering: the default (Aptos) scheme measures and draws with Intos, and the SVG embeds only the Intos
-// families its text names, not the unused Narrow and Serif families.
+// Rendering: the default (Aptos) scheme measures and draws with Intos, and the SVG embeds only the
+// families its text names, not the unused Narrow and Serif families or the other packs' faces.
 const deck = {name: 'Aptos preview', slides: [{id: 'a', title: 'Quarterly operating review', text: 'Revenue grew in every region.'}]};
 const source = JSON.stringify(deck);
 const svg = renderSvg(deck, options);
@@ -78,9 +83,11 @@ const embedded = [...svg.matchAll(/@font-face\{font-family:"([^"]+)"/g)].map(mat
 assert.equal(embedded.filter(family => family === 'Intos').length, 4);
 assert.equal(embedded.filter(family => family === 'Intos Display').length, 4);
 assert.ok(!embedded.includes('Intos Narrow') && !embedded.includes('Intos Serif'), 'unused Intos families stay out of the SVG');
-assert.ok(!embedded.includes('Roboto') && !embedded.includes('Carlito'), 'the aptos pack embeds only the families the slide names');
-assert.ok((await prepareNodeFonts({pack: 'office'})).options.embeddedFonts.length === 33 && (await prepareNodeFonts({pack: 'office'})).options.embeddedFonts.every(face => face.embed === undefined), 'other packs embed as before');
-assert.equal(renderSvg(deck, (await prepareNodeFonts({pack: 'aptos'})).options), svg, 'same bytes and input replay identically');
+assert.ok(!embedded.includes('Roboto') && !embedded.includes('Carlito'), 'only the families the slide names are embedded');
+assert.ok(svg.length < 9e6, 'an Aptos slide embeds about 8 MB of font data, not the whole office pack');
+const baseSvg = renderSvg({name: 'Roboto', design: {fontScheme: 'roboto'}, slides: [{id: 'r', title: 'Title', text: 'Body'}]}, (await prepareNodeFonts()).options);
+assert.deepEqual([...new Set([...baseSvg.matchAll(/@font-face\{font-family:"([^"]+)"/g)].map(match => match[1]))], ['Roboto'], 'the base pack embeds only the used family too');
+assert.equal(renderSvg(deck, (await prepareNodeFonts({pack: 'office'})).options), svg, 'same bytes and input replay identically');
 // A slide that names none of the Intos families embeds none of them.
 const roboto = renderSvg({name: 'Roboto', design: {fontScheme: 'roboto'}, slides: [{id: 'r', title: 'Title', text: 'Body'}]}, options);
 assert.ok(!/font-family:"Intos/.test(roboto) && /font-family:"Roboto"/.test(roboto));
@@ -100,19 +107,19 @@ if (existsSync(new URL('../dist/fonts-node.js', import.meta.url))) {
     await mkdir(path.join(temporary, 'node_modules'), {recursive: true});
     for (const name of ['fontkit', '@openpresentation', '@resvg', '@expo-google-fonts']) await symlink(path.join(root, 'node_modules', name), path.join(temporary, 'node_modules', name), process.platform === 'win32' ? 'junction' : 'dir');
     const isolated = await import(pathToFileURL(path.join(temporary, 'dist/fonts-node.js')));
-    await isolated.prepareNodeFonts({pack: 'aptos'});
+    await isolated.prepareNodeFonts({pack: 'office'});
     const file = path.join(temporary, 'fonts/intos', pkg.faces[0].file), original = await readFile(file);
     await writeFile(file, Buffer.concat([original, Buffer.from('corrupt')]));
-    await assert.rejects(isolated.prepareNodeFonts({pack: 'aptos'}), {code: 'font-integrity-mismatch'});
+    await assert.rejects(isolated.prepareNodeFonts({pack: 'office'}), {code: 'font-integrity-mismatch'});
     await writeFile(file, original);
     const licenseFile = path.join(temporary, 'fonts/intos', pkg.licenseFile);
     await writeFile(licenseFile, 'Missing original notice');
-    await assert.rejects(isolated.prepareNodeFonts({pack: 'aptos'}), {code: 'font-integrity-mismatch'});
+    await assert.rejects(isolated.prepareNodeFonts({pack: 'office'}), {code: 'font-integrity-mismatch'});
     await writeFile(licenseFile, license);
     await rm(file);
-    await assert.rejects(isolated.prepareNodeFonts({pack: 'aptos'}), {code: 'font-resource-unavailable'});
-    // The other packs do not read the vendored directory.
-    await isolated.prepareNodeFonts({pack: 'office'});
+    await assert.rejects(isolated.prepareNodeFonts({pack: 'office'}), {code: 'font-resource-unavailable'});
+    // The base pack does not read the vendored directory.
+    await isolated.prepareNodeFonts({pack: 'base'});
   } finally { await rm(temporary, {recursive: true, force: true}); }
 }
-console.log(JSON.stringify({test: 'aptos-pack', commit: pkg.commit, faces: pkg.faces.length, embeddedInAptosSlide: embedded.filter(family => /^Intos/.test(family)).length, svgBytes: svg.length}));
+console.log(JSON.stringify({test: 'aptos-preview', commit: pkg.commit, faces: pkg.faces.length, embeddedInAptosSlide: embedded.filter(family => /^Intos/.test(family)).length, svgBytes: svg.length}));

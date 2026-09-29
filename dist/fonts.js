@@ -68,7 +68,7 @@ export function createFontRegistry(entries, options = {}) {
     const format = signature === "OTTO" ? "otf" : signature === "wOFF" ? "woff" : signature === "wOF2" ? "woff2" : "ttf";
     // Script replacement faces (FF-19) declare the ISO 15924 scripts they serve.
     const scripts = Array.isArray(entry.scripts) && entry.scripts.length ? Object.freeze(entry.scripts.map(String)) : undefined;
-    // "used": large replacement families are embedded in an SVG only when its text names the family.
+    // "used": a bundled face is embedded in an SVG only when the slide's text names its family.
     if (entry.embed !== undefined && entry.embed !== "always" && entry.embed !== "used") throw new OPFFontError("invalid-font-embed", "Font embed must be 'always' or 'used'.");
     return {family,familyGroup,fontFace,weight,italic,font,data,format,license:entry.license,embed:entry.embed,scripts,cache:new Map()};
   });

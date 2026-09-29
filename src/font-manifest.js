@@ -325,18 +325,19 @@ export const BUNDLED_FONT_MANIFEST=freeze({
     {
       "name": "intos",
       "version": "1.000",
-      "pack": "aptos",
+      "pack": "office",
       "vendored": true,
       "directory": "fonts/intos",
       "commit": "fef9315c14da9e4b23b4c3cac8e718998d4e4736",
       "source": "https://github.com/muglug/intos/tree/fef9315c14da9e4b23b4c3cac8e718998d4e4736",
       "license": "OFL-1.1",
-      "reservedFontName": null,
       "licenseFile": "LICENSE.txt",
       "licenseSha256": "3b4a605d1a6305360d8dbabf203465bee9b1287f9fba97718e5f3d260813801e",
       "noticeFile": "NOTICE.md",
       "noticeSha256": "3e1241892bf385141df55d9762612505cd47ce8fd046438e2d4babb3d3c0fcf7",
-      "embed": "used",
+      "reservedFontNames": [],
+      "upstream": "https://github.com/muglug/intos",
+      "copyright": "Copyright 2013 The Intos Project Authors (https://github.com/muglug/intos)",
       "faces": [
         {
           "file": "Intos-Regular.ttf",

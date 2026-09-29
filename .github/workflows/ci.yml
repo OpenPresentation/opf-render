@@ -37,12 +37,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       # FF-31 (metric replacements): the policy snapshot follows core PR "FF-31: metric-compatible replacements
-      # for Aptos", commit 4da45ca253443c7bf4f55c4c0b79d2708c88cb0c. Repin this to the merge commit once merged.
+      # for Aptos", commit 4f1b891337cd49c7d33f1a709a559fd4bf8bd3c2. Repin this to the merge commit once merged.
       # The golden corpus and linked sources stay on the core pin above.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OpenPresentation/opf
-          ref: 4da45ca253443c7bf4f55c4c0b79d2708c88cb0c
+          ref: 4f1b891337cd49c7d33f1a709a559fd4bf8bd3c2
           path: opf-policy
           fetch-depth: 1
           persist-credentials: false
@@ -98,7 +98,7 @@ jobs:
       - run: npm run test:code-browser
       - run: npm run test:font-preparation-browser
       - run: npm run test:font-variants-browser
-      - run: npm run test:aptos-pack-browser
+      - run: npm run test:aptos-preview-browser
       - run: npm run test:script-fonts-browser
       - run: npm run test:plain-whitespace-browser
       - id: rich-flow

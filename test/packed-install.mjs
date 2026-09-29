@@ -32,7 +32,7 @@ try{
   assert.ok(core.resolved.startsWith('https://registry.npmjs.org/')&&core.integrity.startsWith('sha512-')&&!core.link);
   const actualCore=await realpath(path.join(consumer,'node_modules/@openpresentation/opf'));
   assert.ok(actualCore.startsWith((await realpath(path.join(consumer,'node_modules')))+path.sep),'Core must be installed inside the clean consumer');
-  for(const file of ['shared-quote.mjs','quote-footer.mjs','shared-code.mjs','chart-axis.mjs','aptos-pack.mjs']){
+  for(const file of ['shared-quote.mjs','quote-footer.mjs','shared-code.mjs','chart-axis.mjs','aptos-preview.mjs']){
     const source=(await readFile(path.join(root,'test',file),'utf8'))
       .replaceAll("'../dist/svg.js'","'@openpresentation/opf-render/svg'")
       .replaceAll("'../dist/fonts-node.js'","'@openpresentation/opf-render/fonts-node'")
