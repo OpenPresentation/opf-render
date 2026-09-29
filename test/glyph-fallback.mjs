@@ -42,13 +42,19 @@ const latinGaps = {
   meiryo: ['greek'], 'yu-gothic': ['greek'], 'microsoft-yahei': ['greek'], 'malgun-gothic': ['greek']
 };
 let cases = 0;
+const covered = [];
 for (const [scheme, languages] of Object.entries(latinGaps)) {
   for (const language of languages) {
     const label = `${scheme} + ${language}`;
     const document = deck(language, scheme, TEXT[language].title, TEXT[language].body);
-    // The exact face named by the scheme cannot show the text (this is what used to fail).
+    // The exact face named by the scheme cannot show the text (this is what used to fail). Some schemes now
+    // resolve to a face that does (Constantia previews with the open PT Serif, which has Cyrillic): no note then.
     const face = fonts.registry.resolveFont({fontFamily: core.resolveScriptFonts(document).body.latin, fontWeight: 400}).resolvedFamily;
-    assert.ok(!strictCovers(face, TEXT[language].body), `${label}: ${face} lacks glyphs of the text`);
+    if (strictCovers(face, TEXT[language].body)) {
+      assert.deepEqual(assertDrawable(label, document).diagnostics, [], `${label}: ${face} covers the text, so no fallback is reported`);
+      covered.push(label);
+      continue;
+    }
     assert.throws(() => renderSvg(document, {...fonts.options, glyphFallback: 'none', textMeasurement: createScriptTextMeasurement(raw, core.resolveScriptFonts(document), {glyphFallback: 'none'})}), {code: 'missing-glyph'}, `${label}: strict faces still raise missing-glyph`);
     // Preview: renders, draws every glyph with a face that has it, notes the substitution.
     const {svg, diagnostics} = assertDrawable(label, document);
@@ -63,6 +69,8 @@ for (const [scheme, languages] of Object.entries(latinGaps)) {
   }
 }
 
+assert.ok(cases >= 14 && cases + covered.length === 16, `gap cases ${cases}, already covered ${covered}`);
+for (const label of ['georgia + russian', 'georgia + greek', 'meiryo + greek', 'mangal + russian']) assert.ok(!covered.includes(label), `${label} is a fallback case`);
 // 2. Faces that already cover the script never report a fallback; plain Latin text is untouched.
 for (const [scheme, language] of [['calibri', 'russian'], ['calibri', 'greek'], ['roboto', 'greek'], ['times-new-roman', 'russian']]) {
   const {diagnostics} = assertDrawable(`${scheme} + ${language}`, deck(language, scheme, TEXT[language].title, TEXT[language].body));
@@ -187,7 +195,7 @@ function designatedFamiliesAll() {
 {
   const bare = await prepareNodeFonts({pack: 'office', substitutionPolicy: 'visual'});
   const bareMeasurement = bare.registry.textMeasurement;
-  for (const [scheme, language] of [['georgia', 'russian'], ['georgia', 'greek'], ['constantia', 'russian']]) {
+  for (const [scheme, language] of [['georgia', 'russian'], ['georgia', 'greek']]) {
     const document = deck(language, scheme, TEXT[language].title, TEXT[language].body);
     const notes = [];
     const svg = renderSvg(document, {...bare.options, textMeasurement: createScriptTextMeasurement(bareMeasurement, core.resolveScriptFonts(document)), onDiagnostic: (item) => notes.push(item)});
