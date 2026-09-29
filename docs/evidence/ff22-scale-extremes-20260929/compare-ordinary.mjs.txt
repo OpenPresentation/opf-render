@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import {writeFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {renderSvg as before} from './baseline/dist/svg.js';
+import {renderSvg as after} from './opf-render/dist/svg.js';
+import {CHART_TYPES,DEPRECATED_CHART_TYPES} from './baseline/dist/charts.js';
+const sets={
+ mixed:{columns:['Quarter','North','South','East'],rows:[['Q1',12,8,-3],['Q2',16,10,5],['Q3',21,-4,null],['Q4',18,13,9]]},
+ positive:{columns:['Item','X','Y'],rows:[['A',1,5],['B',2,7],['C',4,9]]},
+ negative:{columns:['Item','X','Y'],rows:[['A',-10,-5],['B',-8,-7],['C',-4,-9]]},
+ zero:{columns:['Item','Value'],rows:[['A',0],['B',0]]},
+ single:{columns:['Item','Value'],rows:[['A',42]]},
+ cells:{columns:['Item','X','Y'],rows:[['A','1e3',null],['B','1,000',''],['C',2,'1e2']]}
+};
+const records=[];const sha=text=>createHash('sha256').update(text).digest('hex');
+for(const type of [...Object.keys(CHART_TYPES),...Object.keys(DEPRECATED_CHART_TYPES),'donut','mystery-chart'])for(const [fixture,data] of Object.entries(sets)){
+ const document={slides:[{chart:{type,data}}]};const a=before(document,{trace:true}),b=after(document,{trace:true});
+ records.push({type,fixture,beforeSha256:sha(a),afterSha256:sha(b),bytes:Buffer.byteLength(a),exact:a===b});
+ assert.equal(b,a,`${type}/${fixture}: byte-identical SVG`);
+}
+const result={runtime:process.version,baseline:'2f32414d2e0ad10679fe6fae4614e4fd8c6e4ebd',scope:'Same frozen installed dependencies, public renderSvg, no raster or native claim',count:records.length,records};
+await writeFile(new URL('ordinary-comparison.json',import.meta.url),JSON.stringify(result,null,2)+'\n');console.log(`Byte-identical ordinary SVGs: ${records.length}/${records.length}`);
