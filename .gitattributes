@@ -1,0 +1,4 @@
+# Vendored fonts (FF-31): binaries and license notices stay byte-exact, with no eol conversion.
+*.ttf binary
+fonts/**/OFL.txt -text
+fonts/**/PROVENANCE.json text eol=lf

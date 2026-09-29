@@ -1,0 +1,51 @@
+{
+  "upstream": {
+    "package": "source-sans",
+    "version": "3.52.0",
+    "source": "https://www.npmjs.com/package/source-sans/v/3.52.0",
+    "integrity": "sha512-xsm7qlMI/JwxwNdp6pvpR6l+aZjn90fzOzoeUz/qoohIYbKbDwQNRIz5/ItYs7/hvqLirQNUoDFGXSVA3TU9tw=="
+  },
+  "license": "OFL-1.1",
+  "licenseFile": "OFL.txt",
+  "upstreamLicenseFile": "LICENSE.md",
+  "licenseSha256": "56af9b9c6715597e458284a474dc118a50a4150e9d547c70f7b4a33c3e6a9328",
+  "hasReservedFontName": true,
+  "reservedFontNames": [
+    "Source"
+  ],
+  "renamedFrom": "Source Sans Pro",
+  "faces": [
+    {
+      "file": "SourceSans3-Regular.ttf",
+      "upstreamFile": "TTF/SourceSans3-Regular.ttf",
+      "family": "Source Sans 3",
+      "weight": 400,
+      "italic": false,
+      "sha256": "4644c81b86ec9caaa76b634889968ed3c4f4f52f054855933acc7c2b21e53b0f"
+    },
+    {
+      "file": "SourceSans3-It.ttf",
+      "upstreamFile": "TTF/SourceSans3-It.ttf",
+      "family": "Source Sans 3",
+      "weight": 400,
+      "italic": true,
+      "sha256": "192afd78f0f54a3c69eaf02d43f4d9a821e9d6110e41d3d25d61a7385cd580e4"
+    },
+    {
+      "file": "SourceSans3-Bold.ttf",
+      "upstreamFile": "TTF/SourceSans3-Bold.ttf",
+      "family": "Source Sans 3",
+      "weight": 700,
+      "italic": false,
+      "sha256": "9214b9d95e4231c609802815c2646c98174e2102d0d37f88978a7f8e71006e6a"
+    },
+    {
+      "file": "SourceSans3-BoldIt.ttf",
+      "upstreamFile": "TTF/SourceSans3-BoldIt.ttf",
+      "family": "Source Sans 3",
+      "weight": 700,
+      "italic": true,
+      "sha256": "7978291fc1bf314db887e0366853b33c5cf2e964c7b95cfb9ce403a6ec46a842"
+    }
+  ]
+}

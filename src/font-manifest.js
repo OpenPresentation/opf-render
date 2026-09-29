@@ -344,139 +344,163 @@ export const BUNDLED_FONT_MANIFEST=freeze({
       "name": "@expo-google-fonts/open-sans",
       "version": "0.4.2",
       "pack": "open",
+      "vendored": "fonts/open/open-sans",
       "source": "https://www.npmjs.com/package/@expo-google-fonts/open-sans/v/0.4.2",
       "license": "OFL-1.1",
-      "licenseFile": "LICENSE_FONT",
+      "licenseFile": "OFL.txt",
+      "upstreamLicenseFile": "LICENSE_FONT",
       "licenseSha256": "fbbbcfef55318de350562559b671360de6d597112ecc5c73881b05092db89602",
       "hasReservedFontName": false,
       "reservedFontNames": [],
       "faces": [
         {
-          "file": "400Regular/OpenSans_400Regular.ttf",
+          "file": "OpenSans_400Regular.ttf",
+          "upstreamFile": "400Regular/OpenSans_400Regular.ttf",
           "family": "Open Sans",
           "weight": 400,
           "italic": false,
           "sha256": "33e93bec67d91c396876db50694213802a39e43a911bb5c22322f0dbdf4d5e43"
         },
         {
-          "file": "400Regular_Italic/OpenSans_400Regular_Italic.ttf",
+          "file": "OpenSans_400Regular_Italic.ttf",
+          "upstreamFile": "400Regular_Italic/OpenSans_400Regular_Italic.ttf",
           "family": "Open Sans",
           "weight": 400,
           "italic": true,
           "sha256": "dd74eb2d271b57ef5c382a97403818715bfb6b1d53d7fa6da9c88336763651fb"
         },
         {
-          "file": "700Bold/OpenSans_700Bold.ttf",
+          "file": "OpenSans_700Bold.ttf",
+          "upstreamFile": "700Bold/OpenSans_700Bold.ttf",
           "family": "Open Sans",
           "weight": 700,
           "italic": false,
           "sha256": "5f4c6f0c6beae94863a099a7a538059c480f91587f1abffc06552e9fa3a44f40"
         },
         {
-          "file": "700Bold_Italic/OpenSans_700Bold_Italic.ttf",
+          "file": "OpenSans_700Bold_Italic.ttf",
+          "upstreamFile": "700Bold_Italic/OpenSans_700Bold_Italic.ttf",
           "family": "Open Sans",
           "weight": 700,
           "italic": true,
           "sha256": "c7e0a936ff0f08b6726cf205126a5e6dd6ae1340111325f7e86cbba1408e82d7"
         }
-      ]
+      ],
+      "integrity": "sha512-gvhPqLXYnltWgll3iBwRGUwf5yN2HCh4mgQmFoQ8oU66LTs23oX4N7T3t0BDsKfP/1Z8F8+4c7wSkA11Nnk4kA=="
     },
     {
       "name": "@expo-google-fonts/montserrat",
       "version": "0.4.2",
       "pack": "open",
+      "vendored": "fonts/open/montserrat",
       "source": "https://www.npmjs.com/package/@expo-google-fonts/montserrat/v/0.4.2",
       "license": "OFL-1.1",
-      "licenseFile": "LICENSE_FONT",
+      "licenseFile": "OFL.txt",
+      "upstreamLicenseFile": "LICENSE_FONT",
       "licenseSha256": "8b7141c03fa4f8d44e6345d5d4931709290f0f67875e452e95ac1fd3a027802e",
       "hasReservedFontName": false,
       "reservedFontNames": [],
       "faces": [
         {
-          "file": "400Regular/Montserrat_400Regular.ttf",
+          "file": "Montserrat_400Regular.ttf",
+          "upstreamFile": "400Regular/Montserrat_400Regular.ttf",
           "family": "Montserrat",
           "weight": 400,
           "italic": false,
           "sha256": "ef9cf99f0175bef530b88934bd904fcf56f773cec6fd4dfb8ccaf7ce2bbd395e"
         },
         {
-          "file": "400Regular_Italic/Montserrat_400Regular_Italic.ttf",
+          "file": "Montserrat_400Regular_Italic.ttf",
+          "upstreamFile": "400Regular_Italic/Montserrat_400Regular_Italic.ttf",
           "family": "Montserrat",
           "weight": 400,
           "italic": true,
           "sha256": "7e87c0f96b39fbb919b30aef8991323d0b257649f391e6456bcf03c231448f49"
         },
         {
-          "file": "700Bold/Montserrat_700Bold.ttf",
+          "file": "Montserrat_700Bold.ttf",
+          "upstreamFile": "700Bold/Montserrat_700Bold.ttf",
           "family": "Montserrat",
           "weight": 700,
           "italic": false,
           "sha256": "7fa93d7daa5c2f881a6727229c211782de6b76008fbd6346b3d7664e8fc83f43"
         },
         {
-          "file": "700Bold_Italic/Montserrat_700Bold_Italic.ttf",
+          "file": "Montserrat_700Bold_Italic.ttf",
+          "upstreamFile": "700Bold_Italic/Montserrat_700Bold_Italic.ttf",
           "family": "Montserrat",
           "weight": 700,
           "italic": true,
           "sha256": "001a59b0f2c541080033b83ca6dfacce03095d99caa3594835f51b7c6d9ce758"
         },
         {
-          "file": "900Black/Montserrat_900Black.ttf",
+          "file": "Montserrat_900Black.ttf",
+          "upstreamFile": "900Black/Montserrat_900Black.ttf",
           "family": "Montserrat Black",
           "weight": 900,
           "italic": false,
           "sha256": "b48e6741b9889ede4ffe3d8acfda3e6917c62127537b19fe7206cba04e6ebb63"
         }
-      ]
+      ],
+      "integrity": "sha512-Xyq7rKJhhZOE1Xk4wKSSVoUeOkFmQEMhtZ3pdFrgYckGZMs115Apmld1AI8Ju+yrl5GzDdfRCCqRr33dvEDYUA=="
     },
     {
       "name": "@expo-google-fonts/poppins",
       "version": "0.4.1",
       "pack": "open",
+      "vendored": "fonts/open/poppins",
       "source": "https://www.npmjs.com/package/@expo-google-fonts/poppins/v/0.4.1",
       "license": "OFL-1.1",
-      "licenseFile": "LICENSE_FONT",
+      "licenseFile": "OFL.txt",
+      "upstreamLicenseFile": "LICENSE_FONT",
       "licenseSha256": "6be04893d770899a015649c7aa3b582f871b272f8747a92b78b17c3e5c8b2573",
       "hasReservedFontName": false,
       "reservedFontNames": [],
       "faces": [
         {
-          "file": "400Regular/Poppins_400Regular.ttf",
+          "file": "Poppins_400Regular.ttf",
+          "upstreamFile": "400Regular/Poppins_400Regular.ttf",
           "family": "Poppins",
           "weight": 400,
           "italic": false,
           "sha256": "707fdc5c8bab57a90061c6a8ed7b70d5ffb82fc810e994e79f90bace890c255a"
         },
         {
-          "file": "400Regular_Italic/Poppins_400Regular_Italic.ttf",
+          "file": "Poppins_400Regular_Italic.ttf",
+          "upstreamFile": "400Regular_Italic/Poppins_400Regular_Italic.ttf",
           "family": "Poppins",
           "weight": 400,
           "italic": true,
           "sha256": "3225cec6a018310497ea9ee116aa43b2a833464fed6156dceb9a3a4424bb8613"
         },
         {
-          "file": "700Bold/Poppins_700Bold.ttf",
+          "file": "Poppins_700Bold.ttf",
+          "upstreamFile": "700Bold/Poppins_700Bold.ttf",
           "family": "Poppins",
           "weight": 700,
           "italic": false,
           "sha256": "7219547ee25334cbac0fe4b3acf0bf631e48ebb622c71af038edaaa652c60875"
         },
         {
-          "file": "700Bold_Italic/Poppins_700Bold_Italic.ttf",
+          "file": "Poppins_700Bold_Italic.ttf",
+          "upstreamFile": "700Bold_Italic/Poppins_700Bold_Italic.ttf",
           "family": "Poppins",
           "weight": 700,
           "italic": true,
           "sha256": "9d4d9f3c2c289eaec403660ec215bdc45e62b49f978807714bfc31ca7916c8fe"
         }
-      ]
+      ],
+      "integrity": "sha512-LiX5oEryJqDt3UmWwr4oqf11hGMz/JEffkkNcZ3UtGwyoMFzXmBmTwcrAWrEttxypxmLNmPykDg+CY2VjKve9A=="
     },
     {
       "name": "@expo-google-fonts/pt-serif",
       "version": "0.4.1",
       "pack": "open",
+      "vendored": "fonts/open/pt-serif",
       "source": "https://www.npmjs.com/package/@expo-google-fonts/pt-serif/v/0.4.1",
       "license": "OFL-1.1",
-      "licenseFile": "LICENSE_FONT",
+      "licenseFile": "OFL.txt",
+      "upstreamLicenseFile": "LICENSE_FONT",
       "licenseSha256": "ddf311c28ddf5a5ad9747649837346b67bed9d356789c3072bb27dbce49e514d",
       "hasReservedFontName": true,
       "reservedFontNames": [
@@ -486,42 +510,49 @@ export const BUNDLED_FONT_MANIFEST=freeze({
       ],
       "faces": [
         {
-          "file": "400Regular/PTSerif_400Regular.ttf",
+          "file": "PTSerif_400Regular.ttf",
+          "upstreamFile": "400Regular/PTSerif_400Regular.ttf",
           "family": "PT Serif",
           "weight": 400,
           "italic": false,
           "sha256": "13d9f82f41fcd7d2813dc0a44a9639dec0c1e9a922ab96c7de8dec467c3dec55"
         },
         {
-          "file": "400Regular_Italic/PTSerif_400Regular_Italic.ttf",
+          "file": "PTSerif_400Regular_Italic.ttf",
+          "upstreamFile": "400Regular_Italic/PTSerif_400Regular_Italic.ttf",
           "family": "PT Serif",
           "weight": 400,
           "italic": true,
           "sha256": "b75d426f372d18a53a4f7206b1cb90816432f699ba106ed8d1a79aef79622666"
         },
         {
-          "file": "700Bold/PTSerif_700Bold.ttf",
+          "file": "PTSerif_700Bold.ttf",
+          "upstreamFile": "700Bold/PTSerif_700Bold.ttf",
           "family": "PT Serif",
           "weight": 700,
           "italic": false,
           "sha256": "e868267095de0f61d908dfc18de98c5fc7b9185c8505a814f0fbb8eac627ecc5"
         },
         {
-          "file": "700Bold_Italic/PTSerif_700Bold_Italic.ttf",
+          "file": "PTSerif_700Bold_Italic.ttf",
+          "upstreamFile": "700Bold_Italic/PTSerif_700Bold_Italic.ttf",
           "family": "PT Serif",
           "weight": 700,
           "italic": true,
           "sha256": "8c97cd67f86c470eec73f5795affc6303c0fadf682df48f0b0d837a3900cfbce"
         }
-      ]
+      ],
+      "integrity": "sha512-XziSzDDcyNvNehbsGMFw06SfC46GQf5Or4nH4XX8PEVTl+HI3xKKDmgGeatL37LAdEeEJ8xg2TTYKFE8FdPcOQ=="
     },
     {
       "name": "@expo-google-fonts/raleway",
       "version": "0.4.2",
       "pack": "open",
+      "vendored": "fonts/open/raleway",
       "source": "https://www.npmjs.com/package/@expo-google-fonts/raleway/v/0.4.2",
       "license": "OFL-1.1",
-      "licenseFile": "LICENSE_FONT",
+      "licenseFile": "OFL.txt",
+      "upstreamLicenseFile": "LICENSE_FONT",
       "licenseSha256": "7e946cf1171784d1015279e7dc35f827957a6b5d1f1f659ae0c98e5f5e37ed9b",
       "hasReservedFontName": true,
       "reservedFontNames": [
@@ -529,42 +560,49 @@ export const BUNDLED_FONT_MANIFEST=freeze({
       ],
       "faces": [
         {
-          "file": "400Regular/Raleway_400Regular.ttf",
+          "file": "Raleway_400Regular.ttf",
+          "upstreamFile": "400Regular/Raleway_400Regular.ttf",
           "family": "Raleway",
           "weight": 400,
           "italic": false,
           "sha256": "bf386500b0655a15f11a20c06a459aec2002fa2d1f44e0bc2549a08bb69a8f76"
         },
         {
-          "file": "400Regular_Italic/Raleway_400Regular_Italic.ttf",
+          "file": "Raleway_400Regular_Italic.ttf",
+          "upstreamFile": "400Regular_Italic/Raleway_400Regular_Italic.ttf",
           "family": "Raleway",
           "weight": 400,
           "italic": true,
           "sha256": "4f9680ef2fed5c4302d94f874a6199b350332e4719f3967bfae8035a0bf50f9b"
         },
         {
-          "file": "700Bold/Raleway_700Bold.ttf",
+          "file": "Raleway_700Bold.ttf",
+          "upstreamFile": "700Bold/Raleway_700Bold.ttf",
           "family": "Raleway",
           "weight": 700,
           "italic": false,
           "sha256": "dc26a12a68cb78a83d13dcea38848af687b6d0260fa2df7ace13381508516ae1"
         },
         {
-          "file": "700Bold_Italic/Raleway_700Bold_Italic.ttf",
+          "file": "Raleway_700Bold_Italic.ttf",
+          "upstreamFile": "700Bold_Italic/Raleway_700Bold_Italic.ttf",
           "family": "Raleway",
           "weight": 700,
           "italic": true,
           "sha256": "d16bfd8ffd7b56314a1b3ec80502ae0ae066031b10a596cac30d77ab4326112c"
         }
-      ]
+      ],
+      "integrity": "sha512-EFHYXFx9/M+6kGt/T2/y2Aqo30SosZUp4d8Dd7aLumhacrwlcRL6GYMqwIYQpLbR0xh5Vn4/APH5N72tEkoKRA=="
     },
     {
       "name": "@expo-google-fonts/playfair-display",
       "version": "0.4.2",
       "pack": "open",
+      "vendored": "fonts/open/playfair-display",
       "source": "https://www.npmjs.com/package/@expo-google-fonts/playfair-display/v/0.4.2",
       "license": "OFL-1.1",
-      "licenseFile": "LICENSE_FONT",
+      "licenseFile": "OFL.txt",
+      "upstreamLicenseFile": "LICENSE_FONT",
       "licenseSha256": "566be814f8e96e93dfa16101331557eb6b5467e9e03f627c0910fe93ca12300e",
       "hasReservedFontName": true,
       "reservedFontNames": [
@@ -572,62 +610,73 @@ export const BUNDLED_FONT_MANIFEST=freeze({
       ],
       "faces": [
         {
-          "file": "400Regular/PlayfairDisplay_400Regular.ttf",
+          "file": "PlayfairDisplay_400Regular.ttf",
+          "upstreamFile": "400Regular/PlayfairDisplay_400Regular.ttf",
           "family": "Playfair Display",
           "weight": 400,
           "italic": false,
           "sha256": "861f838d481d28cbbd4793e45dc02f01d04c81e06ed98ab2779ca152ace9f27b"
         },
         {
-          "file": "400Regular_Italic/PlayfairDisplay_400Regular_Italic.ttf",
+          "file": "PlayfairDisplay_400Regular_Italic.ttf",
+          "upstreamFile": "400Regular_Italic/PlayfairDisplay_400Regular_Italic.ttf",
           "family": "Playfair Display",
           "weight": 400,
           "italic": true,
           "sha256": "40a6afa92220254c2c426ccef129d3615dd19e4c591fbfa997e5f28ebba8302c"
         },
         {
-          "file": "700Bold/PlayfairDisplay_700Bold.ttf",
+          "file": "PlayfairDisplay_700Bold.ttf",
+          "upstreamFile": "700Bold/PlayfairDisplay_700Bold.ttf",
           "family": "Playfair Display",
           "weight": 700,
           "italic": false,
           "sha256": "4f3b87b5aa297eed5e5a48dbd9941356ca0313d4725b02c29a298cb042b7b31b"
         },
         {
-          "file": "700Bold_Italic/PlayfairDisplay_700Bold_Italic.ttf",
+          "file": "PlayfairDisplay_700Bold_Italic.ttf",
+          "upstreamFile": "700Bold_Italic/PlayfairDisplay_700Bold_Italic.ttf",
           "family": "Playfair Display",
           "weight": 700,
           "italic": true,
           "sha256": "db5737059ff617317aca97e9e35730f8933a2e187c75bbe2deaf45c4d72f5b1d"
         }
-      ]
+      ],
+      "integrity": "sha512-mWhBV59RUjSS3aYpytUb7UyHHTnXcHh7epAn7gq+M4XAEh5PuMKUrP8eiUfkJLb6UwHZCi7EhQpUzxHu5OL96w=="
     },
     {
       "name": "@expo-google-fonts/bebas-neue",
       "version": "0.4.1",
       "pack": "open",
+      "vendored": "fonts/open/bebas-neue",
       "source": "https://www.npmjs.com/package/@expo-google-fonts/bebas-neue/v/0.4.1",
       "license": "OFL-1.1",
-      "licenseFile": "LICENSE_FONT",
+      "licenseFile": "OFL.txt",
+      "upstreamLicenseFile": "LICENSE_FONT",
       "licenseSha256": "72082f6cb4d04be2ecf7cc7d9e1e7d73787f0af8a5a278a47cade70c16b78341",
       "hasReservedFontName": false,
       "reservedFontNames": [],
       "faces": [
         {
-          "file": "400Regular/BebasNeue_400Regular.ttf",
+          "file": "BebasNeue_400Regular.ttf",
+          "upstreamFile": "400Regular/BebasNeue_400Regular.ttf",
           "family": "Bebas Neue",
           "weight": 400,
           "italic": false,
           "sha256": "830ea186acffc2316ed1a4e42319246ba3b46b04e33a211079249bf901193f04"
         }
-      ]
+      ],
+      "integrity": "sha512-Ibnf0EQgMUj01tT/ws64RlsMQmOvDP+UDFW93bld0C/WwaOaCGWKgNnqxNkKxmL73y2kpT8EB4dkSNUOyAOEJA=="
     },
     {
       "name": "@expo-google-fonts/lora",
       "version": "0.4.2",
       "pack": "open",
+      "vendored": "fonts/open/lora",
       "source": "https://www.npmjs.com/package/@expo-google-fonts/lora/v/0.4.2",
       "license": "OFL-1.1",
-      "licenseFile": "LICENSE_FONT",
+      "licenseFile": "OFL.txt",
+      "upstreamLicenseFile": "LICENSE_FONT",
       "licenseSha256": "1d9a970809ac804b582a6ce7f0ebc4e7fefcbfd7ff6299cad35ee656a21be716",
       "hasReservedFontName": true,
       "reservedFontNames": [
@@ -635,42 +684,49 @@ export const BUNDLED_FONT_MANIFEST=freeze({
       ],
       "faces": [
         {
-          "file": "400Regular/Lora_400Regular.ttf",
+          "file": "Lora_400Regular.ttf",
+          "upstreamFile": "400Regular/Lora_400Regular.ttf",
           "family": "Lora",
           "weight": 400,
           "italic": false,
           "sha256": "7ed00e7c9cdf16ab7e2fd2361fe45d4f0b61263cd60aae398b27b7ee08108827"
         },
         {
-          "file": "400Regular_Italic/Lora_400Regular_Italic.ttf",
+          "file": "Lora_400Regular_Italic.ttf",
+          "upstreamFile": "400Regular_Italic/Lora_400Regular_Italic.ttf",
           "family": "Lora",
           "weight": 400,
           "italic": true,
           "sha256": "be627e595184e8afe521f08da0607eee613f1997d423bc8dadc5798995581377"
         },
         {
-          "file": "700Bold/Lora_700Bold.ttf",
+          "file": "Lora_700Bold.ttf",
+          "upstreamFile": "700Bold/Lora_700Bold.ttf",
           "family": "Lora",
           "weight": 700,
           "italic": false,
           "sha256": "7d74015e950c2fb66519c7295b8155621d22200ae2ca2a4c6b43ce3c490cac87"
         },
         {
-          "file": "700Bold_Italic/Lora_700Bold_Italic.ttf",
+          "file": "Lora_700Bold_Italic.ttf",
+          "upstreamFile": "700Bold_Italic/Lora_700Bold_Italic.ttf",
           "family": "Lora",
           "weight": 700,
           "italic": true,
           "sha256": "152f87e71f5ddb60d5c57ecd9132807c947e65c42977193c9164e7c5a6690081"
         }
-      ]
+      ],
+      "integrity": "sha512-Bnofh2mIOUKp4KUS48VjaBgug4lQOcw/ftU0NFv5OPtiutL422//G1v63xDZEMUEL6ft4fi5q94/uKcpDjbPag=="
     },
     {
       "name": "@expo-google-fonts/merriweather-sans",
       "version": "0.4.2",
       "pack": "open",
+      "vendored": "fonts/open/merriweather-sans",
       "source": "https://www.npmjs.com/package/@expo-google-fonts/merriweather-sans/v/0.4.2",
       "license": "OFL-1.1",
-      "licenseFile": "LICENSE_FONT",
+      "licenseFile": "OFL.txt",
+      "upstreamLicenseFile": "LICENSE_FONT",
       "licenseSha256": "e07e715e58eb63bd8d4ccf2b2e7d0a5d3ef5d93f596431f6dc3aed42ac1a2304",
       "hasReservedFontName": true,
       "reservedFontNames": [
@@ -678,42 +734,49 @@ export const BUNDLED_FONT_MANIFEST=freeze({
       ],
       "faces": [
         {
-          "file": "400Regular/MerriweatherSans_400Regular.ttf",
+          "file": "MerriweatherSans_400Regular.ttf",
+          "upstreamFile": "400Regular/MerriweatherSans_400Regular.ttf",
           "family": "Merriweather Sans",
           "weight": 400,
           "italic": false,
           "sha256": "4acdb554f81650e76b3380865e8dcb9569d9f0dbff5dc6eeb9d1ff3d185f8759"
         },
         {
-          "file": "400Regular_Italic/MerriweatherSans_400Regular_Italic.ttf",
+          "file": "MerriweatherSans_400Regular_Italic.ttf",
+          "upstreamFile": "400Regular_Italic/MerriweatherSans_400Regular_Italic.ttf",
           "family": "Merriweather Sans",
           "weight": 400,
           "italic": true,
           "sha256": "b74596ca5cb876df7464cd5e2ffdd0791af630091f609f60b74ad5675a62ca3d"
         },
         {
-          "file": "700Bold/MerriweatherSans_700Bold.ttf",
+          "file": "MerriweatherSans_700Bold.ttf",
+          "upstreamFile": "700Bold/MerriweatherSans_700Bold.ttf",
           "family": "Merriweather Sans",
           "weight": 700,
           "italic": false,
           "sha256": "48a5c18678c300b9c85379f2a5b965b6ca10dee30f58fc8a2fa22de19c230319"
         },
         {
-          "file": "700Bold_Italic/MerriweatherSans_700Bold_Italic.ttf",
+          "file": "MerriweatherSans_700Bold_Italic.ttf",
+          "upstreamFile": "700Bold_Italic/MerriweatherSans_700Bold_Italic.ttf",
           "family": "Merriweather Sans",
           "weight": 700,
           "italic": true,
           "sha256": "53218031a66828a47a92162d78c6dd83a28d090760d9bffae9b63ada62bc09ca"
         }
-      ]
+      ],
+      "integrity": "sha512-XLQnMfvx2jTeA/DqSkoLtD5JN/jvajG8wkhliOKfG5CUMzVvnhN206LVmhyLmEmRwaw4opVpbCaypfLuEn//Xw=="
     },
     {
       "name": "source-sans",
       "version": "3.52.0",
       "pack": "open",
+      "vendored": "fonts/open/source-sans-3",
       "source": "https://www.npmjs.com/package/source-sans/v/3.52.0",
       "license": "OFL-1.1",
-      "licenseFile": "LICENSE.md",
+      "licenseFile": "OFL.txt",
+      "upstreamLicenseFile": "LICENSE.md",
       "licenseSha256": "56af9b9c6715597e458284a474dc118a50a4150e9d547c70f7b4a33c3e6a9328",
       "hasReservedFontName": true,
       "reservedFontNames": [
@@ -722,34 +785,39 @@ export const BUNDLED_FONT_MANIFEST=freeze({
       "renamedFrom": "Source Sans Pro",
       "faces": [
         {
-          "file": "TTF/SourceSans3-Regular.ttf",
+          "file": "SourceSans3-Regular.ttf",
+          "upstreamFile": "TTF/SourceSans3-Regular.ttf",
           "family": "Source Sans 3",
           "weight": 400,
           "italic": false,
           "sha256": "4644c81b86ec9caaa76b634889968ed3c4f4f52f054855933acc7c2b21e53b0f"
         },
         {
-          "file": "TTF/SourceSans3-It.ttf",
+          "file": "SourceSans3-It.ttf",
+          "upstreamFile": "TTF/SourceSans3-It.ttf",
           "family": "Source Sans 3",
           "weight": 400,
           "italic": true,
           "sha256": "192afd78f0f54a3c69eaf02d43f4d9a821e9d6110e41d3d25d61a7385cd580e4"
         },
         {
-          "file": "TTF/SourceSans3-Bold.ttf",
+          "file": "SourceSans3-Bold.ttf",
+          "upstreamFile": "TTF/SourceSans3-Bold.ttf",
           "family": "Source Sans 3",
           "weight": 700,
           "italic": false,
           "sha256": "9214b9d95e4231c609802815c2646c98174e2102d0d37f88978a7f8e71006e6a"
         },
         {
-          "file": "TTF/SourceSans3-BoldIt.ttf",
+          "file": "SourceSans3-BoldIt.ttf",
+          "upstreamFile": "TTF/SourceSans3-BoldIt.ttf",
           "family": "Source Sans 3",
           "weight": 700,
           "italic": true,
           "sha256": "7978291fc1bf314db887e0366853b33c5cf2e964c7b95cfb9ce403a6ec46a842"
         }
-      ]
+      ],
+      "integrity": "sha512-xsm7qlMI/JwxwNdp6pvpR6l+aZjn90fzOzoeUz/qoohIYbKbDwQNRIz5/ItYs7/hvqLirQNUoDFGXSVA3TU9tw=="
     },
     {
       "name": "@expo-google-fonts/noto-sans-jp",

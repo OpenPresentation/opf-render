@@ -21,6 +21,7 @@
   },
   "files": [
     "dist",
+    "fonts",
     "README.md",
     "LICENSE"
   ],
@@ -82,19 +83,10 @@
   },
   "dependencies": {
     "@expo-google-fonts/arimo": "0.4.3",
-    "@expo-google-fonts/bebas-neue": "0.4.1",
     "@expo-google-fonts/caladea": "0.4.2",
     "@expo-google-fonts/carlito": "0.4.1",
     "@expo-google-fonts/cousine": "0.4.3",
     "@expo-google-fonts/gelasio": "0.4.1",
-    "@expo-google-fonts/lora": "0.4.2",
-    "@expo-google-fonts/merriweather-sans": "0.4.2",
-    "@expo-google-fonts/montserrat": "0.4.2",
-    "@expo-google-fonts/open-sans": "0.4.2",
-    "@expo-google-fonts/playfair-display": "0.4.2",
-    "@expo-google-fonts/poppins": "0.4.1",
-    "@expo-google-fonts/pt-serif": "0.4.1",
-    "@expo-google-fonts/raleway": "0.4.2",
     "@expo-google-fonts/roboto": "0.4.3",
     "@expo-google-fonts/roboto-mono": "0.4.2",
     "@expo-google-fonts/tinos": "0.4.2",
@@ -102,8 +94,7 @@
     "@resvg/resvg-js": "^2.6.2",
     "fontkit": "^2.0.4",
     "pdf-lib": "^1.17.1",
-    "sharp": "0.35.4",
-    "source-sans": "3.52.0"
+    "sharp": "0.35.4"
   },
   "peerDependencies": {
     "@expo-google-fonts/noto-naskh-arabic": "0.4.5",

@@ -1,0 +1,50 @@
+{
+  "upstream": {
+    "package": "@expo-google-fonts/playfair-display",
+    "version": "0.4.2",
+    "source": "https://www.npmjs.com/package/@expo-google-fonts/playfair-display/v/0.4.2",
+    "integrity": "sha512-mWhBV59RUjSS3aYpytUb7UyHHTnXcHh7epAn7gq+M4XAEh5PuMKUrP8eiUfkJLb6UwHZCi7EhQpUzxHu5OL96w=="
+  },
+  "license": "OFL-1.1",
+  "licenseFile": "OFL.txt",
+  "upstreamLicenseFile": "LICENSE_FONT",
+  "licenseSha256": "566be814f8e96e93dfa16101331557eb6b5467e9e03f627c0910fe93ca12300e",
+  "hasReservedFontName": true,
+  "reservedFontNames": [
+    "Playfair Display"
+  ],
+  "faces": [
+    {
+      "file": "PlayfairDisplay_400Regular.ttf",
+      "upstreamFile": "400Regular/PlayfairDisplay_400Regular.ttf",
+      "family": "Playfair Display",
+      "weight": 400,
+      "italic": false,
+      "sha256": "861f838d481d28cbbd4793e45dc02f01d04c81e06ed98ab2779ca152ace9f27b"
+    },
+    {
+      "file": "PlayfairDisplay_400Regular_Italic.ttf",
+      "upstreamFile": "400Regular_Italic/PlayfairDisplay_400Regular_Italic.ttf",
+      "family": "Playfair Display",
+      "weight": 400,
+      "italic": true,
+      "sha256": "40a6afa92220254c2c426ccef129d3615dd19e4c591fbfa997e5f28ebba8302c"
+    },
+    {
+      "file": "PlayfairDisplay_700Bold.ttf",
+      "upstreamFile": "700Bold/PlayfairDisplay_700Bold.ttf",
+      "family": "Playfair Display",
+      "weight": 700,
+      "italic": false,
+      "sha256": "4f3b87b5aa297eed5e5a48dbd9941356ca0313d4725b02c29a298cb042b7b31b"
+    },
+    {
+      "file": "PlayfairDisplay_700Bold_Italic.ttf",
+      "upstreamFile": "700Bold_Italic/PlayfairDisplay_700Bold_Italic.ttf",
+      "family": "Playfair Display",
+      "weight": 700,
+      "italic": true,
+      "sha256": "db5737059ff617317aca97e9e35730f8933a2e187c75bbe2deaf45c4d72f5b1d"
+    }
+  ]
+}

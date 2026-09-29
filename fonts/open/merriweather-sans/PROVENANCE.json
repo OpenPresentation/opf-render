@@ -1,0 +1,50 @@
+{
+  "upstream": {
+    "package": "@expo-google-fonts/merriweather-sans",
+    "version": "0.4.2",
+    "source": "https://www.npmjs.com/package/@expo-google-fonts/merriweather-sans/v/0.4.2",
+    "integrity": "sha512-XLQnMfvx2jTeA/DqSkoLtD5JN/jvajG8wkhliOKfG5CUMzVvnhN206LVmhyLmEmRwaw4opVpbCaypfLuEn//Xw=="
+  },
+  "license": "OFL-1.1",
+  "licenseFile": "OFL.txt",
+  "upstreamLicenseFile": "LICENSE_FONT",
+  "licenseSha256": "e07e715e58eb63bd8d4ccf2b2e7d0a5d3ef5d93f596431f6dc3aed42ac1a2304",
+  "hasReservedFontName": true,
+  "reservedFontNames": [
+    "Merriweather"
+  ],
+  "faces": [
+    {
+      "file": "MerriweatherSans_400Regular.ttf",
+      "upstreamFile": "400Regular/MerriweatherSans_400Regular.ttf",
+      "family": "Merriweather Sans",
+      "weight": 400,
+      "italic": false,
+      "sha256": "4acdb554f81650e76b3380865e8dcb9569d9f0dbff5dc6eeb9d1ff3d185f8759"
+    },
+    {
+      "file": "MerriweatherSans_400Regular_Italic.ttf",
+      "upstreamFile": "400Regular_Italic/MerriweatherSans_400Regular_Italic.ttf",
+      "family": "Merriweather Sans",
+      "weight": 400,
+      "italic": true,
+      "sha256": "b74596ca5cb876df7464cd5e2ffdd0791af630091f609f60b74ad5675a62ca3d"
+    },
+    {
+      "file": "MerriweatherSans_700Bold.ttf",
+      "upstreamFile": "700Bold/MerriweatherSans_700Bold.ttf",
+      "family": "Merriweather Sans",
+      "weight": 700,
+      "italic": false,
+      "sha256": "48a5c18678c300b9c85379f2a5b965b6ca10dee30f58fc8a2fa22de19c230319"
+    },
+    {
+      "file": "MerriweatherSans_700Bold_Italic.ttf",
+      "upstreamFile": "700Bold_Italic/MerriweatherSans_700Bold_Italic.ttf",
+      "family": "Merriweather Sans",
+      "weight": 700,
+      "italic": true,
+      "sha256": "53218031a66828a47a92162d78c6dd83a28d090760d9bffae9b63ada62bc09ca"
+    }
+  ]
+}

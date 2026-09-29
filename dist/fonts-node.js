@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { createFontRegistry, OPFFontError } from "./fonts.js";
@@ -21,6 +22,18 @@ async function verifiedFile(file, expected, details) {
 async function loadPackages(packages) {
   const entries = [], fontFiles = [];
   for (const pkg of packages) {
+    if (pkg.vendored) {
+      // FF-31: vendored faces ship inside this package (fonts/open/<family>/), hash-pinned like the npm packs.
+      const directory = fileURLToPath(new URL(`../${pkg.vendored}/`, import.meta.url));
+      const license = (await verifiedFile(path.join(directory, pkg.licenseFile), pkg.licenseSha256, {package:pkg.name, file:pkg.licenseFile})).toString("utf8");
+      for (const face of pkg.faces) {
+        const file = path.join(directory, face.file);
+        const data = await verifiedFile(file, face.sha256, {package:pkg.name, file:face.file});
+        fontFiles.push(file);
+        entries.push({data:new Uint8Array(data), family:face.family, weight:face.weight, italic:face.italic, license});
+      }
+      continue;
+    }
     let manifestPath, installed;
     try {
       manifestPath = require.resolve(`${pkg.name}/package.json`);

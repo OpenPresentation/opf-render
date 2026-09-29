@@ -1,0 +1,50 @@
+{
+  "upstream": {
+    "package": "@expo-google-fonts/lora",
+    "version": "0.4.2",
+    "source": "https://www.npmjs.com/package/@expo-google-fonts/lora/v/0.4.2",
+    "integrity": "sha512-Bnofh2mIOUKp4KUS48VjaBgug4lQOcw/ftU0NFv5OPtiutL422//G1v63xDZEMUEL6ft4fi5q94/uKcpDjbPag=="
+  },
+  "license": "OFL-1.1",
+  "licenseFile": "OFL.txt",
+  "upstreamLicenseFile": "LICENSE_FONT",
+  "licenseSha256": "1d9a970809ac804b582a6ce7f0ebc4e7fefcbfd7ff6299cad35ee656a21be716",
+  "hasReservedFontName": true,
+  "reservedFontNames": [
+    "Lora"
+  ],
+  "faces": [
+    {
+      "file": "Lora_400Regular.ttf",
+      "upstreamFile": "400Regular/Lora_400Regular.ttf",
+      "family": "Lora",
+      "weight": 400,
+      "italic": false,
+      "sha256": "7ed00e7c9cdf16ab7e2fd2361fe45d4f0b61263cd60aae398b27b7ee08108827"
+    },
+    {
+      "file": "Lora_400Regular_Italic.ttf",
+      "upstreamFile": "400Regular_Italic/Lora_400Regular_Italic.ttf",
+      "family": "Lora",
+      "weight": 400,
+      "italic": true,
+      "sha256": "be627e595184e8afe521f08da0607eee613f1997d423bc8dadc5798995581377"
+    },
+    {
+      "file": "Lora_700Bold.ttf",
+      "upstreamFile": "700Bold/Lora_700Bold.ttf",
+      "family": "Lora",
+      "weight": 700,
+      "italic": false,
+      "sha256": "7d74015e950c2fb66519c7295b8155621d22200ae2ca2a4c6b43ce3c490cac87"
+    },
+    {
+      "file": "Lora_700Bold_Italic.ttf",
+      "upstreamFile": "700Bold_Italic/Lora_700Bold_Italic.ttf",
+      "family": "Lora",
+      "weight": 700,
+      "italic": true,
+      "sha256": "152f87e71f5ddb60d5c57ecd9132807c947e65c42977193c9164e7c5a6690081"
+    }
+  ]
+}

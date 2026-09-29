@@ -1,0 +1,52 @@
+{
+  "upstream": {
+    "package": "@expo-google-fonts/pt-serif",
+    "version": "0.4.1",
+    "source": "https://www.npmjs.com/package/@expo-google-fonts/pt-serif/v/0.4.1",
+    "integrity": "sha512-XziSzDDcyNvNehbsGMFw06SfC46GQf5Or4nH4XX8PEVTl+HI3xKKDmgGeatL37LAdEeEJ8xg2TTYKFE8FdPcOQ=="
+  },
+  "license": "OFL-1.1",
+  "licenseFile": "OFL.txt",
+  "upstreamLicenseFile": "LICENSE_FONT",
+  "licenseSha256": "ddf311c28ddf5a5ad9747649837346b67bed9d356789c3072bb27dbce49e514d",
+  "hasReservedFontName": true,
+  "reservedFontNames": [
+    "PT Sans",
+    "PT Serif",
+    "ParaType"
+  ],
+  "faces": [
+    {
+      "file": "PTSerif_400Regular.ttf",
+      "upstreamFile": "400Regular/PTSerif_400Regular.ttf",
+      "family": "PT Serif",
+      "weight": 400,
+      "italic": false,
+      "sha256": "13d9f82f41fcd7d2813dc0a44a9639dec0c1e9a922ab96c7de8dec467c3dec55"
+    },
+    {
+      "file": "PTSerif_400Regular_Italic.ttf",
+      "upstreamFile": "400Regular_Italic/PTSerif_400Regular_Italic.ttf",
+      "family": "PT Serif",
+      "weight": 400,
+      "italic": true,
+      "sha256": "b75d426f372d18a53a4f7206b1cb90816432f699ba106ed8d1a79aef79622666"
+    },
+    {
+      "file": "PTSerif_700Bold.ttf",
+      "upstreamFile": "700Bold/PTSerif_700Bold.ttf",
+      "family": "PT Serif",
+      "weight": 700,
+      "italic": false,
+      "sha256": "e868267095de0f61d908dfc18de98c5fc7b9185c8505a814f0fbb8eac627ecc5"
+    },
+    {
+      "file": "PTSerif_700Bold_Italic.ttf",
+      "upstreamFile": "700Bold_Italic/PTSerif_700Bold_Italic.ttf",
+      "family": "PT Serif",
+      "weight": 700,
+      "italic": true,
+      "sha256": "8c97cd67f86c470eec73f5795affc6303c0fadf682df48f0b0d837a3900cfbce"
+    }
+  ]
+}

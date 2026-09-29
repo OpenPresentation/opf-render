@@ -3,7 +3,9 @@
 // the office pack, so a strict registry no longer throws for them. Source Sans Pro is the renamed family
 // Source Sans 3: its requests draw the Source Sans 3 faces and report visual.
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
+import {cp, mkdtemp, readFile, readdir, rm, symlink, writeFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {fileURLToPath, pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
 import path from 'node:path';
 import {fontSchemes} from '@openpresentation/opf/catalogs';
@@ -23,16 +25,32 @@ for (const item of BUNDLED_FONT_MANIFEST.packages) {
   assert.equal(typeof item.hasReservedFontName, 'boolean', item.name);
   assert.ok(Array.isArray(item.reservedFontNames) && item.hasReservedFontName === item.reservedFontNames.length > 0, item.name);
 }
-const require = (await import('node:module')).createRequire(import.meta.url);
+// The faces are vendored in this package (fonts/open/<family>/), not installed from npm: every file is
+// present, listed, hash-pinned, and carries its notice and provenance.
+const root = fileURLToPath(new URL('../', import.meta.url));
+const dependencies = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+const packageFiles = dependencies.files;
+assert.ok(packageFiles.includes('fonts'), 'the published package includes the vendored fonts');
 for (const item of open) {
+  assert.ok(!dependencies.dependencies?.[item.name] && !dependencies.devDependencies?.[item.name], `${item.name} is vendored, not a dependency`);
+  assert.ok(/^fonts\/open\/[a-z0-9-]+$/.test(item.vendored), item.vendored);
   assert.match(item.version, /^\d+\.\d+\.\d+$/);
   assert.equal(item.source, `https://www.npmjs.com/package/${item.name}/v/${item.version}`);
-  const directory = path.dirname(require.resolve(`${item.name}/package.json`));
-  const notice = await readFile(path.join(directory, item.licenseFile), 'utf8');
+  const directory = path.join(root, item.vendored);
+  const noticeBytes = await readFile(path.join(directory, item.licenseFile)), notice = noticeBytes.toString('utf8');
   assert.match(notice, /SIL Open Font License,? Version 1\.1/i, `${item.name} ships the OFL 1.1 notice`);
-  assert.equal(createHash('sha256').update(notice).digest('hex'), item.licenseSha256, item.name);
+  assert.equal(createHash('sha256').update(noticeBytes).digest('hex'), item.licenseSha256, item.name);
   for (const name of item.reservedFontNames) assert.ok(notice.split(/^-{20,}/m)[0].includes(name), `${item.name}: Reserved Font Name ${name} is declared in the notice`);
   if (item.hasReservedFontName === false) assert.doesNotMatch(notice.split(/^-{20,}/m)[0], /Reserved Font Name/i, `${item.name} declares no Reserved Font Name`);
+  // Only the listed faces are vendored, each pinned by hash.
+  const listed = new Set([item.licenseFile, 'PROVENANCE.json', ...item.faces.map(face => face.file)]);
+  assert.deepEqual((await readdir(directory)).sort(), [...listed].sort(), `${item.vendored} holds exactly the listed files`);
+  for (const face of item.faces) assert.equal(createHash('sha256').update(await readFile(path.join(directory, face.file))).digest('hex'), face.sha256, face.file);
+  // PROVENANCE.json says where every byte came from and agrees with the manifest.
+  const provenance = JSON.parse(await readFile(path.join(directory, 'PROVENANCE.json'), 'utf8'));
+  assert.deepEqual([provenance.upstream.package, provenance.upstream.version, provenance.upstream.source, provenance.license, provenance.licenseSha256, provenance.hasReservedFontName, provenance.reservedFontNames, provenance.renamedFrom], [item.name, item.version, item.source, item.license, item.licenseSha256, item.hasReservedFontName, item.reservedFontNames, item.renamedFrom]);
+  assert.match(provenance.upstream.integrity, /^sha512-/);
+  assert.deepEqual(provenance.faces.map(face => [face.file, face.upstreamFile, face.family, face.weight, face.italic, face.sha256]), item.faces.map(face => [face.file, face.upstreamFile, face.family, face.weight, face.italic, face.sha256]));
 }
 assert.deepEqual(open.find(item => item.name === 'source-sans').reservedFontNames, ['Source']);
 assert.deepEqual(open.find(item => item.name === '@expo-google-fonts/pt-serif').reservedFontNames, ['PT Sans', 'PT Serif', 'ParaType']);
@@ -40,6 +58,31 @@ assert.equal(open.find(item => item.name === '@expo-google-fonts/open-sans').has
 assert.deepEqual(OPEN.filter(family => !open.some(item => item.renamedFrom === family || item.faces.some(face => face.family === family))), []);
 assert.equal(open.find(item => item.name === 'source-sans').renamedFrom, 'Source Sans Pro');
 assert.ok(open.every(item => item.name === 'source-sans' || item.renamedFrom === undefined));
+
+// Integrity guards on a disposable copy: changed bytes and a missing vendored file are refused.
+{
+  const copy = await mkdtemp(path.join(tmpdir(), 'opf-open-fonts-'));
+  try {
+    await writeFile(path.join(copy, 'package.json'), JSON.stringify({type: 'module'}));
+    await cp(path.join(root, 'dist'), path.join(copy, 'dist'), {recursive: true});
+    await cp(path.join(root, 'fonts'), path.join(copy, 'fonts'), {recursive: true});
+    await symlink(path.join(root, 'node_modules'), path.join(copy, 'node_modules'), process.platform === 'win32' ? 'junction' : 'dir');
+    const isolated = await import(pathToFileURL(path.join(copy, 'dist/fonts-node.js')));
+    await isolated.loadOfficeFontRegistry();
+    const face = path.join(copy, open[0].vendored, open[0].faces[0].file), original = await readFile(face);
+    await writeFile(face, Buffer.concat([original, Buffer.from('corrupt')]));
+    await assert.rejects(isolated.loadOfficeFontRegistry(), {code: 'font-integrity-mismatch'});
+    await writeFile(face, original);
+    const notice = path.join(copy, open[0].vendored, open[0].licenseFile), text = await readFile(notice);
+    await writeFile(notice, 'Missing original notice');
+    await assert.rejects(isolated.loadOfficeFontRegistry(), {code: 'font-integrity-mismatch'});
+    await writeFile(notice, text);
+    await rm(face);
+    await assert.rejects(isolated.loadOfficeFontRegistry(), {code: 'font-resource-unavailable'});
+    await writeFile(face, original);
+    await isolated.loadOfficeFontRegistry();
+  } finally { await rm(copy, {recursive: true, force: true}); }
+}
 
 // Every open family a font scheme selects (core catalog plus the four gallery-only legacy schemes) has a
 // policy row that says open, and resolves to its own exact face in a strict office registry.

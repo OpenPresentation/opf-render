@@ -22,7 +22,9 @@ export type BundledFontPackage = Readonly<{
   hasReservedFontName:boolean; reservedFontNames:readonly string[];
   /** The family this package is the renamed successor of; requests for the old name draw these faces, reported visual. */
   renamedFrom?:string;
-  faces:readonly Readonly<{file:string; family:string; weight:number; italic:boolean; sha256:string}>[];
+  /** Open pack: the directory inside this package holding the vendored faces, notice and PROVENANCE.json; `file` and `licenseFile` are relative to it. */
+  vendored?:string; upstreamLicenseFile?:string;
+  faces:readonly Readonly<{file:string; family:string; weight:number; italic:boolean; sha256:string; upstreamFile?:string}>[];
 }>;
 export interface BundledFontManifest {
   readonly version: number;

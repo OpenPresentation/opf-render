@@ -27,6 +27,24 @@ try{
     files[file]=hash(bytes);
   }
   for(const entry of ['dist/index.js','dist/svg.js','dist/fonts-node.js','dist/fonts-browser.js','dist/svg.d.ts','LICENSE'])assert.ok(files[entry],`Missing public entry: ${entry}`);
+  // FF-31: the open-pack faces are vendored in the tarball. Every listed face, notice and provenance file must be
+  // packed, byte-match the manifest pin, and load (hash-verified) from the clean consumer's installed copy.
+  const {BUNDLED_FONT_MANIFEST}=await import('../src/font-manifest.js');
+  const vendored=BUNDLED_FONT_MANIFEST.packages.filter(item=>item.vendored);
+  assert.equal(vendored.reduce((total,item)=>total+item.faces.length,0),38);
+  for(const item of vendored){
+    for(const face of item.faces)assert.equal(files[`${item.vendored}/${face.file}`],face.sha256,`Packed vendored face differs from its manifest pin: ${item.vendored}/${face.file}`);
+    assert.equal(files[`${item.vendored}/${item.licenseFile}`],item.licenseSha256,`Packed license notice differs from its pin: ${item.vendored}`);
+    assert.ok(files[`${item.vendored}/PROVENANCE.json`],`Missing provenance: ${item.vendored}`);
+  }
+  assert.equal(Object.keys(files).filter(file=>file.startsWith('fonts/')&&file.endsWith('.ttf')).length,38,'Only the listed faces are packed');
+  await writeFile(path.join(consumer,'vendored-fonts.mjs'),`import assert from 'node:assert/strict';
+import {prepareNodeFonts} from '@openpresentation/opf-render/fonts-node';
+const {registry,options}=await prepareNodeFonts({pack:'office'});
+for(const family of ['Open Sans','Montserrat','Poppins','PT Serif','Raleway','Playfair Display','Bebas Neue','Lora','Merriweather Sans','Source Sans 3'])assert.equal(registry.resolveFont({fontFamily:family,fontWeight:400}).compatibility,'exact',family);
+assert.equal(options.fontFiles.filter(file=>file.split(String.fromCharCode(92)).join('/').includes('/node_modules/@openpresentation/opf-render/fonts/open/')).length,38);
+console.log('Installed vendored open faces resolve exact from the packed package.');`);
+  process.stdout.write(execFileSync(process.execPath,['vendored-fonts.mjs'],{cwd:consumer,encoding:'utf8'}));
   const lock=JSON.parse(await readFile(path.join(consumer,'package-lock.json'),'utf8'));
   const core=lock.packages['node_modules/@openpresentation/opf'];
   assert.ok(core.resolved.startsWith('https://registry.npmjs.org/')&&core.integrity.startsWith('sha512-')&&!core.link);
