@@ -10,8 +10,7 @@ import path from 'node:path';
 import {fontSchemes} from '@openpresentation/opf';
 import {BUNDLED_FONT_MANIFEST, loadBundledFontRegistry, prepareNodeFonts} from '../dist/fonts-node.js';
 import {createFontRegistry} from '../dist/fonts.js';
-import {loadBrowserFontRegistry, lazyFontEntries, lazyFontList, lazyFontsFor} from '../dist/fonts-browser.js';
-import {presentationFamilies} from '../dist/lazy-fonts.js';
+import {loadBrowserFontRegistry, lazyFontEntries, lazyFontList, lazyFontsFor, presentationFamilies} from '../dist/fonts-browser.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');

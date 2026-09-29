@@ -23,6 +23,8 @@ export interface BrowserFontRegistry extends FontRegistry {
 export declare function lazyFontList(): readonly LazyFont[];
 /** Hash-pinned browser entries for the vendored faces, served by the host from `baseUrl` at their package-relative paths. */
 export declare function lazyFontEntries(options: { baseUrl: string }, list?: readonly LazyFont[]): (BrowserFontInput & { url: string; family: string; weight: number; italic: boolean; sha256: string; package: string })[];
+/** The font families a presentation's slides resolve (heading, body and code roles); empty for a document that does not resolve. */
+export declare function presentationFamilies(presentation: unknown): Set<string>;
 /** The vendored faces a set of resolved families needs that the registry does not hold. */
 export declare function lazyFontsFor(families: Iterable<string>, context: { lazy: readonly LazyFont[]; hasFamily(family: string): boolean; loaded?: ReadonlySet<string> }): LazyFont[];
 export interface BrowserFontInput extends Omit<FontFaceInput, "data"> {

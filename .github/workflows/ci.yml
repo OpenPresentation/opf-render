@@ -29,11 +29,11 @@ jobs:
       # match core main's ecosystem-ci. Verify the released graph before using source links.
       # FF-29 pins merged core (opf#132) that adds composed item.alignment.
       # FF-31 pins merged core (opf#133): src/font-policy.js snapshots its spec/reference/font-policy.json.
-      # FF-31 (Intos): pins core PR opf#166 (main at opf#163 plus the Intos policy, skills, docs and ecosystem font counts); repin to its merge commit once merged. Gelasio metric tier (opf#163, Georgia disabledFeatures) is included. opf-pptx and opf-editor move to the coordinated heads core main pins (ecosystem-ci), which pass core#155 and its packed quote test.
+      # FF-31 (Intos): pins core PR opf#166 (core main plus the Intos policy, skills, docs and build scripts); repin to its merge commit once merged (never leave it on an unmerged head). Gelasio metric tier (opf#163, Georgia disabledFeatures) is included. opf-pptx and opf-editor move to the coordinated heads core main pins (ecosystem-ci), which pass core#155 and its packed quote test.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OpenPresentation/opf
-          ref: 2bd10aebf4f39d8f447bedfc5c16577ff2d3461e
+          ref: 1c2dc235b9a108b4f70e37e221e4f72cde9b692f
           path: opf
           fetch-depth: 0
           persist-credentials: false

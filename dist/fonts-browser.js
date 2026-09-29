@@ -2,7 +2,7 @@ import { createFontRegistry, OPFFontError } from "./fonts.js";
 import { lazyFontEntries, lazyFontList } from "./lazy-font-list.js";
 import { lazyFontsFor, presentationFamilies } from "./lazy-fonts.js";
 export { lazyFontEntries, lazyFontList } from "./lazy-font-list.js";
-export { lazyFontsFor } from "./lazy-fonts.js";
+export { lazyFontsFor, presentationFamilies } from "./lazy-fonts.js";
 export { scriptFontEntries, scriptFontPackages } from "./script-font-pack.js";
 
 async function verifyDigest(entry, data, subtle) {
