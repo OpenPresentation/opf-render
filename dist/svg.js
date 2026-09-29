@@ -1481,7 +1481,7 @@ function segmentSpan(attrs, segment, text, style, bound, type, options) {
   return tag("tspan", { ...attrs, "font-family": scripted.family }, scripted.content);
 }
 
-// Faces flagged embed:"used" (the vendored open and Intos faces) are embedded only when the slide's own markup draws
+// Faces flagged embed:"used" (the vendored open, Intos and script-pack faces) are embedded only when the slide's own markup draws
 // them: the family in a font-family list, at a font-weight and font-style some text of the slide takes (attributes are
 // inherited down the element tree, as in SVG). A used family none of whose faces matches a drawn weight and style keeps all
 // its faces, so the browser can always choose. Every other face (the npm packs) is embedded as before.

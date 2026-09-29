@@ -41,7 +41,7 @@ const intosRegular = await readFile(path.join(root, 'fonts/intos/Intos-Regular.t
 const eager = office.embeddedFonts.map(face => ({family: face.family, weight: face.weight, italic: face.italic, data: decode(face)}));
 const grown = createFontRegistry(eager, {substitutionPolicy: 'metric'});
 const before = grown.describeFaces().length;
-assert.equal(grown.addFaces([{data: new Uint8Array(intosRegular), family: 'Intos', weight: 400, italic: false, embed: 'used'}]), 1);
+assert.equal(grown.addFaces([{data: new Uint8Array(intosRegular), family: 'Intos', weight: 400, italic: false, embed: 'used'}]).length, 1);
 assert.equal(grown.describeFaces().length, before + 1);
 assert.equal(grown.resolveFont({fontFamily: 'Aptos', fontWeight: 400}).resolvedFamily, 'Intos', 'later resolutions see the new face');
 assert.throws(() => grown.addFaces([{data: new Uint8Array(intosRegular), family: 'Intos', weight: 400, italic: false}]), {code: 'duplicate-font-face'});
@@ -49,7 +49,7 @@ const intosBold = new Uint8Array(await readFile(path.join(root, 'fonts/intos/Int
 assert.throws(() => grown.addFaces([{data: intosBold, family: 'Intos', weight: 700}, {data: new Uint8Array([1, 2, 3])}]), {code: 'invalid-font-data'});
 assert.equal(grown.describeFaces().length, before + 1, 'a failed batch adds nothing, not even its valid faces');
 assert.equal(grown.resolveFont({fontFamily: 'Intos', fontWeight: 700}).resolvedWeight, 400, 'the valid face of the failed batch is not resolvable');
-assert.throws(() => grown.addFaces([]), {code: 'empty-font-registry'});
+assert.deepEqual(grown.addFaces([]), [], 'an empty batch is a no-op');
 
 // ---- which faces a document needs ----
 const deckWith = scheme => ({name: `Lazy ${scheme ?? 'default'}`, ...(scheme ? {design: {fontScheme: scheme}} : {}), slides: [{id: 'a', title: 'Quarterly review', text: 'Revenue grew.'}]});
@@ -63,6 +63,15 @@ assert.deepEqual(needFor(eagerOnly(), deckWith('roboto')), [], 'a Roboto deck ne
 assert.deepEqual(needFor(eagerOnly(), deckWith('calibri')), [], 'Calibri resolves to the eager Carlito');
 assert.deepEqual(needFor(eagerOnly(), {name: 'invalid', slides: 'not slides'}), [], 'a document that does not resolve needs nothing');
 assert.ok(needFor(eagerOnly(), deckWith('open-sans')).every(face => face.family === 'Open Sans'));
+
+// Nothing is downloaded for a family the substitution policy would not resolve.
+const forPolicy = (policy, families, aliases) => lazyFontsFor(families, {lazy: office.lazyFonts, hasFamily: held(eagerOnly()), policy, aliases}).map(face => face.family);
+assert.deepEqual([...new Set(forPolicy('none', ['Aptos', 'Aptos Display', 'Segoe UI', 'Montserrat']))].sort(), ['Montserrat'], 'policy none: only a family requested by its own name');
+assert.deepEqual([...new Set(forPolicy('metric', ['Aptos', 'Segoe UI']))].sort(), ['Intos'], 'policy metric: the metric replacement, not the visual alternates');
+assert.deepEqual([...new Set(forPolicy('visual', ['Segoe UI']))], ['Red Hat Display'], 'policy visual: the declared visual replacement');
+assert.deepEqual(forPolicy('metric', ['Segoe UI']), [], 'policy metric: a visual replacement is not used');
+assert.deepEqual(forPolicy('none', ['Source Sans Pro'], new Map([['source sans pro', 'Source Sans 3']])).every(family => family === 'Source Sans 3'), true, 'an alias the host passes resolves under any policy');
+assert.deepEqual(forPolicy('none', ['Source Sans Pro']), [], 'without the alias there is nothing to load');
 
 // Loading exactly what a document needs resolves like Node with every vendored face loaded.
 const lc = value => value.toLowerCase();
@@ -98,6 +107,12 @@ const eagerFaces = fonts.size;
 assert.equal(browser.lazyFonts.length, lazyCount);
 const aptosDeck = deckWith();
 assert.equal(browser.pendingLazyFonts(aptosDeck).length, 8);
+const none = await loadBrowserFontRegistry(eager.map(face => ({...face})), {document, fetch: fetchLazy, lazyFontsBaseUrl: 'https://fonts.example/'});
+assert.deepEqual(none.pendingLazyFonts(aptosDeck), [], 'the default policy (none) would not resolve Aptos, so Intos is not downloaded');
+served.length = 0;
+assert.deepEqual(await none.ensureLazyFonts(aptosDeck), []);
+assert.equal(served.length, 0);
+none.dispose();
 assert.equal(browser.resolveFont({fontFamily: 'Aptos', fontWeight: 400}).resolvedFamily, 'Roboto', 'before loading, Aptos previews with its visual alternate, in measurement and painting alike');
 // A failed hash leaves the document and registry untouched and can be retried.
 corrupt.add('fonts/intos/IntosDisplay-Bold.ttf');

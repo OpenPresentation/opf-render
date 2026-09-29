@@ -1,17 +1,40 @@
-import type {FontRegistry,FontRegistryOptions,EmbeddedFont,FontFaceInput} from "./fonts.js";
+import type {FontRegistry,FontRegistryOptions,EmbeddedFont,FontFaceInput,ScriptFontProfile} from "./fonts.js";
 /** A caller-supplied face (FF-31), for example a licensed copy of the real font. Node callers may pass a file path. */
 export type CallerFontFace = FontFaceInput | (Omit<FontFaceInput, "data"> & {path: string});
 /** "all" or ISO 15924 codes (`Jpan`, `Hans`, `Hant`, `Kore`, `Arab`, `Hebr`, `Deva`, `Thai`, ...). */
 export type ScriptSelection = "all" | string[];
+/** What `scripts: "auto"` chose for a presentation (FF-19). */
+export interface AutoScriptSelection {
+  /** Scripts the presentation's drawn text uses, other than Latin, Greek and Cyrillic. */
+  detected: string[];
+  /** The detected scripts a pinned package serves; the input for `scriptFontPackages`. */
+  scripts: string[];
+  /** Detected scripts no pinned open font serves; that text uses the design font. */
+  unavailable: string[];
+}
+/** Script-pack packages that `scripts: "auto"` loaded or found not installed. */
+export interface AppliedScriptSelection extends AutoScriptSelection { packages: string[]; notInstalled: string[]; /** Drawn CJK characters no loaded face covers (glyph fallback stopped at its cap). */ uncovered?: string[] }
+/** Script keys whose faces a preview of the presentation needs: text decides, the document language only tells Han scripts apart. */
+export declare function detectPresentationScripts(presentation: unknown, options?: { profile?: ScriptFontProfile }): string[];
+export declare function autoScriptSelection(presentation: unknown, options?: { profile?: ScriptFontProfile }): AutoScriptSelection;
 export interface ScriptPackOptions {
   /** Caller-supplied faces, loaded first so a licensed real font resolves as an exact face (FF-31). */
   faces?: readonly CallerFontFace[];
-  /** Also load the optional, hash-pinned OFL Noto script pack for these scripts (FF-19). */
-  scripts?: ScriptSelection;
+  /**
+   * Also load the optional, hash-pinned OFL Noto script pack for these scripts (FF-19).
+   * `"auto"` loads only the scripts `presentation` draws (and needs it); a script package that is not installed
+   * is reported through `onDiagnostic` instead of failing.
+   */
+  scripts?: ScriptSelection | "auto";
+  /** The presentation whose text decides `scripts: "auto"`. */
+  presentation?: unknown;
+  /** Receives `script-font-unavailable` and `script-font-not-installed` for `scripts: "auto"`. */
+  onDiagnostic?: (diagnostic: {code: string; message: string; script?: string; package?: string; scripts?: string[]}) => void;
 }
 /** A vendored face that an SVG embeds only when its text names the family (the open families and Intos), and that browser hosts load on demand from a separate hash-pinned file. */
 export interface LazyFont { readonly package: string; readonly family: string; readonly weight: number; readonly italic: boolean; /** Path relative to the package root, for example fonts/intos/Intos-Regular.ttf. */ readonly file: string; readonly sha256: string; readonly license: string; readonly renamedFrom?: string }
-export type NodeFontRegistry = FontRegistry & {fontFiles:string[]; /** The embed "used" faces this registry holds, with the files a host copies to serve them itself. */ lazyFonts: readonly LazyFont[]};
+export type ScriptFontRegistry = FontRegistry & {fontFiles:string[]; /** Set for `scripts: "auto"`. */ scriptSelection?: AppliedScriptSelection};
+export type NodeFontRegistry = ScriptFontRegistry & {/** The embed "used" faces this registry holds, with the files a host copies to serve them itself. */ lazyFonts: readonly LazyFont[]};
 export declare function loadBundledFontRegistry(options?: FontRegistryOptions & ScriptPackOptions): Promise<NodeFontRegistry>;
 
 export declare function loadOfficeFontRegistry(options?: FontRegistryOptions & ScriptPackOptions & {includeBaseFonts?:boolean; /** Leave out the open families font schemes select (FF-31); default true. */ includeOpenFonts?:boolean}): Promise<NodeFontRegistry>;

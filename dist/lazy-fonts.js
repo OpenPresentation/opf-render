@@ -20,21 +20,29 @@ export function presentationFamilies(presentation) {
 }
 
 /**
- * The vendored faces a document needs that the registry does not hold, following the registry's own order:
- * the family itself, a renamed predecessor, then the policy replacement and its alternates. The first candidate the
- * registry already has ends the search (it will resolve to that); the first vendored candidate is loaded, whole
- * family, so the browser resolves exactly what Node resolves with everything loaded.
+ * The vendored faces a document needs that the registry does not hold, following the registry's own order and substitution
+ * policy: the family itself, an alias target, then (unless the policy is "none") the declared replacement and, under
+ * "visual", its alternates. The first candidate the registry already has ends the search (it will resolve to that); the
+ * first vendored candidate is needed, whole family, so the browser resolves exactly what Node resolves with everything
+ * loaded, and nothing is downloaded for a family the policy would not resolve.
  * @param {Iterable<string>} families families the document resolves
- * @param {{lazy: readonly object[], hasFamily: (family: string) => boolean, loaded?: ReadonlySet<string>}} context
+ * @param {{lazy: readonly object[], hasFamily: (family: string) => boolean, loaded?: ReadonlySet<string>, policy?: "none"|"metric"|"visual", aliases?: ReadonlyMap<string, string>}} context
  */
-export function lazyFontsFor(families, { lazy, hasFamily, loaded = new Set() }) {
+export function lazyFontsFor(families, { lazy, hasFamily, loaded = new Set(), policy = "visual", aliases = new Map() }) {
   const byFamily = new Map();
   for (const face of lazy) { const list = byFamily.get(lc(face.family)) ?? []; list.push(face); byFamily.set(lc(face.family), list); }
-  const renamed = new Map(lazy.filter(face => face.renamedFrom).map(face => [lc(face.renamedFrom), face.family]));
   const needed = new Set();
   for (const family of families) {
-    const row = fontPolicyFor(family);
-    const route = [family, renamed.get(lc(family)), row?.replacement?.family, ...(row?.alternates ?? [])].filter(Boolean);
+    if (hasFamily(family)) continue;
+    if (byFamily.has(lc(family))) { needed.add(lc(family)); continue; }
+    const target = aliases.get(lc(family));
+    if (target && (hasFamily(target) || byFamily.has(lc(target)))) { if (!hasFamily(target)) needed.add(lc(target)); continue; }
+    if (policy === "none") continue;
+    const row = fontPolicyFor(family), replacement = row?.replacement;
+    const route = [];
+    // Metric mode uses a metric replacement, or a visual one its policy row keeps as a metric-mode fallback; alternates are visual only.
+    if (replacement && (policy === "visual" || replacement.compatibility === "metric" || replacement.metricModeFallback)) route.push(replacement.family);
+    if (policy === "visual") route.push(...(row?.alternates ?? []));
     for (const candidate of route) {
       if (hasFamily(candidate)) break;
       if (byFamily.has(lc(candidate))) { needed.add(lc(candidate)); break; }
