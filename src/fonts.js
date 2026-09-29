@@ -20,7 +20,8 @@ function validFamily(family) {
   if (typeof family !== "string" || !family.trim() || /[\u0000-\u001f"'\\<>;]/.test(family)) throw new OPFFontError("invalid-font-family", "Font family must be a nonempty plain name.");
   return family;
 }
-const packFor = family => BUNDLED_FONT_MANIFEST.packages.find(pkg=>pkg.faces.some(face=>face.family.toLowerCase()===family.toLowerCase()))?.pack;
+// The open families load with the office pack (prepareNodeFonts({pack:"office"})).
+const packFor = family => { const pack = BUNDLED_FONT_MANIFEST.packages.find(pkg=>pkg.faces.some(face=>face.family.toLowerCase()===family.toLowerCase()))?.pack; return pack==="open" ? "office" : pack; };
 const percent = value => `${(value*100).toFixed(1)}%`;
 /** FF-31: say why a family has no face and what the caller can do, from the OPF font policy. */
 function unavailableFontError(family, style, policy) {

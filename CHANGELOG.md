@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- FF-31: bundle the open families that font schemes select, so the preview draws them with their own faces instead of throwing `font-unavailable`. New manifest pack `open` (10 exact runtime dependencies, 38 pinned static faces, 6.9 MiB, SIL OFL 1.1): Open Sans, Montserrat (plus Montserrat Black 900 for the Arial Black policy row), Poppins, PT Serif, Raleway, Playfair Display, Bebas Neue, Lora, Merriweather Sans and Source Sans Pro. `loadOfficeFontRegistry` and `prepareNodeFonts({pack:'office'})` include them (`includeOpenFonts: false` opts out); the base pack is unchanged.
+  - **Provenance:** every manifest package now records `hasReservedFontName` and `reservedFontNames`, and `scripts/update-font-manifest.mjs` reads the SPDX id from the notice the package ships (OFL-1.1, Apache-2.0, MIT or UFL-1.0 only) and refuses a package without one. Source Sans Pro comes from `source-sans-pro@3.6.0` because `@expo-google-fonts/source-sans-pro` ships no font license file.
+  - **SVG size:** open faces are not embedded in standalone SVG unless `embedOpenFonts: true`; raster reads them from `fontFiles`. Office SVG embedding is unchanged (the same 33 faces).
+  - **Policy effects:** with the faces loaded, visual previews of Verdana and Arial Black use Montserrat, Book Antiqua, Constantia and Palatino Linotype use PT Serif, Bodoni MT and Didot use Playfair Display, and Segoe UI and Tahoma use Open Sans (before: the bundled Arimo alternate). Tiers are unchanged (visual).
+  - **Tests:** new `test/open-fonts.mjs`; updated `office-fonts`, `font-policy` and `font-preparation` for the larger office pack. Golden: unchanged.
+
 - FF-31: the renderer now chooses preview replacements from a snapshot of the core OPF font policy table. The snapshot is `src/font-policy.js`, generated from opf `spec/reference/font-policy.json` by `scripts/update-font-policy.mjs`, with a `--check` option for drift. It exports `FONT_POLICY`, `FONT_POLICY_DECISIONS`, `FONT_POLICY_SOURCE` and `fontPolicyFor`, and `FONT_COMPATIBILITY` is derived from it. Legacy rules stay only for families that the table does not list, and the FF-19 script replacements are unchanged.
   - **Provisional owner decisions (owner may revise):**
     - Aptos → Roboto, measured at a 2.15% mean width difference (signed +0.1%). Before, Aptos previewed with Carlito, which is 7.1% narrower. Aptos Display keeps Carlito.

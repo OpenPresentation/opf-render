@@ -36,7 +36,7 @@ const pptx = await toPptx(presentation, options);
 console.log(registry.substitutions);
 ```
 
-The default `pack: 'base'` contains nine Roboto/Roboto Mono faces and suits a document using `design.fontScheme: 'roboto'`. The Office pack includes 24 additional faces and defaults to metric substitution policy; visual substitution remains explicit. Neither helper changes the document's authored font scheme or installs system fonts. The authored (selected) font is the source of truth. Licensed fonts are never bundled, so these packs supply open look-alikes for previews and SVG: metric-compatible where one exists (Carlito for Calibri, the goal), visual-only where none does yet (Aptos today; a documented fallback and known layout-fidelity gap). The PPTX exporter still writes the selected name; see the [OPF font policy](https://github.com/OpenPresentation/opf/blob/main/docs/font-fidelity.md#font-policy-ff-31). Missing resources, changed bytes/notices, and unexpected package versions fail with actionable font errors. Requested/resolved substitution records remain on `registry.substitutions`; source paths appear where the caller supplies them. Font coverage, variant naming, shaping, and native fidelity retain their documented limits.
+The default `pack: 'base'` contains nine Roboto/Roboto Mono faces and suits a document using `design.fontScheme: 'roboto'`. The Office pack includes 24 Office-substitute faces plus 38 faces of the ten open families that font schemes select (below), and defaults to metric substitution policy; visual substitution remains explicit. Neither helper changes the document's authored font scheme or installs system fonts. The authored (selected) font is the source of truth. Licensed fonts are never bundled, so these packs supply open look-alikes for previews and SVG: metric-compatible where one exists (Carlito for Calibri, the goal), visual-only where none does yet (Aptos today; a documented fallback and known layout-fidelity gap). The PPTX exporter still writes the selected name; see the [OPF font policy](https://github.com/OpenPresentation/opf/blob/main/docs/font-fidelity.md#font-policy-ff-31). Missing resources, changed bytes/notices, and unexpected package versions fail with actionable font errors. Requested/resolved substitution records remain on `registry.substitutions`; source paths appear where the caller supplies them. Font coverage, variant naming, shaping, and native fidelity retain their documented limits.
 
 Default PNG/PDF raster loading now uses the same complete nine-face base pack, fixing omitted semibold and italic faces. Custom raster callers may still set `useBundledFonts: false`. Font files must stay available and unchanged for subsequent raster calls. `node scripts/update-font-manifest.mjs` is an explicit maintenance operation requiring review of font bytes, style metadata, licenses and raster changes; builds and installs never regenerate the expected hashes.
 
@@ -116,6 +116,27 @@ container.innerHTML = renderSvg(presentation, {
 ```
 
 Each entry contains `url` or `data: Uint8Array`, with optional `family`, `weight`, `italic` and `license`. The loader registers browser FontFaces using the same bytes used for measurement. It fetches only URLs supplied by the host, supports an AbortSignal and custom fetch, and awaits font loading. Use pinned static faces and retain their licenses. For standalone SVG export also pass `embeddedFonts: fonts.embeddedFonts`; embedding is unnecessary for each live draft after browser fonts are loaded.
+
+## Open font-scheme families (FF-31)
+
+Font schemes select ten openly licensed Latin families that no Office substitute covers. The office pack ships them as pinned static faces, so `loadOfficeFontRegistry()` and `prepareNodeFonts({ pack: 'office' })` resolve each to its own exact face, and a strict registry no longer throws `font-unavailable` for them:
+
+| Family | Package | Faces |
+|---|---|---|
+| Open Sans | `@expo-google-fonts/open-sans@0.4.2` | 400, 700, italics |
+| Montserrat | `@expo-google-fonts/montserrat@0.4.2` | 400, 700, italics, 900 (Montserrat Black, named by the Arial Black policy row) |
+| Poppins | `@expo-google-fonts/poppins@0.4.1` | 400, 700, italics |
+| PT Serif | `@expo-google-fonts/pt-serif@0.4.1` | 400, 700, italics |
+| Raleway | `@expo-google-fonts/raleway@0.4.2` | 400, 700, italics |
+| Playfair Display | `@expo-google-fonts/playfair-display@0.4.2` | 400, 700, italics |
+| Bebas Neue | `@expo-google-fonts/bebas-neue@0.4.1` | 400 (the family has no other style) |
+| Lora | `@expo-google-fonts/lora@0.4.2` | 400, 700, italics |
+| Merriweather Sans | `@expo-google-fonts/merriweather-sans@0.4.2` | 400, 700, italics |
+| Source Sans Pro | `source-sans-pro@3.6.0` (Adobe's package, which ships the OFL notice; the Expo wrapper does not) | 400, 700, italics |
+
+All are SIL OFL 1.1; each manifest entry records the SPDX id read from the shipped notice and whether the notice declares a Reserved Font Name (`hasReservedFontName`, `reservedFontNames`). The 38 pinned faces are 6.9 MiB. The packages are exact runtime dependencies and install at about 43 MiB, because they also ship weights the manifest does not pin. The published tarball grows by about 3 kB. A style a family lacks is not synthesized: Bebas Neue bold draws the regular face and reports `visual`, and an italic request throws `font-style-unavailable`, as for Roboto Mono.
+
+Standalone SVG would gain about 9 MiB of base64 if these faces were embedded, so `prepareNodeFonts` leaves them out of `options.embeddedFonts` and raster output reads them from `fontFiles`, as for script faces. Pass `embedOpenFonts: true` to embed them. `includeOpenFonts: false` leaves the open families out of the office pack entirely.
 
 ## Script fonts, lang and right-to-left text (FF-19)
 

@@ -79,25 +79,30 @@ export async function loadBundledFontRegistry({scripts, faces, ...options} = {})
   return Object.assign(createFontRegistry(entries,options),{fontFiles});
 }
 
-/** Six pinned open-source Office substitutes, optionally alongside the base Roboto pack. */
+/** Six pinned open-source Office substitutes plus the open families that font schemes select (FF-31),
+ * optionally alongside the base Roboto pack. `includeOpenFonts: false` leaves the open families out. */
 export async function loadOfficeFontRegistry({scripts, faces, ...options} = {}) {
   const {entries, fontFiles} = await loadPack("office");
-  if (options.includeBaseFonts !== false) {
-    const base = await loadPack("base");
-    fontFiles.push(...base.fontFiles);
-    entries.push(...base.entries);
+  for (const [include, pack] of [[options.includeOpenFonts, "open"], [options.includeBaseFonts, "base"]]) {
+    if (include === false) continue;
+    const extra = await loadPack(pack);
+    fontFiles.push(...extra.fontFiles);
+    entries.push(...extra.entries);
   }
   const loaded = await withFaces(await withScripts({entries, fontFiles}, scripts), faces);
   return Object.assign(createFontRegistry(loaded.entries,{substitutionPolicy:"metric",...options}),{fontFiles:loaded.fontFiles});
 }
 
 /** One set of verified font inputs for layout, SVG, editor, PPTX, and Node raster export. */
-export async function prepareNodeFonts({pack = "base", embedScriptFonts = false, ...options} = {}) {
+export async function prepareNodeFonts({pack = "base", embedScriptFonts = false, embedOpenFonts = false, ...options} = {}) {
   if (pack !== "base" && pack !== "office") throw new OPFFontError("invalid-font-pack", "Choose the base or office font pack.", {pack});
   const registry = await (pack === "base" ? loadBundledFontRegistry(options) : loadOfficeFontRegistry(options));
   // Script faces are large (CJK faces are 5-10 MB each). Raster output reads them
   // from fontFiles; embed them in standalone SVG only on request.
-  const embeddedFonts = registry.selectEmbeddedFonts(face => embedScriptFonts || !face.scripts);
+  // The open families (Open Sans, Montserrat, ...) add about 9 MiB of base64 to every standalone SVG, so
+  // they are read from fontFiles for raster output and embedded only on request, like script faces.
+  const openFamilies = new Set(pack === "office" && options.includeOpenFonts !== false ? BUNDLED_FONT_MANIFEST.packages.filter(item => item.pack === "open").flatMap(item => item.faces.map(face => face.family.toLowerCase())) : []);
+  const embeddedFonts = registry.selectEmbeddedFonts(face => (embedScriptFonts || !face.scripts) && (embedOpenFonts || !openFamilies.has(face.family.toLowerCase())));
   return {
     registry,
     manifest:BUNDLED_FONT_MANIFEST,

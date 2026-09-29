@@ -11,13 +11,15 @@ export interface ScriptPackOptions {
 }
 export declare function loadBundledFontRegistry(options?: FontRegistryOptions & ScriptPackOptions): Promise<FontRegistry & {fontFiles:string[]}>;
 
-export declare function loadOfficeFontRegistry(options?: FontRegistryOptions & ScriptPackOptions & {includeBaseFonts?:boolean}): Promise<FontRegistry & {fontFiles:string[]}>;
+export declare function loadOfficeFontRegistry(options?: FontRegistryOptions & ScriptPackOptions & {includeBaseFonts?:boolean; /** Leave out the open families font schemes select (FF-31); default true. */ includeOpenFonts?:boolean}): Promise<FontRegistry & {fontFiles:string[]}>;
 
 export type BundledFontPackage = Readonly<{
-  name:string; version:string; pack:"base"|"office"|"scripts"; source:string;
+  name:string; version:string; pack:"base"|"office"|"open"|"scripts"; source:string;
   /** ISO 15924 scripts served by a script-pack package. */
   scripts?: readonly string[];
   license:string; licenseFile:string; licenseSha256:string;
+  /** Whether the shipped notice declares a Reserved Font Name, and which (read from the notice, never assumed). */
+  hasReservedFontName:boolean; reservedFontNames:readonly string[];
   faces:readonly Readonly<{file:string; family:string; weight:number; italic:boolean; sha256:string}>[];
 }>;
 export interface BundledFontManifest {
@@ -37,4 +39,4 @@ export interface PreparedNodeFonts {
     loadSystemFonts: false;
   };
 }
-export declare function prepareNodeFonts(options?: FontRegistryOptions & ScriptPackOptions & {pack?:"base"|"office"; includeBaseFonts?:boolean; /** Embed script faces in SVG (large); default false. */ embedScriptFonts?:boolean}): Promise<PreparedNodeFonts>;
+export declare function prepareNodeFonts(options?: FontRegistryOptions & ScriptPackOptions & {pack?:"base"|"office"; includeBaseFonts?:boolean; /** With pack "office": leave out the open families (FF-31); default true. */ includeOpenFonts?:boolean; /** Embed script faces in SVG (large); default false. */ embedScriptFonts?:boolean; /** Embed the open families in SVG (about 9 MiB); default false, raster reads them from fontFiles. */ embedOpenFonts?:boolean}): Promise<PreparedNodeFonts>;
