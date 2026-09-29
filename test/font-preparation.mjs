@@ -14,8 +14,8 @@ const root=fileURLToPath(new URL('../',import.meta.url)),report={node:process.ve
 const {registry,options}=await prepareNodeFonts();
 // Base and office packs are runtime dependencies; the FF-19 script pack is an optional peer.
 const runtimePacks=BUNDLED_FONT_MANIFEST.packages.filter(p=>p.pack!=='scripts'),scriptPack=BUNDLED_FONT_MANIFEST.packages.filter(p=>p.pack==='scripts');
-assert.equal(runtimePacks.length,8);
-assert.equal(runtimePacks.reduce((n,p)=>n+p.faces.length,0),33);
+assert.equal(runtimePacks.length,9);
+assert.equal(runtimePacks.reduce((n,p)=>n+p.faces.length,0),49);
 assert.equal(scriptPack.length,31);
 assert.equal(scriptPack.reduce((n,p)=>n+p.faces.length,0),63);
 assert.throws(()=>{BUNDLED_FONT_MANIFEST.packages[0].faces[0].sha256='changed';},TypeError);
@@ -87,4 +87,4 @@ try{
   assert.ok((await raster.svgToPng(emptySvg)).length>0,'a repaired installation must recover from a rejected default-font load');
 }finally{await rm(temporary,{recursive:true,force:true});}
 if(process.argv[2]){await mkdir(path.dirname(path.resolve(process.argv[2])),{recursive:true});await writeFile(process.argv[2],JSON.stringify(report,null,2)+'\n');}
-console.log('Prepared fonts: 33 pinned faces/notices, nine exact raster styles, deterministic document workflow, explicit substitutions and integrity failure/recovery passed.');
+console.log('Prepared fonts: 49 pinned faces (33 from npm packs, 16 vendored Intos), nine exact raster styles, deterministic document workflow, explicit substitutions and integrity failure/recovery passed.');

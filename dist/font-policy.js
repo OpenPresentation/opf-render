@@ -5,9 +5,9 @@ const SNAPSHOT=freeze({
  "decisions": {
   "status": "provisional, owner may revise",
   "aptos-preview": {
-   "replacement": "Roboto",
-   "compatibility": "visual",
-   "note": "Default scheme aptos previews with Roboto; the PPTX still names Aptos."
+   "replacement": "Intos",
+   "compatibility": "metric",
+   "note": "Owner policy 2026-09-29: a licensed font the user selects previews with an open replacement that looks similar and has the same size on screen; the PPTX keeps the selected name. Aptos previews with Intos (metric, OFL-1.1, vendored in opf-render); Roboto and Carlito are alternates when the aptos pack is not loaded."
   },
   "segoe-ui-preview": {
    "replacement": "Red Hat Display",
@@ -23,7 +23,7 @@ const SNAPSHOT=freeze({
  },
  "source": {
   "path": "spec/reference/font-policy.json",
-  "sha256": "7368c1f56b8a93c63b09cabb8aa9c5284dd9c8b1fd811f9387b05c175abbd5ac"
+  "sha256": "3ac21db442ac596709061170ac14bfa9cffc2bb1b27ca3f3245092d8db04db51"
  },
  "families": [
   {
@@ -81,18 +81,20 @@ const SNAPSHOT=freeze({
    "embeddableByOpf": false,
    "replacement": {
     "decision": "aptos-preview",
+    "source": "https://github.com/muglug/intos/tree/fef9315c14da9e4b23b4c3cac8e718998d4e4736",
     "measured": {
-     "replacement": "Roboto",
-     "meanAbsWidthDelta": 0.0215,
-     "meanWidthDelta": 0.0008,
-     "maxAbsWidthDelta": 0.0739,
+     "replacement": "Intos",
+     "meanAbsWidthDelta": 0,
+     "meanWidthDelta": 0,
+     "maxAbsWidthDelta": 0,
      "styles": 4,
      "reference": "Aptos 2.01;O365"
     },
-    "family": "Roboto",
-    "compatibility": "visual"
+    "family": "Intos",
+    "compatibility": "metric"
    },
    "alternates": [
+    "Roboto",
     "Carlito"
    ]
   },
@@ -105,18 +107,20 @@ const SNAPSHOT=freeze({
    ],
    "embeddableByOpf": false,
    "replacement": {
-    "family": "Carlito",
-    "compatibility": "visual",
+    "family": "Intos Display",
+    "compatibility": "metric",
+    "source": "https://github.com/muglug/intos/tree/fef9315c14da9e4b23b4c3cac8e718998d4e4736",
     "measured": {
-     "replacement": "Carlito",
-     "meanAbsWidthDelta": 0.0184,
-     "meanWidthDelta": -0.0057,
-     "maxAbsWidthDelta": 0.0691,
+     "replacement": "Intos Display",
+     "meanAbsWidthDelta": 0,
+     "meanWidthDelta": 0,
+     "maxAbsWidthDelta": 0,
      "styles": 4,
      "reference": "Aptos Display 2.01;O365"
     }
    },
    "alternates": [
+    "Carlito",
     "Roboto"
    ]
   },
@@ -146,17 +150,21 @@ const SNAPSHOT=freeze({
    ],
    "embeddableByOpf": false,
    "replacement": {
-    "family": "Carlito",
-    "compatibility": "visual",
+    "family": "Intos Narrow",
+    "compatibility": "metric",
+    "source": "https://github.com/muglug/intos/tree/fef9315c14da9e4b23b4c3cac8e718998d4e4736",
     "measured": {
-     "replacement": "Carlito",
-     "meanAbsWidthDelta": 0.0233,
-     "meanWidthDelta": 0.0222,
-     "maxAbsWidthDelta": 0.0786,
+     "replacement": "Intos Narrow",
+     "meanAbsWidthDelta": 0,
+     "meanWidthDelta": 0,
+     "maxAbsWidthDelta": 0,
      "styles": 4,
      "reference": "Aptos Narrow 2.01;O365"
     }
-   }
+   },
+   "alternates": [
+    "Carlito"
+   ]
   },
   {
    "family": "Aptos Serif",
@@ -167,10 +175,21 @@ const SNAPSHOT=freeze({
    ],
    "embeddableByOpf": false,
    "replacement": {
-    "family": "Tinos",
-    "compatibility": "visual",
-    "measured": null
-   }
+    "family": "Intos Serif",
+    "compatibility": "metric",
+    "source": "https://github.com/muglug/intos/tree/fef9315c14da9e4b23b4c3cac8e718998d4e4736",
+    "measured": {
+     "replacement": "Intos Serif",
+     "meanAbsWidthDelta": 0,
+     "meanWidthDelta": 0,
+     "maxAbsWidthDelta": 0,
+     "styles": 4,
+     "reference": "Aptos Serif 2.01;240513210638;O365"
+    }
+   },
+   "alternates": [
+    "Tinos"
+   ]
   },
   {
    "family": "Arabic Typesetting",
@@ -1097,6 +1116,38 @@ const SNAPSHOT=freeze({
    "alternates": [
     "Carlito"
    ]
+  },
+  {
+   "family": "Intos",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
+   "family": "Intos Display",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
+   "family": "Intos Narrow",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
+   "family": "Intos Serif",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
   },
   {
    "family": "Kalinga",

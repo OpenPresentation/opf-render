@@ -36,6 +36,16 @@ jobs:
           path: opf
           fetch-depth: 0
           persist-credentials: false
+      # FF-31 (metric replacements): the policy snapshot follows core PR "FF-31: metric-compatible replacements
+      # for Aptos", commit 4da45ca253443c7bf4f55c4c0b79d2708c88cb0c. Repin this to the merge commit once merged.
+      # The golden corpus and linked sources stay on the core pin above.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: OpenPresentation/opf
+          ref: 4da45ca253443c7bf4f55c4c0b79d2708c88cb0c
+          path: opf-policy
+          fetch-depth: 1
+          persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OpenPresentation/opf-pptx
@@ -74,7 +84,7 @@ jobs:
           pnpm build
           node scripts/link-ecosystem.mjs --packages-only
       - name: Font policy snapshot matches the pinned core table
-        run: node scripts/update-font-policy.mjs --check ../opf/spec/reference/font-policy.json
+        run: node scripts/update-font-policy.mjs --check ../opf-policy/spec/reference/font-policy.json
       - run: npm audit
       - run: npm run typecheck
       - run: npm run validate
@@ -88,6 +98,7 @@ jobs:
       - run: npm run test:code-browser
       - run: npm run test:font-preparation-browser
       - run: npm run test:font-variants-browser
+      - run: npm run test:aptos-pack-browser
       - run: npm run test:script-fonts-browser
       - run: npm run test:plain-whitespace-browser
       - id: rich-flow

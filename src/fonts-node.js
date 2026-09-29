@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { createHash } from "node:crypto";
@@ -21,21 +22,29 @@ async function verifiedFile(file, expected, details) {
 async function loadPackages(packages) {
   const entries = [], fontFiles = [];
   for (const pkg of packages) {
-    let manifestPath, installed;
-    try {
-      manifestPath = require.resolve(`${pkg.name}/package.json`);
-      installed = JSON.parse(await readFile(manifestPath, "utf8"));
-    } catch (error) {
-      throw new OPFFontError("font-resource-unavailable", `Install ${pkg.name}@${pkg.version} to use this offline font pack.`, {package:pkg.name, cause:error.code});
+    let directory;
+    if (pkg.vendored) {
+      // Vendored faces ship inside this package (fonts/<name>/), pinned by upstream commit and per-file hashes.
+      directory = fileURLToPath(new URL(`../${pkg.directory}/`, import.meta.url));
+    } else {
+      let manifestPath, installed;
+      try {
+        manifestPath = require.resolve(`${pkg.name}/package.json`);
+        installed = JSON.parse(await readFile(manifestPath, "utf8"));
+      } catch (error) {
+        throw new OPFFontError("font-resource-unavailable", `Install ${pkg.name}@${pkg.version} to use this offline font pack.`, {package:pkg.name, cause:error.code});
+      }
+      if (installed.version !== pkg.version) throw new OPFFontError("font-version-mismatch", `Expected ${pkg.name}@${pkg.version}; reinstall the pinned package.`, {package:pkg.name, expected:pkg.version, actual:installed.version});
+      directory = path.dirname(manifestPath);
     }
-    if (installed.version !== pkg.version) throw new OPFFontError("font-version-mismatch", `Expected ${pkg.name}@${pkg.version}; reinstall the pinned package.`, {package:pkg.name, expected:pkg.version, actual:installed.version});
-    const directory = path.dirname(manifestPath);
-    const license = (await verifiedFile(path.join(directory, pkg.licenseFile), pkg.licenseSha256, {package:pkg.name, file:pkg.licenseFile})).toString("utf8");
+    let license = (await verifiedFile(path.join(directory, pkg.licenseFile), pkg.licenseSha256, {package:pkg.name, file:pkg.licenseFile})).toString("utf8");
+    // A notice file carries provenance and upstream copyright lines the upstream license file omits.
+    if (pkg.noticeFile) license += "\n\n" + (await verifiedFile(path.join(directory, pkg.noticeFile), pkg.noticeSha256, {package:pkg.name, file:pkg.noticeFile})).toString("utf8");
     for (const face of pkg.faces) {
       const file = path.join(directory, face.file);
       const data = await verifiedFile(file, face.sha256, {package:pkg.name, file:face.file});
       fontFiles.push(file);
-      entries.push({data:new Uint8Array(data), family:face.family, weight:face.weight, italic:face.italic, license, ...(pkg.scripts ? {scripts:[...pkg.scripts]} : {})});
+      entries.push({data:new Uint8Array(data), family:face.family, weight:face.weight, italic:face.italic, license, ...(pkg.embed ? {embed:pkg.embed} : {}), ...(pkg.scripts ? {scripts:[...pkg.scripts]} : {})});
     }
   }
   return {entries, fontFiles};
@@ -91,10 +100,30 @@ export async function loadOfficeFontRegistry({scripts, faces, ...options} = {}) 
   return Object.assign(createFontRegistry(loaded.entries,{substitutionPolicy:"metric",...options}),{fontFiles:loaded.fontFiles});
 }
 
+/**
+ * Office pack plus the vendored Intos family (Aptos, Aptos Display, Aptos Narrow and Aptos Serif
+ * metric-compatible replacements), optionally alongside the base Roboto pack. Metric substitution
+ * policy is the default, so Aptos previews resolve to Intos without asking for visual mode.
+ */
+export async function loadAptosFontRegistry({scripts, faces, ...options} = {}) {
+  const {entries, fontFiles} = await loadPack("aptos");
+  const office = await loadPack("office");
+  entries.push(...office.entries); fontFiles.push(...office.fontFiles);
+  if (options.includeBaseFonts !== false) {
+    const base = await loadPack("base");
+    fontFiles.push(...base.fontFiles);
+    entries.push(...base.entries);
+  }
+  // This pack is about 12 MB larger than the office pack: an SVG embeds only the families its text names.
+  for (const [index, entry] of entries.entries()) entries[index] = {...entry, embed: "used"};
+  const loaded = await withFaces(await withScripts({entries, fontFiles}, scripts), faces);
+  return Object.assign(createFontRegistry(loaded.entries,{substitutionPolicy:"metric",...options}),{fontFiles:loaded.fontFiles});
+}
+
 /** One set of verified font inputs for layout, SVG, editor, PPTX, and Node raster export. */
 export async function prepareNodeFonts({pack = "base", embedScriptFonts = false, ...options} = {}) {
-  if (pack !== "base" && pack !== "office") throw new OPFFontError("invalid-font-pack", "Choose the base or office font pack.", {pack});
-  const registry = await (pack === "base" ? loadBundledFontRegistry(options) : loadOfficeFontRegistry(options));
+  if (pack !== "base" && pack !== "office" && pack !== "aptos") throw new OPFFontError("invalid-font-pack", "Choose the base, office or aptos font pack.", {pack});
+  const registry = await (pack === "base" ? loadBundledFontRegistry(options) : pack === "office" ? loadOfficeFontRegistry(options) : loadAptosFontRegistry(options));
   // Script faces are large (CJK faces are 5-10 MB each). Raster output reads them
   // from fontFiles; embed them in standalone SVG only on request.
   const embeddedFonts = registry.selectEmbeddedFonts(face => embedScriptFonts || !face.scripts);

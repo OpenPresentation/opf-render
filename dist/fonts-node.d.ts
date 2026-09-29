@@ -11,10 +11,21 @@ export interface ScriptPackOptions {
 }
 export declare function loadBundledFontRegistry(options?: FontRegistryOptions & ScriptPackOptions): Promise<FontRegistry & {fontFiles:string[]}>;
 
+/** Office pack plus the vendored Intos family (metric-compatible Aptos replacements). Metric policy by default. */
+export declare function loadAptosFontRegistry(options?: FontRegistryOptions & ScriptPackOptions & {includeBaseFonts?:boolean}): Promise<FontRegistry & {fontFiles:string[]}>;
+
 export declare function loadOfficeFontRegistry(options?: FontRegistryOptions & ScriptPackOptions & {includeBaseFonts?:boolean}): Promise<FontRegistry & {fontFiles:string[]}>;
 
 export type BundledFontPackage = Readonly<{
-  name:string; version:string; pack:"base"|"office"|"scripts"; source:string;
+  name:string; version:string; pack:"base"|"office"|"aptos"|"scripts"; source:string;
+  /** Vendored packages ship inside this package under `directory` instead of a separate npm package. */
+  vendored?: boolean; directory?: string; commit?: string;
+  /** Reserved Font Name declared by the license, or null when it declares none. */
+  reservedFontName?: string | null;
+  /** Provenance/copyright notice file whose hash is pinned beside the license. */
+  noticeFile?: string; noticeSha256?: string;
+  /** "used" embeds the package's faces in an SVG only when the slide names the family. */
+  embed?: "used";
   /** ISO 15924 scripts served by a script-pack package. */
   scripts?: readonly string[];
   license:string; licenseFile:string; licenseSha256:string;
@@ -37,4 +48,4 @@ export interface PreparedNodeFonts {
     loadSystemFonts: false;
   };
 }
-export declare function prepareNodeFonts(options?: FontRegistryOptions & ScriptPackOptions & {pack?:"base"|"office"; includeBaseFonts?:boolean; /** Embed script faces in SVG (large); default false. */ embedScriptFonts?:boolean}): Promise<PreparedNodeFonts>;
+export declare function prepareNodeFonts(options?: FontRegistryOptions & ScriptPackOptions & {pack?:"base"|"office"|"aptos"; includeBaseFonts?:boolean; /** Embed script faces in SVG (large); default false. */ embedScriptFonts?:boolean}): Promise<PreparedNodeFonts>;

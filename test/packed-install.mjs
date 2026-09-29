@@ -26,16 +26,17 @@ try{
     assert.equal(hash(bytes),hash(await readFile(path.join(root,file))),`Installed package file differs: ${file}`);
     files[file]=hash(bytes);
   }
-  for(const entry of ['dist/index.js','dist/svg.js','dist/fonts-node.js','dist/fonts-browser.js','dist/svg.d.ts','LICENSE'])assert.ok(files[entry],`Missing public entry: ${entry}`);
+  for(const entry of ['dist/index.js','dist/svg.js','dist/fonts-node.js','dist/fonts-browser.js','dist/svg.d.ts','LICENSE','fonts/intos/LICENSE.txt','fonts/intos/NOTICE.md','fonts/intos/Intos-Regular.ttf','fonts/intos/IntosSerif-BoldItalic.ttf'])assert.ok(files[entry],`Missing public entry: ${entry}`);
   const lock=JSON.parse(await readFile(path.join(consumer,'package-lock.json'),'utf8'));
   const core=lock.packages['node_modules/@openpresentation/opf'];
   assert.ok(core.resolved.startsWith('https://registry.npmjs.org/')&&core.integrity.startsWith('sha512-')&&!core.link);
   const actualCore=await realpath(path.join(consumer,'node_modules/@openpresentation/opf'));
   assert.ok(actualCore.startsWith((await realpath(path.join(consumer,'node_modules')))+path.sep),'Core must be installed inside the clean consumer');
-  for(const file of ['shared-quote.mjs','quote-footer.mjs','shared-code.mjs','chart-axis.mjs']){
+  for(const file of ['shared-quote.mjs','quote-footer.mjs','shared-code.mjs','chart-axis.mjs','aptos-pack.mjs']){
     const source=(await readFile(path.join(root,'test',file),'utf8'))
       .replaceAll("'../dist/svg.js'","'@openpresentation/opf-render/svg'")
-      .replaceAll("'../dist/fonts-node.js'","'@openpresentation/opf-render/fonts-node'");
+      .replaceAll("'../dist/fonts-node.js'","'@openpresentation/opf-render/fonts-node'")
+      .replaceAll("'../dist/index.js'","'@openpresentation/opf-render'");
     await writeFile(path.join(consumer,file),source);
     process.stdout.write(execFileSync(process.execPath,[file],{cwd:consumer,encoding:'utf8'}));
   }

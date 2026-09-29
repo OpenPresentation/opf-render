@@ -41,7 +41,7 @@ function unavailableFontError(family, style, policy) {
     return new OPFFontError("font-unavailable", `No local font face for '${family}'. ${owner} Its declared replacement ${replacement} is visual only${delta}, which substitutionPolicy '${policy}' does not allow. Pass substitutionPolicy: 'visual' to preview with ${candidates.join(" or ")}, or ${hook}. The PPTX names '${family}' either way.`, details);
   if (policy === "none")
     return new OPFFontError("font-unavailable", `No local font face for '${family}'. ${owner} Its declared ${compatibility} replacement is ${replacement}${delta}; substitutionPolicy 'none' does not allow it. Pass substitutionPolicy: '${compatibility}', or ${hook}.`, details);
-  return new OPFFontError("font-unavailable", `No local font face for '${family}'. ${owner} None of its replacements (${candidates.join(", ")}) is loaded${packs.length ? `; load the ${packs.map(pack=>"'"+pack+"'").join(" or ")} font pack` : ""}, or ${hook}.`, details);
+  return new OPFFontError("font-unavailable", `No local font face for '${family}'. ${owner} None of its replacements (${candidates.join(", ")}) is loaded${packs.length ? `; load the ${packs.map(pack=>"'"+pack+"'").join(" or ")} font pack` : ""}, or ${hook}. The PPTX names '${family}' either way.`, details);
 }
 /** Local font files only. The caller explicitly chooses aliases and fallback. */
 export function createFontRegistry(entries, options = {}) {
@@ -68,7 +68,9 @@ export function createFontRegistry(entries, options = {}) {
     const format = signature === "OTTO" ? "otf" : signature === "wOFF" ? "woff" : signature === "wOF2" ? "woff2" : "ttf";
     // Script replacement faces (FF-19) declare the ISO 15924 scripts they serve.
     const scripts = Array.isArray(entry.scripts) && entry.scripts.length ? Object.freeze(entry.scripts.map(String)) : undefined;
-    return {family,familyGroup,fontFace,weight,italic,font,data,format,license:entry.license,scripts,cache:new Map()};
+    // "used": large replacement families are embedded in an SVG only when its text names the family.
+    if (entry.embed !== undefined && entry.embed !== "always" && entry.embed !== "used") throw new OPFFontError("invalid-font-embed", "Font embed must be 'always' or 'used'.");
+    return {family,familyGroup,fontFace,weight,italic,font,data,format,license:entry.license,embed:entry.embed,scripts,cache:new Map()};
   });
   const duplicates = new Set();
   for (const face of faces) {
@@ -215,5 +217,5 @@ export function createFontRegistry(entries, options = {}) {
     /** Embedded faces for which `predicate({family,weight,italic,scripts})` holds; large script faces can be left to raster fontFiles. */
     selectEmbeddedFonts: predicate=>embedded(predicate),
   };
-  function embedded(predicate) { return faces.filter(face=>predicate({family:face.family,weight:face.weight,italic:face.italic,scripts:face.scripts})).map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.license ? {license:face.license} : {}),dataUrl:`data:font/${face.format};base64,${base64(face.data)}`})); }
+  function embedded(predicate) { return faces.filter(face=>predicate({family:face.family,weight:face.weight,italic:face.italic,scripts:face.scripts})).map(face=>({family:face.family,weight:face.weight,italic:face.italic,...(face.license ? {license:face.license} : {}),...(face.embed==="used" ? {embed:"used"} : {}),dataUrl:`data:font/${face.format};base64,${base64(face.data)}`})); }
 }

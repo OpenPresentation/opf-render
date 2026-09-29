@@ -3,12 +3,24 @@ import {readFile,writeFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {createHash} from 'node:crypto';
 import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 import {BUNDLED_FONT_MANIFEST} from '../src/font-manifest.js';
 const require=createRequire(import.meta.url),hash=data=>createHash('sha256').update(data).digest('hex');
 const root=JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8'));
 const manifest=structuredClone(BUNDLED_FONT_MANIFEST);
 for(const pkg of manifest.packages){
+  if(pkg.vendored){
+    // Vendored faces (fonts/<name>/) are pinned by upstream commit; re-hash them, never re-fetch.
+    const directory=fileURLToPath(new URL(`../${pkg.directory}/`,import.meta.url));
+    assert.match(pkg.commit,/^[0-9a-f]{40}$/,`Pin ${pkg.name} to a full upstream commit.`);
+    assert.ok(pkg.source.includes(pkg.commit),`${pkg.name}: source URL must name the pinned commit.`);
+    assert.match(await readFile(path.join(directory,pkg.licenseFile),'utf8'),/SIL OPEN FONT LICENSE Version 1\.1/i,`${pkg.name} must carry the SIL Open Font License 1.1.`);
+    pkg.licenseSha256=hash(await readFile(path.join(directory,pkg.licenseFile)));
+    if(pkg.noticeFile)pkg.noticeSha256=hash(await readFile(path.join(directory,pkg.noticeFile)));
+    for(const face of pkg.faces)face.sha256=hash(await readFile(path.join(directory,face.file)));
+    continue;
+  }
   const directory=path.dirname(require.resolve(`${pkg.name}/package.json`));
   const installed=JSON.parse(await readFile(path.join(directory,'package.json'),'utf8'));
   // Base and office packs are runtime dependencies. The script pack (FF-19) is an
