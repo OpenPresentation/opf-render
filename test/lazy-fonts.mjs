@@ -24,7 +24,9 @@ assert.ok(vendored.some(pkg => pkg.name === 'intos'));
 assert.equal(office.lazyFonts.length, lazyCount, 'the office registry lists every vendored face');
 assert.equal(office.embeddedFonts.length, 33, 'the eager list is the npm office and base faces only');
 assert.ok(!office.embeddedFonts.some(face => /^Intos/.test(face.family)));
-assert.equal(options.embeddedFonts.filter(face => face.embed === 'used').length, lazyCount, 'options.embeddedFonts carries the vendored faces, flagged used');
+const usedFaces = options.embeddedFonts.filter(face => face.embed === 'used');
+assert.equal(usedFaces.filter(face => face.family !== 'Noto Sans').length, lazyCount, 'options.embeddedFonts carries the vendored faces, flagged used');
+assert.equal(usedFaces.length, lazyCount + 4, 'plus the four Noto Sans glyph-fallback faces (opf-render#57), which are npm files, not lazy');
 assert.equal(office.lazyFonts.filter(face => /^Intos/.test(face.family)).length, 16);
 for (const face of office.lazyFonts) {
   assert.ok(!path.isAbsolute(face.file) && !face.file.split('/').includes('..') && face.file.startsWith('fonts/'), face.file);
@@ -82,6 +84,7 @@ for (const scheme of fontSchemes) {
   if (need.length) partial.addFaces(await Promise.all(need.map(async face => ({family: face.family, weight: face.weight, italic: face.italic, embed: 'used', data: new Uint8Array(await readFile(path.join(root, face.file)))}))));
   for (const family of presentationFamilies(deck)) for (const [fontWeight, italic] of [[400, false], [700, false], [400, true]]) {
     const expected = (() => { try { return office.resolveFont({fontFamily: family, fontWeight, italic}); } catch (error) { return {error: error.code}; } })();
+    if (expected.resolvedFamily === 'Noto Sans') continue; // the glyph-fallback face (opf-render#57) loads through the script loader, not the eager list or the lazy set
     const actual = (() => { try { return partial.resolveFont({fontFamily: family, fontWeight, italic}); } catch (error) { return {error: error.code}; } })();
     assert.deepEqual([actual.error, actual.resolvedFamily && lc(actual.resolvedFamily), actual.compatibility], [expected.error, expected.resolvedFamily && lc(expected.resolvedFamily), expected.compatibility], `${scheme.id}: ${family} ${fontWeight}${italic ? 'i' : ''} resolves as in Node`);
     compared++;
