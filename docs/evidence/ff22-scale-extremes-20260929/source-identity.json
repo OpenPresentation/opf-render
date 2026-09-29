@@ -1,0 +1,48 @@
+{
+  "timestamp": "2026-09-29T08:08:19.507855+00:00",
+  "baseline": "2f32414d2e0ad10679fe6fae4614e4fd8c6e4ebd",
+  "branch": "codex/ff-22-scale-extremes-20260929",
+  "node": "v24.21.0",
+  "platform": "darwin",
+  "files": [
+    {
+      "path": "src/charts.js",
+      "bytes": 32663,
+      "sha256": "40ca7e5edf701663874e09c698f6ec1cc8eb2788414b3f72277abf826eb1d0a4"
+    },
+    {
+      "path": "dist/charts.js",
+      "bytes": 32663,
+      "sha256": "40ca7e5edf701663874e09c698f6ec1cc8eb2788414b3f72277abf826eb1d0a4"
+    },
+    {
+      "path": "test/chart-scale.mjs",
+      "bytes": 7454,
+      "sha256": "adab74181895a8d09be042c6d3202aebd2d3a67e0f44a3dcf662a5c3c7db3ff3"
+    },
+    {
+      "path": "package.json",
+      "bytes": 5753,
+      "sha256": "f69f59b71be95f972ca06c026c71abc18e7671a45de365109773651e34931a05"
+    },
+    {
+      "path": "README.md",
+      "bytes": 21442,
+      "sha256": "0683bd5612e3abf05ed9d91361a350b4d70988c43237ea28410a9f601e1fd308"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 55266,
+      "sha256": "614610ce41e023c6d9c933ffb22bc0eecbc3ed0073455322301eb4b3fb109a93"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 4379,
+      "sha256": "0a04700873b7e388822b21e167239e5b5751adc75fbbe0f437ca1325c4875e8f"
+    }
+  ],
+  "coreVersion": "0.11.0",
+  "corePackageSha256": "86364f07f30f5106539a936b4eb84cf5a00c53524599b222f823b2460efb3a0f",
+  "srcDistIdentical": true,
+  "status": " M README.md\n M dist/charts.js\n M package.json\n M src/charts.js\n?? test/chart-scale.mjs\n"
+}
