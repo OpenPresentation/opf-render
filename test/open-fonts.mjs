@@ -30,18 +30,18 @@ assert.equal(open.length, 10);
 assert.equal(open.reduce((total, item) => total + item.faces.length, 0), 35);
 assert.ok(rootPackage.files.includes('fonts'), 'the published package includes the vendored fonts');
 for (const item of open) {
-  assert.equal(item.vendored, true);
+  assert.ok(/^fonts\/[a-z0-9-]+$/.test(item.vendored), item.vendored);
   assert.ok(!rootPackage.dependencies?.[item.name] && !rootPackage.devDependencies?.[item.name], `${item.name} is vendored, not a dependency`);
-  const directory = path.join(root, item.directory);
+  const directory = path.join(root, item.vendored);
   const noticeBytes = await readFile(path.join(directory, item.licenseFile)), notice = noticeBytes.toString('utf8');
   assert.equal(sha(noticeBytes), item.licenseSha256, item.name);
   assert.match(notice, /SIL Open Font License,? Version 1\.1/i, `${item.name} ships the OFL 1.1 notice`);
   // Only the listed faces are vendored, each pinned by hash.
   const listed = new Set([item.licenseFile, 'PROVENANCE.json', ...item.faces.map(face => face.file)]);
-  assert.deepEqual((await readdir(directory)).sort(), [...listed].sort(), `${item.directory} holds exactly the listed files`);
+  assert.deepEqual((await readdir(directory)).sort(), [...listed].sort(), `${item.vendored} holds exactly the listed files`);
   for (const face of item.faces) assert.equal(sha(await readFile(path.join(directory, face.file))), face.sha256, face.file);
   // A family with a Reserved Font Name in its own name must be the copyright holder's byte-identical file at a pinned commit.
-  if (item.commit) for (const face of item.faces) {
+  if (item.faces.every(face => face.upstreamFile)) for (const face of item.faces) {
     assert.ok(isUnmodifiedUpstreamUrl(face.upstreamFile.url) && face.upstreamFile.sha256 === face.sha256, `${item.name} ${face.file} is byte-identical to its pinned upstream file`);
   } else assert.deepEqual(item.reservedFontNames, [], `${item.name}: an npm-derived (instanced) family must not declare a Reserved Font Name`);
   // PROVENANCE.json says where every byte came from and agrees with the manifest.
@@ -66,11 +66,11 @@ assert.deepEqual(NOT_BUNDLED.filter(family => open.some(item => item.faces.some(
     await symlink(path.join(root, 'node_modules'), path.join(copy, 'node_modules'), process.platform === 'win32' ? 'junction' : 'dir');
     const isolated = await import(pathToFileURL(path.join(copy, 'dist/fonts-node.js')));
     await isolated.loadOfficeFontRegistry();
-    const face = path.join(copy, open[0].directory, open[0].faces[0].file), original = await readFile(face);
+    const face = path.join(copy, open[0].vendored, open[0].faces[0].file), original = await readFile(face);
     await writeFile(face, Buffer.concat([original, Buffer.from('corrupt')]));
     await assert.rejects(isolated.loadOfficeFontRegistry(), {code: 'font-integrity-mismatch'});
     await writeFile(face, original);
-    const notice = path.join(copy, open[0].directory, open[0].licenseFile), text = await readFile(notice);
+    const notice = path.join(copy, open[0].vendored, open[0].licenseFile), text = await readFile(notice);
     await writeFile(notice, 'Missing original notice');
     await assert.rejects(isolated.loadOfficeFontRegistry(), {code: 'font-integrity-mismatch'});
     await writeFile(notice, text);
@@ -168,7 +168,7 @@ const svgFor = (family, weight, italic) => `<svg xmlns="http://www.w3.org/2000/s
 const rasterOptions = fontFiles => ({fontFiles, useBundledFonts: false, loadSystemFonts: false});
 const slash = file => file.split(String.fromCharCode(92)).join('/');
 for (const item of open) for (const entry of item.faces) {
-  const file = defaults.options.fontFiles.find(candidate => path.basename(candidate) === entry.file && slash(candidate).includes(item.directory));
+  const file = defaults.options.fontFiles.find(candidate => path.basename(candidate) === entry.file && slash(candidate).includes(item.vendored));
   assert.ok(file, entry.file);
   const drawn = svgFor(entry.family, entry.weight, entry.italic);
   const all = sha(await svgToPng(drawn, rasterOptions(defaults.options.fontFiles)));

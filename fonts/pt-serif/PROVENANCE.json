@@ -1,9 +1,7 @@
 {
   "upstream": {
-    "repository": "https://github.com/google/fonts",
+    "source": "https://github.com/google/fonts/tree/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/ptserif",
     "commit": "23e54b51ddffbc7713c583748e3bd86f62b1fa4a",
-    "release": "1.000",
-    "source": "https://github.com/google/fonts/tree/23e54b51ddffbc7713c583748e3bd86f62b1fa4a",
     "licenseUrl": "https://raw.githubusercontent.com/google/fonts/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/ptserif/OFL.txt"
   },
   "license": "OFL-1.1",

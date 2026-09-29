@@ -1,9 +1,7 @@
 {
   "upstream": {
-    "repository": "https://github.com/cyrealtype/Lora-Cyrillic",
+    "source": "https://github.com/cyrealtype/Lora-Cyrillic/tree/0caf2e6389163dd49e5f973d7ed8bf42e60d83a2/fonts/ttf",
     "commit": "0caf2e6389163dd49e5f973d7ed8bf42e60d83a2",
-    "release": "3.021",
-    "source": "https://github.com/cyrealtype/Lora-Cyrillic/tree/0caf2e6389163dd49e5f973d7ed8bf42e60d83a2",
     "licenseUrl": "https://raw.githubusercontent.com/cyrealtype/Lora-Cyrillic/0caf2e6389163dd49e5f973d7ed8bf42e60d83a2/OFL.txt"
   },
   "license": "OFL-1.1",

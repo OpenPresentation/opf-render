@@ -1,9 +1,7 @@
 {
   "upstream": {
-    "repository": "https://github.com/SorkinType/Merriweather-Sans",
+    "source": "https://github.com/SorkinType/Merriweather-Sans/tree/bb6bd99bf9eb756723f2428629659a638702d335/fonts/ttf",
     "commit": "bb6bd99bf9eb756723f2428629659a638702d335",
-    "release": "2.001",
-    "source": "https://github.com/SorkinType/Merriweather-Sans/tree/bb6bd99bf9eb756723f2428629659a638702d335",
     "licenseUrl": "https://raw.githubusercontent.com/SorkinType/Merriweather-Sans/bb6bd99bf9eb756723f2428629659a638702d335/OFL.txt"
   },
   "license": "OFL-1.1",

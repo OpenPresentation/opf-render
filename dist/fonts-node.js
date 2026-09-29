@@ -23,15 +23,15 @@ async function loadPackages(packages) {
   const entries = [], fontFiles = [];
   for (const pkg of packages) {
     if (pkg.vendored) {
-      // FF-31: vendored faces ship inside this package (pkg.directory), hash-pinned like the npm packs. The open pack is
+      // FF-31: vendored faces ship inside this package (pkg.vendored, for example fonts/carlito), hash-pinned like the npm packs. The open pack is
       // embedded in an SVG only when the slide's text names the family (embed "used"); raster output reads the files.
-      const directory = fileURLToPath(new URL(`../${pkg.directory}/`, import.meta.url));
+      const directory = fileURLToPath(new URL(`../${pkg.vendored}/`, import.meta.url));
       const license = (await verifiedFile(path.join(directory, pkg.licenseFile), pkg.licenseSha256, {package:pkg.name, file:pkg.licenseFile})).toString("utf8");
       for (const face of pkg.faces) {
         const file = path.join(directory, face.file);
         const data = await verifiedFile(file, face.sha256, {package:pkg.name, file:face.file});
         fontFiles.push(file);
-        entries.push({data:new Uint8Array(data), family:face.family, weight:face.weight, italic:face.italic, license, embed:"used"});
+        entries.push({data:new Uint8Array(data), family:face.family, weight:face.weight, italic:face.italic, license, ...(pkg.pack === "open" ? {embed:"used"} : {})});
       }
       continue;
     }

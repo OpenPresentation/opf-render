@@ -1,9 +1,7 @@
 {
   "upstream": {
-    "repository": "https://github.com/adobe-fonts/source-sans",
+    "source": "https://github.com/adobe-fonts/source-sans/tree/ed1808970eb3c7301c9a523bee26473ba0bb62fa/TTF",
     "commit": "ed1808970eb3c7301c9a523bee26473ba0bb62fa",
-    "release": "3.052",
-    "source": "https://github.com/adobe-fonts/source-sans/tree/ed1808970eb3c7301c9a523bee26473ba0bb62fa",
     "licenseUrl": "https://raw.githubusercontent.com/adobe-fonts/source-sans/ed1808970eb3c7301c9a523bee26473ba0bb62fa/LICENSE.md"
   },
   "license": "OFL-1.1",

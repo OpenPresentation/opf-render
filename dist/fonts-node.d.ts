@@ -14,20 +14,25 @@ export declare function loadBundledFontRegistry(options?: FontRegistryOptions & 
 export declare function loadOfficeFontRegistry(options?: FontRegistryOptions & ScriptPackOptions & {includeBaseFonts?:boolean; /** Leave out the open families font schemes select (FF-31); default true. */ includeOpenFonts?:boolean}): Promise<FontRegistry & {fontFiles:string[]}>;
 
 export type BundledFontPackage = Readonly<{
-  name:string; version:string; pack:"base"|"office"|"open"|"scripts"; source:string;
-  /** Vendored packages ship inside this package under `directory` (`file` and `licenseFile` are relative to it, with a generated PROVENANCE.json), instead of as a separate npm package. `commit` pins a git upstream. */
-  vendored?:boolean; directory?:string; commit?:string;
+  /** An npm package name, or a plain id for a vendored entry of a git upstream. */
+  name:string;
+  /** The exact npm version, or for a git-upstream vendored entry the pinned upstream commit. */
+  version:string; pack:"base"|"office"|"open"|"scripts"; source:string;
+  /** FF-31: directory inside this package (for example `fonts/carlito`) that holds the vendored faces and notice (`file` and `licenseFile` are relative to it); absent for npm packages. */
+  vendored?: string;
   /** ISO 15924 scripts served by a script-pack package. */
   scripts?: readonly string[];
   license:string; licenseFile:string; licenseSha256:string;
-  /** Vendored from a commit: the commit-pinned URL of the upstream license notice. Vendored from npm: the notice's path in the package. */
+  /** Vendored from a git upstream: the commit-pinned URL of the notice. Vendored from npm: the notice's path in the npm package. */
   upstreamLicenseUrl?:string; npmLicenseFile?:string;
   /** The family this package is the renamed successor of; requests for the old name draw these faces, reported visual. */
   renamedFrom?:string;
-  /** Reserved Font Names declared in the license's copyright block (empty when none), the upstream project URL and the copyright line. */
   reservedFontNames:readonly string[]; upstream:string; copyright:string;
-  /** `upstreamFile`: the copyright holder's byte-identical file at a pinned commit (sha256 equals the face's own). `npmFile`: the file's path in the npm package it was vendored from. */
-  faces:readonly Readonly<{file:string; family:string; weight:number; italic:boolean; sha256:string; upstreamFile?:Readonly<{url:string; sha256:string}>; npmFile?:string}>[];
+  faces:readonly Readonly<{file:string; family:string; weight:number; italic:boolean; sha256:string;
+    /** FF-31: the byte-identical upstream release file this face is (sha256 equals the face's own). */
+    upstreamFile?: Readonly<{url:string; sha256:string}>;
+    /** FF-31: for a vendored npm-derived (instanced) face, its path in the npm package it was copied from. */
+    npmFile?: string}>[];
 }>;
 export interface BundledFontManifest {
   readonly version: number;
