@@ -29,22 +29,14 @@ jobs:
       # match core main's ecosystem-ci. Verify the released graph before using source links.
       # FF-29 pins merged core (opf#132) that adds composed item.alignment.
       # FF-31 pins merged core (opf#133): src/font-policy.js snapshots its spec/reference/font-policy.json.
+      # FF-31 (Intos): the pin is claude/ff-31-ci-pin, opf#133 plus the Intos policy table and the packed-ecosystem font count of
+      # opf#166, so the golden corpus stays on the opf#133 examples. Repin to the opf#166 merge commit once it merges (and rebaseline goldens if examples moved).
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OpenPresentation/opf
-          ref: d3397502035639892e03665f8761493a30817621
+          ref: ea72f6d772edad12224e1fbac1750536c3230808
           path: opf
           fetch-depth: 0
-          persist-credentials: false
-      # FF-31 (metric replacements): the policy snapshot follows core PR "FF-31: metric-compatible replacements
-      # for Aptos", commit 4f1b891337cd49c7d33f1a709a559fd4bf8bd3c2. Repin this to the merge commit once merged.
-      # The golden corpus and linked sources stay on the core pin above.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: OpenPresentation/opf
-          ref: 4f1b891337cd49c7d33f1a709a559fd4bf8bd3c2
-          path: opf-policy
-          fetch-depth: 1
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -84,7 +76,7 @@ jobs:
           pnpm build
           node scripts/link-ecosystem.mjs --packages-only
       - name: Font policy snapshot matches the pinned core table
-        run: node scripts/update-font-policy.mjs --check ../opf-policy/spec/reference/font-policy.json
+        run: node scripts/update-font-policy.mjs --check ../opf/spec/reference/font-policy.json
       - run: npm audit
       - run: npm run typecheck
       - run: npm run validate
