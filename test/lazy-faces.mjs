@@ -131,6 +131,14 @@ assert.deepEqual(fileNames(lazyFontsFor([request('Segoe UI Semibold', 700), requ
 assert.deepEqual(lazyFontsFor([request('Roboto', 700)], {lazy: roboto, held: heldOf(roboto[0])}).map(face => face.file), [roboto[1].file], 'Roboto Regular held does not suppress Roboto Bold');
 assert.deepEqual(lazyFontsFor([request('Roboto', 400)], {lazy: roboto, held: heldOf(roboto[0])}), []);
 assert.deepEqual(lazyFontsFor(['Roboto'], {lazy: roboto, held: heldOf(roboto[0])}).map(face => face.file), [roboto[1].file], 'a family name loads the family\'s missing faces');
+// An alias whose target the registry holds but the lazy list does not know (Roboto, an eager face) needs nothing, and must not crash (Bugbot, opf-render#71).
+const aliasHeld = {lazy: lazyList, held: heldOf(roboto[0]), policy: 'none', aliases: new Map([['heading font', 'roboto'], ['other font', 'intos']])};
+assert.deepEqual(lazyFontsFor(['Heading Font'], aliasHeld), [], 'family name: held alias target outside the lazy list');
+assert.deepEqual(lazyFontsFor([request('Heading Font', 700)], aliasHeld), [], 'face request: held alias target outside the lazy list');
+assert.deepEqual(lazyFontsFor(['Heading Font'], {...aliasHeld, held: []}), [], 'alias target neither held nor lazy');
+assert.equal(lazyFontsFor(['Other Font'], {...aliasHeld, held: []}).length, 4, 'an alias to a lazy family loads the family');
+assert.deepEqual(fileNames(lazyFontsFor(['Other Font'], {...aliasHeld, held: heldOf(regular)})), ['Intos-Bold.ttf', 'Intos-BoldItalic.ttf', 'Intos-Italic.ttf'], 'an alias to a partially held lazy family loads its missing faces');
+assert.deepEqual(lazyFontsFor(['Roboto Medium'], {lazy: lazyList, held: heldOf(roboto[0]), policy: 'visual'}), [], 'a held replacement candidate outside the lazy list');
 // The family-level call of earlier releases still works.
 assert.equal(lazyFontsFor(['Aptos'], {lazy: lazyList, hasFamily: () => false, policy: 'visual'}).length, 4, 'a family name means the whole family (Intos: four faces)');
 assert.equal(lazyFontsFor([request('Aptos')], {lazy: lazyList, hasFamily: () => false, policy: 'visual'}).length, 4, 'without the registry\'s faces a face request falls back to family level');

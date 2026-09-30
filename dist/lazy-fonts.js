@@ -147,7 +147,7 @@ export function lazyFontsFor(entries, { lazy, held, hasFamily, loaded = new Set(
     if (has(family)) { if (heldFaces && byFamily.has(lc(family))) needed.add(lc(family)); return; }
     if (byFamily.has(lc(family))) { needed.add(lc(family)); return; }
     const target = aliases.get(lc(family));
-    if (target && (has(target) || byFamily.has(lc(target)))) { if (!has(target) || heldFaces) needed.add(lc(target)); return; }
+    if (target && (has(target) || byFamily.has(lc(target)))) { if (byFamily.has(lc(target)) && (!has(target) || heldFaces)) needed.add(lc(target)); return; }
     if (policy === "none") return;
     const row = fontPolicyFor(family), replacement = row?.replacement;
     const route = [];
@@ -174,7 +174,7 @@ export function lazyFontsFor(entries, { lazy, held, hasFamily, loaded = new Set(
     catch { continue; }
     if (picked.face.lazy) neededFiles.add(picked.face.lazy.file);
   }
-  const all = [...needed].flatMap(family => byFamily.get(family));
+  const all = [...needed].flatMap(family => byFamily.get(family) ?? []);
   for (const face of lazy) if (neededFiles.has(face.file)) all.push(face);
   return [...new Set(all)].filter(face => !loaded.has(face.file) && !heldKeys.has(faceKey(face)));
 }
