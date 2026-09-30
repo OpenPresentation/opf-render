@@ -77,4 +77,93 @@ for (const [name, values] of ordinary) {
     ordinaryChecked++;
   }
 }
-console.log(`Chart axis passed: ${ordinaryChecked} public ordinary-range cases; authored fractions, zero baselines, evenly spaced ticks, source preservation and deterministic bytes.`);
+// Automatic minimum: zero stays on the axis unless every value is positive and
+// the range is under a sixth of the maximum (mirrored for negative data), and it
+// does so identically for line, column, bar and area. When zero is off the axis,
+// bars and area fills start at the drawn axis edge, never at an off-plot zero.
+const autoZero = [
+  // name, values, whether the axis should drop zero, which edge bars/fills start from
+  ["tight-high", [100, 110, 105], true, "min"],
+  ["tight-fractional", [10.2, 10.6, 10.4], true, "min"],
+  ["tight-negative", [-110, -100, -105], true, "max"],
+  ["just-inside-sixth", [90, 110, 100], false, "zero"],
+  ["wide-positive", [50, 100, 80], false, "zero"],
+  ["wide-negative", [-100, -50, -80], false, "zero"],
+  ["all-equal", [5, 5, 5], false, "zero"],
+  ["all-equal-negative", [-5, -5, -5], false, "zero"],
+  ["mixed-sign-tight-magnitude", [-100, 100, 105], false, "zero"]
+];
+let autoZeroChecked = 0;
+for (const [name, values, dropsZero, edge] of autoZero) {
+  for (const type of ["column", "bar", "line", "line-with-markers", "area"]) {
+    const label = `${name}/${type}`;
+    const horizontal = type === "bar";
+    const input = { slides: [{ title: name, chart: { type, data: { columns: ["Category", "Value"], rows: values.map((v, i) => [`Item ${i + 1}`, v]) } } }] };
+    const svg = renderSvg(input, { trace: true });
+    assert.equal(renderSvg(input, { trace: true }), svg, `${label}: deterministic bytes`);
+    const lines = [...svg.matchAll(/<line\b([^>]*)\/>/g)].map(([, a]) => attributesOf(a));
+    const labels = [...svg.matchAll(/<g\b([^>]*data-opf-source-text="true"[^>]*)>([\s\S]*?)<\/g>/g)]
+      .filter(([, a]) => attributesOf(a)["data-opf-path"] === "slides.0.chart")
+      .map(([, , body]) => Number([...body.matchAll(/<text\b[^>]*>([\s\S]*?)<\/text>/g)].map(([, text]) => text).join("")));
+    const grid = lines.filter((l) => l["stroke-opacity"] === "0.7" && (horizontal ? l.x1 === l.x2 : l.y1 === l.y2));
+    assert.equal(grid.length, labels.length, `${label}: one gridline per tick label`);
+    const at = grid.map((g) => Number(g[horizontal ? "x1" : "y1"]));
+    const scale = (value) => at[0] + (value - labels[0]) * (at.at(-1) - at[0]) / (labels.at(-1) - labels[0]);
+    const lo = Math.min(...values), hi = Math.max(...values);
+    assert.ok(labels[0] <= lo && labels.at(-1) >= hi, `${label}: axis covers every value`);
+    const zeroOnAxis = labels[0] <= 0 && labels.at(-1) >= 0;
+    assert.equal(!zeroOnAxis, dropsZero, `${label}: zero ${dropsZero ? "dropped" : "kept"} by the top-sixth rule`);
+    if (dropsZero) {
+      // No big empty band: the data span fills most of the axis.
+      const span = labels.at(-1) - labels[0];
+      assert.ok((hi - lo) / span > 0.3, `${label}: data fills the tight axis (${hi - lo} of ${span})`);
+    }
+    // Where the baseline sits: zero if it is on the axis, otherwise the near axis edge.
+    const baseline = zeroOnAxis ? scale(0) : edge === "min" ? at[0] : at.at(-1);
+    const baselineValue = zeroOnAxis ? 0 : edge === "min" ? labels[0] : labels.at(-1);
+    const axisLine = lines.find((l) => l.stroke === "#888888" && (horizontal ? l.x1 === l.x2 : l.y1 === l.y2));
+    near(Number(axisLine[horizontal ? "x1" : "y1"]), baseline, `${label}: category axis crosses at the baseline`);
+    const marks = elements(svg).filter((s) => /^slides\.0\.chart\.data\.rows\.\d+\.1$/.test(s["data-opf-path"] ?? ""));
+    if (type === "line-with-markers") {
+      assert.equal(marks.length, values.length, `${label}: every marker`);
+      marks.forEach((mark, i) => near(Number(mark.cy), scale(values[i]), `${label}: marker ${i} at authored value`));
+    } else if (type === "line") {
+      const points = elements(svg).find((s) => s.tag === "polyline")?.points.trim().split(/\s+/).map((pair) => pair.split(",").map(Number));
+      assert.equal(points.length, values.length, `${label}: every vertex`);
+      points.forEach(([, y], i) => near(y, scale(values[i]), `${label}: vertex ${i} at authored value`));
+    } else if (type === "area") {
+      const area = elements(svg).find((s) => s.tag === "path" && s["data-opf-path"] === "slides.0.chart.data.columns.1");
+      const numbers = area.d.match(/-?\d+(?:\.\d+)?/g).map(Number);
+      const ys = numbers.filter((_, i) => i % 2 === 1);
+      const top = ys.slice(0, values.length), bottom = ys.slice(values.length);
+      top.forEach((y, i) => near(y, scale(values[i]), `${label}: area vertex ${i} at authored value`));
+      bottom.forEach((y) => near(y, baseline, `${label}: area fills to the baseline, not an off-plot zero`));
+      ys.forEach((y) => assert.ok(y >= Math.min(at[0], at.at(-1)) - 0.01 && y <= Math.max(at[0], at.at(-1)) + 0.01, `${label}: area stays inside the plot`));
+    } else {
+      assert.equal(marks.length, values.length, `${label}: every bar`);
+      const plotEdges = [Math.min(at[0], at.at(-1)), Math.max(at[0], at.at(-1))];
+      marks.forEach((mark, i) => {
+        const near0 = horizontal ? Number(mark.x) : Number(mark.y), far0 = near0 + Number(horizontal ? mark.width : mark.height);
+        const [start, end] = [near0, far0];
+        const value = scale(values[i]);
+        // One end is the baseline, the other the authored value.
+        const atBaseline = Math.abs(start - baseline) < 0.01 ? end : Math.abs(end - baseline) < 0.01 ? start : NaN;
+        assert.ok(Number.isFinite(atBaseline), `${label}: bar ${i} starts at the baseline ${baselineValue}`);
+        near(atBaseline, value, `${label}: bar ${i} ends at authored value`);
+        assert.ok(start >= plotEdges[0] - 0.01 && end <= plotEdges[1] + 0.01, `${label}: bar ${i} inside the plot`);
+      });
+    }
+    autoZeroChecked++;
+  }
+}
+// Stacked and percentage groupings plot from a base, so their totals keep zero on the axis.
+for (const type of ["stacked-column-3x", "stacked-area-3x"]) {
+  const input = { slides: [{ chart: { type, data: { columns: ["Category", "A", "B"], rows: [["x", 100, 5], ["y", 104, 6], ["z", 102, 7]] } } }] };
+  const svg = renderSvg(input, { trace: true });
+  const first = [...svg.matchAll(/<g\b([^>]*data-opf-source-text="true"[^>]*)>([\s\S]*?)<\/g>/g)]
+    .filter(([, a]) => attributesOf(a)["data-opf-path"] === "slides.0.chart")
+    .map(([, , body]) => Number([...body.matchAll(/<text\b[^>]*>([\s\S]*?)<\/text>/g)].map(([, text]) => text).join("")));
+  assert.equal(Math.min(...first), 0, `${type}: stacked totals keep zero on the axis`);
+  autoZeroChecked++;
+}
+console.log(`Chart axis passed: ${ordinaryChecked} public ordinary-range cases and ${autoZeroChecked} automatic-minimum cases; authored fractions, zero baselines, evenly spaced ticks, top-sixth zero rule for line/column/bar/area, source preservation and deterministic bytes.`);

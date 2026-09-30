@@ -357,7 +357,11 @@ function renderCategoryChart(c, spec) {
   const categories = c.rows.map((row) => c.label(row[0]));
   const count = categories.length;
   const stacks = stackCategoryValues(series, count, spec.kind, spec.grouping, c.path);
-  const extents = stacks.flat().filter(Boolean).flatMap((point) => [point.from, point.to]);
+  // The scale follows the plotted values. Only stacked bars and areas plot from a
+  // base (the running total below them); an unstacked series has a synthetic zero
+  // `from`, which must not force zero onto the axis, and a line plots `to` alone.
+  const stackedGrouping = spec.grouping === "stacked" || percent;
+  const extents = stacks.flat().filter(Boolean).flatMap((point) => spec.kind === "line" || !stackedGrouping ? [point.to] : [point.from, point.to]);
   const dataMin = extents.length ? Math.min(...extents) : 0, dataMax = extents.length ? Math.max(...extents) : 1;
   const legendWidth = seriesLegend(c, series, spec.kind === "line" ? "line" : undefined, spec.markers);
   const right = box.x + box.width - pad - legendWidth;
@@ -400,7 +404,7 @@ function renderCategoryChart(c, spec) {
     }
   }
   const band = (horizontal ? plot.height : plot.width) / count;
-  if (spec.kind === "bar") drawBars(c, spec, series, stacks, { plot, band, at, horizontal, crossing });
+  if (spec.kind === "bar") drawBars(c, spec, series, stacks, { plot, band, at, horizontal, scale });
   else if (spec.kind === "line") drawLines(c, spec, series, stacks, { plot, band, at });
   else drawAreas(c, series, stacks, { plot, band, at, crossing });
   if (horizontal) {
@@ -422,14 +426,16 @@ export function barGeometry(band, seriesCount, grouping) {
   return { group: width, width, offset: (band - width) / 2, clustered: false };
 }
 
-function drawBars(c, spec, series, stacks, { plot, band, at, horizontal }) {
+function drawBars(c, spec, series, stacks, { plot, band, at, horizontal, scale }) {
+  // Bars grow from zero, or from the axis minimum (maximum, for all-negative data) when zero is off the axis.
+  const base = (value) => Math.min(scale.max, Math.max(scale.min, value));
   const geometry = barGeometry(band, series.length, spec.grouping);
   series.forEach((s, j) => {
     const color = c.colors[j % c.colors.length];
     stacks[j].forEach((point, i) => {
       if (!point) return;
       const slot = geometry.clustered ? j * geometry.width : 0;
-      const a = at(point.from), b = at(point.to);
+      const a = at(base(point.from)), b = at(point.to);
       const path = `${c.path}.data.rows.${i}.${s.column}`;
       if (horizontal) {
         // Office bar charts draw the first category and first series nearest the origin (bottom).
