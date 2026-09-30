@@ -250,4 +250,19 @@ for (const count of [12, 49]) {
   }
 }
 
+// Radar spokes: two-line labels wrap at spaces and, with the extra line, stay inside the chart at the top and bottom.
+{
+  const names = Array.from({ length: 6 }, (_, i) => `Regional sales region number ${i + 1}`);
+  const rendered = render('radar', names.map((name, i) => [name, 5 + i]));
+  assert.equal(rendered.diagnostics.filter((d) => d.code === 'text-overflow').length, 0, 'radar two-line: no text-overflow diagnostics');
+  assert.ok(rendered.labels.some((entry) => entry.lines.length === 2), 'radar spoke labels wrap at spaces onto two lines');
+  assert.ok(rendered.labels.every((entry) => entry.lines.join(' ') === names[entry.row]), 'radar two-line labels keep whole words');
+  const frame = /<rect\b([^>]*data-opf-path="slides\.0\.chart"[^>]*)\/>/.exec(rendered.svg);
+  const { x, y, width, height } = attributes(frame[1]);
+  for (const entry of rendered.labels) for (const [px, py] of polygon(entry)) {
+    assert.ok(px >= Number(x) && px <= Number(x) + Number(width) && py >= Number(y) && py <= Number(y) + Number(height), `radar: label ${entry.row} lies inside the chart`);
+  }
+  cases++;
+}
+
 console.log(`Category-axis labels passed: ${cases} cases (3/12/49/120 categories, short/long/numeric labels; column, line, histogram, pareto, bar and the other axis constructs) with no text-overflow, whole-word labels, rotation/skip as specified and byte determinism.`);

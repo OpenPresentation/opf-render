@@ -462,13 +462,15 @@ function planBottomLabels(c, entries, plot, maxReserve, { minX, maxX, rotatedMin
 function planCategoryAxis(c, entries, geometry) {
   const cap = Math.max(c.lineHeight + c.textHeight, c.box.height * 0.4);
   const bounds = (plot) => ({ minX: plot.x - c.fontPx * 0.5, maxX: plot.x + plot.width + c.fontPx * 0.5, rotatedMinX: c.box.x + c.pad });
+  // The space under the plot only grows (a smaller plot can change the value-tick
+  // width and so the band, and the arrangement with it); it stops once the plan
+  // fits the space that shaped the plot.
   let reserve = c.lineHeight, axis = geometry(reserve), plan = planBottomLabels(c, entries, axis.plot, cap, bounds(axis.plot));
-  for (let pass = 0; pass < 2 && Math.abs(plan.reserve - reserve) > 0.5; pass++) {
+  for (let pass = 0; pass < 3 && plan.reserve > reserve + 0.5; pass++) {
     reserve = plan.reserve;
     axis = geometry(reserve);
     plan = planBottomLabels(c, entries, axis.plot, cap, bounds(axis.plot));
   }
-  // The final arrangement must fit the space that shaped the plot.
   if (plan.reserve > reserve + 0.5) plan = planBottomLabels(c, entries, axis.plot, reserve, bounds(axis.plot));
   return { ...axis, plan };
 }
@@ -804,10 +806,15 @@ function renderRadarChart(c, spec) {
   const count = categories.length;
   const values = series.flatMap((s) => s.values).filter((v) => v !== null);
   const legendWidth = seriesLegend(c, series, spec.style === "filled" ? undefined : "line", spec.markers);
-  const labelWidth = Math.min(box.width * 0.2, Math.max(0, ...categories.map(c.width)) + fontPx * 0.5);
+  const labelWidth = Math.min(box.width * 0.2, Math.max(0, ...categories.map((name) => c.width(flatLabel(name)))) + fontPx * 0.5);
+  // Spoke labels follow the same rules as other category labels (never broken
+  // inside a word; one line, two lines at spaces, or an ellipsis). A chart with
+  // two-line spoke labels keeps room for the second line above and below.
+  const spokeLabels = labelCandidates(c, categories.map((name, i) => ({ name, path: `${c.path}.data.rows.${i}.0` })));
+  const wraps = spokeLabels.some((label) => label.width > labelWidth + 0.01 && (twoLines(c, label)?.width ?? Infinity) <= labelWidth + 0.01);
   const area = { x: box.x + pad, y: box.y + pad, width: Math.max(1, box.width - 2 * pad - legendWidth), height: Math.max(1, box.height - 2 * pad) };
   const cx = area.x + area.width / 2, cy = area.y + area.height / 2;
-  const radius = Math.max(1, Math.min(area.width / 2 - labelWidth, area.height / 2 - c.lineHeight));
+  const radius = Math.max(1, Math.min(area.width / 2 - labelWidth, area.height / 2 - c.lineHeight - (wraps ? c.textHeight : 0)));
   const scale = niceScale(values.length ? Math.min(...values) : 0, values.length ? Math.max(...values) : 1, maxIntervalsFor(radius, c.lineHeight));
   const angle = (i) => -Math.PI / 2 + i / count * Math.PI * 2;
   const rAt = (v) => axisFraction(Math.min(scale.max, Math.max(scale.min, v)), scale) * radius;
@@ -818,10 +825,7 @@ function renderRadarChart(c, spec) {
     const ring = categories.map((_, i) => point(i, tick).map(n).join(" "));
     c.mark("path", { d: `M ${ring.join(" L ")} Z`, fill: "none", stroke: c.gridColor, "stroke-opacity": 0.7, "stroke-width": c.pt });
   }
-  // Spoke labels follow the same rules as other category labels (never broken
-  // inside a word; one line, two lines at spaces, or an ellipsis); a label that
-  // would collide with one already drawn is left out, the first is always kept.
-  const spokeLabels = labelCandidates(c, categories.map((name, i) => ({ name, path: `${c.path}.data.rows.${i}.0` })));
+  // A spoke label that would collide with one already drawn is left out; the first is always kept.
   const drawn = [], truncated = [];
   categories.forEach((name, i) => {
     const [x, y] = polar(cx, cy, radius, angle(i));
