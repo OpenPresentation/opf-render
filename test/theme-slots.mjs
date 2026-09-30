@@ -1,6 +1,8 @@
-// FF-49 / FF-50: the preview resolves the East Asian and complex-script slots by the same rule opf-pptx writes into
-// the theme's major/minor a:ea and a:cs (core docs script-font-model.md, "Language contract" and "Theme slots").
-// A slot is never empty: the scheme's or the language's script font when one supplies it, otherwise the latin family.
+// FF-49 / FF-50: the preview resolves the East Asian and complex-script slots from the same selections opf-pptx writes into
+// the theme's major/minor a:ea and a:cs (core docs script-font-model.md, "Language contract" and "Theme slots"). opf-pptx
+// writes a theme slot only where a script font is selected (the scheme's or the language's) and leaves it empty otherwise,
+// as Office does; the preview needs a face for every slot, so its slot is the selected script font where the theme names
+// one and the latin family where the theme is empty.
 // A language never changes the latin slot. The preview draws a slot's family first and the designated open
 // replacement after it; the PPTX keeps the selected name. Offline and deterministic; no fonts are loaded.
 import assert from 'node:assert/strict';
