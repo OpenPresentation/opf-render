@@ -1,11 +1,12 @@
 // Chart previews for the OPF chart type catalog (FF-22).
 //
 // The core catalog keeps one chart type per Office chart construct and
-// deprecates the rest with a replacement id. Published core 0.11.0 predates
-// that metadata, so the table is carried here and in opf-pptx. Kept ids render
-// the construct PowerPoint shows for the exported chart; deprecated ids render
-// exactly like their replacement; any other id returns null so the caller keeps
-// its legacy single-series preview.
+// deprecates the rest with a replacement id (`deprecation.replacedBy`,
+// `mappings.openxml`). The tables below are carried here so the preview stays
+// synchronous and self-contained; test/chart-catalog.mjs checks them against
+// the installed core catalog. Kept ids render the construct PowerPoint shows
+// for the exported chart; deprecated ids render exactly like their replacement;
+// any other id returns null so the caller keeps its legacy single-series preview.
 import { chartColorForFill, resolveTextStyle, textColorForFill, textWidthMeasurer } from "@openpresentation/opf/composition";
 
 // Ordered series palette written by opf-pptx (`CHART_COLORS`), before the same
