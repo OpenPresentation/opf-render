@@ -929,10 +929,12 @@ export function boxStatistics(values) {
 
 // Box and whisker: rows with the same category form one box per series; median line, mean marker and outliers, gap width 100%.
 function renderBoxWhiskerChart(c) {
-  const series = c.series();
+  // A lone value column has no category column: like the exporter, its values plot against their row numbers (one box per row).
+  const lone = c.columns.length === 1;
+  const series = lone ? [{ name: c.label(c.columns[0]), column: 0, index: 0, values: c.rows.map((row) => chartNumber(row[0])) }] : c.series();
   const groups = [];
   c.rows.forEach((row, i) => {
-    const name = c.label(row[0]);
+    const name = lone ? String(i + 1) : c.label(row[0]);
     let group = groups.find((entry) => entry.name === name);
     if (!group) groups.push(group = { name, first: i, rows: [] });
     group.rows.push(i);
@@ -942,7 +944,7 @@ function renderBoxWhiskerChart(c) {
   const dataMin = all.length ? Math.min(...all) : 0, dataMax = all.length ? Math.max(...all) : 1;
   const legendWidth = seriesLegend(c, series);
   const probe = niceScale(dataMin, dataMax, 10);
-  const { plot, band } = chartexPlot(c, { categories: groups.map((group) => ({ name: group.name, path: `${c.path}.data.rows.${group.first}.0` })), legendWidth, tickLabels: probe.ticks.map((tick) => formatTick(tick)) });
+  const { plot, band } = chartexPlot(c, { categories: groups.map((group) => ({ name: group.name, path: lone ? c.path : `${c.path}.data.rows.${group.first}.0` })), legendWidth, tickLabels: probe.ticks.map((tick) => formatTick(tick)) });
   const scale = niceScale(dataMin, dataMax, maxIntervalsFor(plot.height, c.lineHeight * 1.2));
   const { at } = valueAxis(c, plot, scale);
   const group = band / 2, width = group / series.length, offset = (band - group) / 2;

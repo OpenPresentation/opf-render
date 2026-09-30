@@ -264,6 +264,10 @@ for(const id of CHARTEX){
   assert.equal(marks(svg,'rect',/rows\.\d+\.0$/).length,2,'values from column 0');
   assert.ok(texts(svg).includes('1')&&texts(svg).includes('2'),'row numbers as categories');
   assert.match(render('treemap',{columns:['V'],rows:[[3],[5]]}),/data-opf-chart="treemap"/);
+  // A lone-column box chart draws one (degenerate) box per row, traced to the value column, with row numbers as categories.
+  const box=render('box-and-whisker',{columns:['V'],rows:[[3],[5],[8]]});
+  assert.equal(marks(box,'rect',/columns\.0$/).length,3,'one box per row from column 0');
+  assert.ok(texts(box).includes('1')&&texts(box).includes('3'),'row numbers as categories');
   checks++;
 }
 
