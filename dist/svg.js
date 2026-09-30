@@ -4,6 +4,11 @@ import {
   resolveColorRef as resolveCoreColorRef,
   validatePresentation
 } from "@openpresentation/opf";
+// Optional core exports are read from the namespace so an older published core
+// still loads; resolveScriptFonts ships with core FF-18.
+import * as opfCore from "@openpresentation/opf";
+import { createScriptFonts } from "./script-fonts.js";
+import { disabledFeaturesStyle } from "./font-compatibility.js";
 import { renderCatalogChart } from "./charts.js";
 
 export const packageName = "@openpresentation/opf-render";
@@ -240,6 +245,41 @@ function engineDefaultId(kind) {
   return engineDefaults[key];
 }
 
+function findCatalogRecord(kind, id, context) {
+  if (!id) return null;
+  const documentCatalog = context.presentation.catalogs?.[kind];
+  return findById(normalizeSourceRecords(documentCatalog), id) ??
+    findById(sourceRecordsFor(kind, documentCatalog?.source, context.options), id) ??
+    findById(normalizeSourceRecords(context.options.catalogs?.[kind]), id) ??
+    findById(sourceRecordsFor(kind, engineDefaults.catalogs[kind]?.source, context.options), id) ??
+    findById(defaultCatalogFor(kind), id);
+}
+
+// Font schemes follow the shared core rule (resolveFontSchemeReference in
+// @openpresentation/opf): an id that matches no record reports one
+// `unresolved-font-scheme` diagnostic and uses the DEFAULT_FONT_SCHEME record as the
+// base, with sibling overrides on top, so preview and PPTX export use the same fonts.
+function resolveFontSchemeRecord(reference, context, path) {
+  const id = referenceId(reference);
+  const found = findCatalogRecord("fontSchemes", id, context);
+  const base = found ?? findCatalogRecord("fontSchemes", DEFAULT_FONT_SCHEME, context) ?? {};
+  const scheme = cloneWithSortedKeys(isPlainObject(reference) ? { ...base, ...reference } : base);
+  if (!id || found) return { scheme };
+  return { scheme, diagnostic: { code: "unresolved-font-scheme", path, id, fallback: DEFAULT_FONT_SCHEME, message: `Font scheme '${id}' is not in the inline or bundled catalogs; using the default font scheme '${DEFAULT_FONT_SCHEME}'.` } };
+}
+
+// Generated socials furniture formats handles in core. Core applies inline
+// document records first; the host supplies the rest in resolution order.
+function socialPlatformRecords(context) {
+  const kind = "socialPlatforms";
+  return [
+    ...sourceRecordsFor(kind, context.presentation.catalogs?.[kind]?.source, context.options),
+    ...normalizeSourceRecords(context.options.catalogs?.[kind]),
+    ...sourceRecordsFor(kind, engineDefaults.catalogs[kind]?.source, context.options),
+    ...defaultCatalogFor(kind)
+  ];
+}
+
 function resolveCatalogRecord(kind, reference, context, path, fallbackId = engineDefaultId(kind)) {
   const id = referenceId(reference) ?? fallbackId;
   const documentCatalog = context.presentation.catalogs?.[kind];
@@ -345,7 +385,7 @@ function colorLuminance(color) {
   return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
 }
 
-function resolveDesign(presentation, slide, context) {
+function resolveDesign(presentation, slide, context, index) {
   const deckDesign = presentation.design ?? {};
   const slideDesign = slide.design ?? {};
 
@@ -361,11 +401,13 @@ function resolveDesign(presentation, slide, context) {
     context,
     "design.colorScheme"
   );
-  const fontScheme = resolveCatalogRecord(
-    "fontSchemes",
+  const fontPath = slideDesign.fontScheme !== undefined ? `slides.${index}.design.fontScheme`
+    : deckDesign.fontScheme !== undefined ? "design.fontScheme"
+    : slideDesign.theme !== undefined ? `slides.${index}.design.theme` : "design.theme";
+  const { scheme: fontScheme, diagnostic: fontSchemeDiagnostic } = resolveFontSchemeRecord(
     slideDesign.fontScheme ?? deckDesign.fontScheme ?? theme.fontScheme ?? DEFAULT_FONT_SCHEME,
     context,
-    "design.fontScheme"
+    fontPath
   );
   const dimensions = resolveDimensions(slideDesign.dimensions ?? deckDesign.dimensions ?? theme.dimensions);
   const backgroundDefinition = slideDesign.background ?? deckDesign.background ?? theme.background;
@@ -393,8 +435,78 @@ function resolveDesign(presentation, slide, context) {
       accent: normalizeColor(colorScheme.accent, null) ?? colorFromScheme(colorScheme, "accent3", "#F59E0B"),
       border: colorFromScheme(colorScheme, "accent5", "#CBD5E1")
     },
-    fonts: resolveFontFamilies(fontScheme)
+    fonts: resolveFontFamilies(fontScheme),
+    diagnostics: fontSchemeDiagnostic ? [fontSchemeDiagnostic] : []
   };
+}
+
+/**
+ * Script font slots, language tags and direction for one slide from core
+ * `resolveScriptFonts` (FF-18). The latin slot is always the renderer's design
+ * font; a script slot that core fills from the latin family follows it too.
+ * Without core support every slot repeats the latin family.
+ */
+function scriptProfile(presentation, index, design, context) {
+  let resolved;
+  if (typeof opfCore.resolveScriptFonts === "function") {
+    try { resolved = opfCore.resolveScriptFonts(presentation, { slideIndex: index }); }
+    catch (error) {
+      reportLanguageDiagnostic(context, { code: "language-preview-unresolved", path: "language",
+        message: "Script fonts could not be resolved (" + (error instanceof Error ? error.message : String(error)) + "), so the preview uses the design font for every script, sets no lang and lays out every paragraph left to right." });
+    }
+  } else if (presentation.language !== undefined) {
+    reportLanguageDiagnostic(context, { code: "language-preview-unavailable", path: "language",
+      message: "The installed @openpresentation/opf has no resolveScriptFonts (FF-18), so the preview uses the design font for every script, sets no lang and lays out every paragraph left to right. Use a core release with the language model." });
+  }
+  if (resolved?.rtl === true && typeof opfCore.paragraphDirection !== "function") {
+    reportLanguageDiagnostic(context, { code: "paragraph-direction-unavailable", path: "language",
+      message: "The installed @openpresentation/opf has no paragraphDirection, so the preview lays out every paragraph of this right-to-left deck left to right, as the PPTX export does. Use a core release that exports it." });
+  }
+  const slots = role => {
+    const latin = design.fonts[role];
+    const slot = key => !resolved || resolved.sources?.[key] === "latin" || resolved.sources?.[key] === "schemeFamily" ? latin : resolved[role]?.[key] ?? latin;
+    return { latin, eastAsian: slot("eastAsian"), complexScript: slot("complexScript") };
+  };
+  return {
+    heading: slots("heading"),
+    body: slots("body"),
+    ...(resolved?.supplement ? { supplement: resolved.supplement } : {}),
+    script: resolved?.script ?? "Zzzz",
+    ...(resolved?.scriptRole ? { scriptRole: resolved.scriptRole } : {}),
+    ...(resolved ? { bcp47: resolved.bcp47, lang: resolved.lang, languageSource: resolved.languageSource, direction: resolved.direction } : {}),
+    rtl: resolved?.rtl === true,
+    serif: design.fontScheme?.type === "serif"
+  };
+}
+
+/** Report a language diagnostic once per resolvePresentation call. */
+function reportLanguageDiagnostic(context, diagnostic) {
+  context.languageDiagnostics ??= new Set();
+  if (context.languageDiagnostics.has(diagnostic.code)) return;
+  context.languageDiagnostics.add(diagnostic.code);
+  context.options.onDiagnostic?.(diagnostic);
+}
+
+/**
+ * Report a glyph fallback once per resolvePresentation call, family pair and path (FF-19).
+ * It is a note, not an error: the face the font scheme resolved to lacks glyphs for the text,
+ * so a bundled face that has them draws those characters. The PPTX still names the chosen font.
+ */
+function reportGlyphFallback(context, note) {
+  context.glyphFallbackDiagnostics ??= new Set();
+  const key = `${note.fontFamily}\u0000${note.fallbackFamily}\u0000${note.path ?? ""}`;
+  if (context.glyphFallbackDiagnostics.has(key)) return;
+  context.glyphFallbackDiagnostics.add(key);
+  context.options.onDiagnostic?.({
+    code: "font-glyph-fallback",
+    ...(note.path ? { path: note.path } : {}),
+    // The note is reported once per family pair and path: it names characters the face lacks, such as these, not every one.
+    message: `'${note.fontFamily}' lacks glyphs for characters such as ${note.characters.slice(0, 8).map(character => `U+${character.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")}`).join(", ")}; the preview draws those with '${note.fallbackFamily}'. The PPTX keeps the chosen font.`,
+    fontFamily: note.fontFamily,
+    fallbackFamily: note.fallbackFamily,
+    scripts: [...note.scripts],
+    characters: [...note.characters]
+  });
 }
 
 function inferLayoutId(slide) {
@@ -518,10 +630,19 @@ function bindSlide(presentation, slide, layout, index, context) {
   ];
   const blocks = blockContent(slide, slidePath);
 
-  const design = resolveDesign(presentation, slide, context);
-  for (const role of ["heading","body","code"]) design.fonts[role] = resolveTextStyle({fontFamily:design.fonts[role],fontWeight:role === "heading" ? 700 : 400},context.options.textMeasurement).fontFamily;
-  const geometry = composeSlide(slide, { ...design.dimensions, layout, presentation, slideIndex: index, fonts: design.fonts, contentAlignment:design.contentAlignment, titleAlignment:design.titleAlignment, textRasterPadding:context.options.textRasterPadding, contentBox:design.contentBox, textMeasurement: context.options.textMeasurement });
+  const design = resolveDesign(presentation, slide, context, index);
+  // Script fonts (FF-19): each text run is measured and drawn with its script
+  // slot's face; the latin slot stays the design font scheme's family.
+  const scriptFonts = createScriptFonts(scriptProfile(presentation, index, design, context), context.options.textMeasurement, {
+    glyphFallback: context.options.glyphFallback,
+    onFallback: note => reportGlyphFallback(context, note)
+  });
+  const textMeasurement = scriptFonts.textMeasurement ?? context.options.textMeasurement;
+  for (const role of ["heading","body","code"]) design.fonts[role] = resolveTextStyle({fontFamily:design.fonts[role],fontWeight:role === "heading" ? 700 : 400},textMeasurement).fontFamily;
+  const geometry = composeSlide(slide, { ...design.dimensions, layout, presentation, slideIndex: index, fonts: design.fonts, contentAlignment:design.contentAlignment, titleAlignment:design.titleAlignment, textRasterPadding:context.options.textRasterPadding, contentBox:design.contentBox, textMeasurement, date: context.options.date, socialPlatforms: socialPlatformRecords(context) });
   return {
+    scriptFonts,
+    textMeasurement,
     geometry,
     assets: presentation.assets ?? {},
     index,
@@ -572,18 +693,23 @@ export function renderSvgDeck(input, options = {}) {
 }
 
 function renderResolvedSlide(resolved, slideIndex, options) {
-  options = { ...options, _diagnosticPaths: new Set() };
   const bound = resolved.slides[slideIndex];
+  // Paint with the same script-aware measurement composition used.
+  options = { ...options, ...(bound.textMeasurement ? { textMeasurement: bound.textMeasurement } : {}), _diagnosticPaths: new Set() };
+  const script = bound.scriptFonts?.profile;
+  // Only a language the document names sets lang; the renderer default does not.
+  const lang = script?.languageSource === "document" || script?.languageSource === "option" ? script.bcp47 : undefined;
   const { width, height } = bound.design.dimensions;
   const title = bound.slide.title ?? resolved.presentation.name ?? `Slide ${slideIndex + 1}`;
-  const children = [
-    renderEmbeddedFonts(options.embeddedFonts),
+  const content = [
     renderBackground(bound, width, height, options),
+    renderSlideImage(bound, options),
     renderBranding(bound, resolved.presentation, width, height, options),
     ...renderSlideContent(bound, width, height, options),
     renderFurniture(bound, resolved.presentation, width, height, options, "header"),
     renderFurniture(bound, resolved.presentation, width, height, options, "footer")
   ].filter(Boolean);
+  const children = [renderEmbeddedFonts(embeddedFontsFor(options.embeddedFonts, content)), ...content].filter(Boolean);
 
   return tag(
     "svg",
@@ -594,6 +720,8 @@ function renderResolvedSlide(resolved, slideIndex, options) {
       viewBox: `0 0 ${width} ${height}`,
       width,
       height,
+      lang,
+      "xml:lang": lang,
       ...traceAttrs(options, bound.path)
     },
     `\n${children.join("\n")}\n`
@@ -641,7 +769,10 @@ function renderBackground(bound, width, height, options) {
   }
   if(isPlainObject(background) && background.type==='pattern'){
     const pattern=background.pattern??{},id=`opf-s${bound.index+1}-pattern`,color=normalizeColor(pattern.foregroundColor,bound.design.colors.text),preset=pattern.preset;
-    const mark=preset==='ltHorz'?tag('path',{d:'M0 4H8',stroke:color,'stroke-width':1}):preset==='diagStripe'?tag('path',{d:'M-2 2L2 -2M0 8L8 0M6 10L10 6',stroke:color,'stroke-width':2}):preset==='pct5'?tag('circle',{cx:2,cy:2,r:.8,fill:color}):'';
+    // 8px cells approximating DrawingML presets. diagStripe is the engine id that
+    // PPTX export writes as wdUpDiag, so both draw the same rising stripe.
+    const stroke=(d,width=1)=>tag('path',{d,fill:'none',stroke:color,'stroke-width':width});
+    const mark=preset==='ltHorz'?tag('path',{d:'M0 4H8',stroke:color,'stroke-width':1}):preset==='diagStripe'||preset==='wdUpDiag'?tag('path',{d:'M-2 2L2 -2M0 8L8 0M6 10L10 6',stroke:color,'stroke-width':2}):preset==='pct5'?tag('circle',{cx:2,cy:2,r:.8,fill:color}):preset==='openDmnd'?stroke('M0 4L4 0L8 4L4 8Z'):preset==='wave'?stroke('M0 4C2 1 2 1 4 4S6 7 8 4'):'';
     if(!mark)reportDiagnostic({code:'unsupported-pattern',path:`${bound.path}.design.background.pattern.preset`,message:`Pattern ${preset} is not implemented by the SVG preview.`},options);
     return tag('g',{opacity:background.opacity??1},tag('rect',{width,height,fill:normalizeColor(pattern.backgroundColor,'#FFFFFF')})+tag('defs',{},tag('pattern',{id,width:8,height:8,patternUnits:'userSpaceOnUse'},mark))+tag('rect',{width,height,fill:`url(#${id})`}));
   }
@@ -656,11 +787,68 @@ function renderBackground(bound, width, height, options) {
   });
 }
 
+// design.slideImage: the shared composition frame, beneath branding and content.
+// crop covers the frame and fit centers the whole image, matching native a:srcRect.
+// Treatments mirror the native picture: the preset mask (core outline), recolor
+// and alphaModFix on the pixels only, the centered line, then the overlay shape.
+function renderSlideImage(bound, options) {
+  const image = bound.geometry.slideImage;
+  if (!image) return '';
+  const trace = options.trace ? { 'data-opf-slide-image': image.path, 'data-opf-slide-image-position': image.position } : {};
+  const value = image.alt === undefined ? image.value : { ...normalizeAsset(image.value), alt: image.alt };
+  const picture = renderImage({ value, path: image.sourcePath }, image.box, bound, { ...options, imageFit: image.fill === 'crop' ? 'cover' : 'contain' });
+  // Unresolved sources keep the ordinary placeholder without treatments, like the export.
+  if (!picture.startsWith('<image')) return tag('g', trace, picture);
+  const id = `opf-s${bound.index + 1}-slide-image`, shape = image.shape, defs = [];
+  const masked = shape && shape.preset !== 'rect';
+  if (masked) defs.push(tag('clipPath', { id: `${id}-clip` }, tag('path', { d: shape.path })));
+  const matrix = slideImageRecolorMatrix(image.recolor, bound);
+  if (matrix) defs.push(tag('filter', { id: `${id}-recolor`, 'color-interpolation-filters': 'sRGB' }, tag('feColorMatrix', { type: 'matrix', values: matrix })));
+  let pixels = matrix || image.opacity !== undefined ? tag('g', { filter: matrix ? `url(#${id}-recolor)` : undefined, opacity: image.opacity === undefined ? undefined : preciseNumber(image.opacity) }, picture) : picture;
+  if (masked) pixels = tag('g', { 'clip-path': `url(#${id}-clip)` }, pixels);
+  const children = [defs.length ? tag('defs', {}, defs.join('')) : '', pixels];
+  if (image.border) {
+    const paint = slideImagePaint(image.border.color, bound, bound.design.colors.border);
+    children.push(tag('path', { d: shape?.path ?? rectanglePath(image.box), fill: 'none', stroke: paint.color, 'stroke-opacity': paint.alpha < 1 ? preciseNumber(paint.alpha) : undefined, 'stroke-width': stableNumber(image.border.width), 'stroke-linejoin': 'miter', 'stroke-miterlimit': 8 }));
+  }
+  if (image.overlay) {
+    const paint = slideImagePaint(image.overlay.color, bound, bound.design.colors.text);
+    children.push(tag('path', { d: image.overlay.shape?.path ?? rectanglePath(image.overlay.box), fill: paint.color, 'fill-opacity': preciseNumber(paint.alpha * image.overlay.opacity), ...(options.trace ? { 'data-opf-slide-image-overlay': `${image.path}.overlay` } : {}) }));
+  }
+  return tag('g', trace, children.filter(Boolean).join(''));
+}
+
+// Native alpha and color-matrix values keep 1/100000 precision; three decimals would drift.
+const preciseNumber = value => String(Math.round(value * 1e6) / 1e6);
+
+function rectanglePath(box) {
+  return `M${stableNumber(box.x)} ${stableNumber(box.y)}H${stableNumber(box.x + box.width)}V${stableNumber(box.y + box.height)}H${stableNumber(box.x)}Z`;
+}
+
+// ColorRef -> opaque #RRGGBB plus the AA byte as alpha, as the native srgbClr + alpha.
+function slideImagePaint(value, bound, fallback) {
+  const hex = resolveColorRef(value, bound, fallback) ?? fallback;
+  const raw = normalizeColor(hex, fallback).slice(1);
+  return { color: `#${raw.slice(0, 6).toUpperCase()}`, alpha: raw.length === 8 ? parseInt(raw.slice(6), 16) / 255 : 1 };
+}
+
+// Rec. 601 luminance on sRGB values; duotone maps it linearly from dark to light.
+function slideImageRecolorMatrix(recolor, bound) {
+  if (!recolor) return undefined;
+  const weights = [0.299, 0.587, 0.114];
+  const channels = recolor.type === 'duotone'
+    ? [slideImagePaint(recolor.dark, bound, '#000000'), slideImagePaint(recolor.light, bound, '#FFFFFF')].map(paint => [1, 3, 5].map(at => parseInt(paint.color.slice(at, at + 2), 16) / 255))
+    : [[0, 0, 0], [1, 1, 1]];
+  const [dark, light] = channels;
+  const rows = [0, 1, 2].map(channel => [...weights.map(weight => preciseNumber((light[channel] - dark[channel]) * weight)), 0, preciseNumber(dark[channel])].join(' '));
+  return [...rows, '0 0 0 1 0'].join(' ');
+}
+
 function renderSlideContent(bound, width, height, options) {
-  for (const diagnostic of bound.geometry.diagnostics) reportDiagnostic(diagnostic, options);
+  for (const diagnostic of [...bound.design.diagnostics, ...bound.geometry.diagnostics]) reportDiagnostic(diagnostic, options);
   return bound.geometry.items.map(item => {
     const frame=item.frameBox;
-    const surface=frame ? tag('rect',{x:frame.x,y:frame.y,width:frame.width,height:frame.height,rx:8*Math.min(width,height)/720,fill:bound.design.colors.surface,stroke:bound.design.colors.border}) : '';
+    const surface=frame ? tag('rect',{x:frame.x,y:frame.y,width:frame.width,height:frame.height,rx:8*Math.min(width,height)/720,fill:bound.design.colors.surface,stroke:bound.design.colors.border,...traceAttrs(options,item.path)}) : '';
     return surface+renderPayload(item, item.box, { ...bound, composition: item.composition }, options);
   });
 }
@@ -702,10 +890,10 @@ function renderPayload(item, box, bound, options) {
 function renderTextPayload(item, box, bound, options) {
   return (Array.isArray(item.value) ? renderRichTextBox : renderTextBox)(Array.isArray(item.value) ? item.value : flattenText(item.value), box, bound, {
     path: item.path,
-    // Titles follow design.titleAlignment only. An unset title alignment is left,
-    // as in core composition; it must not inherit contentAlignment through the
-    // generic text-box fallback when no accepted placement is available.
-    align: item.field === "title" ? bound.design.titleAlignment ?? "left" : bound.design.contentAlignment,
+    // Core resolves one alignment per composed item for every engine. The
+    // fallback keeps cores published before item.alignment working: titles
+    // follow design.titleAlignment only (unset is left, as in core composition).
+    align: item.alignment ?? (item.field === "title" ? bound.design.titleAlignment ?? "left" : bound.design.contentAlignment),
     fontSize: item.field === "title" ? 54 : item.field === "tag" ? 16 : 25,
     fontFamily: item.field === "title" ? bound.design.fonts.heading : bound.design.fonts.body,
     fontWeight: item.field === "title" ? 700 : 400,
@@ -863,12 +1051,13 @@ function renderCode(item, box, bound, options) {
       'xml:space':'preserve',style:'white-space:pre','text-rendering':'geometricPrecision',fill:part.role==='body'?'#E5E7EB':'#93C5FD',
       ...traceAttrs(options,part.path),...(options.trace?{'data-opf-code-role':part.role,'data-opf-generated':part.generated?'true':undefined,
         'data-opf-text-start':line.start,'data-opf-text-end':line.end,'data-opf-text-next-start':line.nextStart,'data-opf-line-boundary':line.boundary}:{}),
-    },line.segments.map(segment=>tag('tspan',{
+    },line.segments.map(segment=>segmentSpan({
       x:stableNumber(part.box.x+segment.x),
       // SVG's CSS tab-size does not place literal tabs at their measured stops.
       ...(segment.kind==='tab'?{textLength:stableNumber(segment.width),lengthAdjust:'spacingAndGlyphs'}:{}),
       ...(options.trace?{'data-opf-segment':segment.kind,'data-opf-text-start':segment.start,'data-opf-text-end':segment.end}:{}),
-    },escapeText(part.text.slice(segment.start,segment.end)))).join('')));
+      // Code stays left to right; script runs still take their slot fonts.
+    },segment,part.text.slice(segment.start,segment.end),part.style,bound,'monospace',{rtl:false})).join('')));
     children.push(tag('g',{...traceAttrs(options,part.path),...(options.trace?{'data-opf-code-role':part.role,'data-opf-generated':part.generated?'true':undefined,
       'data-opf-box-x':part.box.x,'data-opf-box-y':part.box.y,'data-opf-box-width':part.box.width,'data-opf-box-height':part.box.height}:{}),
       ...(part.fit.overflow?{'data-opf-overflow':'true'}:{})},lines.join('\n')));
@@ -885,18 +1074,32 @@ function renderMetric(item, box, bound, options) {
     if (invalid) throw new OPFRenderError('invalid-metric-text',`Metric text contains U+${invalid[0].codePointAt(0).toString(16).toUpperCase().padStart(4,'0')} at UTF-16 offset ${invalid.index}, which XML cannot represent; edit that character before rendering.`,{path:part.path});
     if (!part.visible) continue;
     if (!part.fit||part.linePositions?.length!==part.fit.sourceLines.length) throw new OPFRenderError('layout-overflow','Metric content has no accepted internal line positions; increase its cell size or coordinate package versions.',{path:part.path,issues:layout.diagnostics});
+    const partRtl=paragraphRtl(bound,part.text);
+    // Anchor untabbed lines at the accepted alignment edge, as PPTX export does,
+    // so a shaper whose advance differs from the accepted width keeps the edge.
+    // Tabbed lines keep their accepted segment origins.
+    const factor=layout.alignment==='right'?1:layout.alignment==='center'?.5:0;
     const lines=part.fit.sourceLines.map((line,index)=>{
       const origin=part.linePositions[index];
+      if(factor&&!line.segments.some(segment=>segment.kind==='tab'))return tag('text',{x:stableNumber(origin.x+line.width*factor),y:stableNumber(origin.baseline),'text-anchor':factor===1?'end':'middle',
+        'font-family':fontStack(part.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(part.fit.fontSize),
+        'font-weight':part.style.fontWeight,'font-style':part.style.italic?'italic':undefined,
+        'xml:space':'preserve',style:'white-space:pre','text-rendering':'geometricPrecision',fill:part.role==='value'?bound.design.colors.primary:bound.design.colors.text,
+        ...traceAttrs(options,part.path),...(options.trace?{'data-opf-metric-role':part.role,'data-opf-text-start':line.start,
+          'data-opf-text-end':line.end,'data-opf-text-next-start':line.nextStart,'data-opf-line-boundary':line.boundary}:{}),
+      },line.segments.map(segment=>segmentSpan({
+        ...(options.trace?{'data-opf-segment':segment.kind,'data-opf-text-start':segment.start,'data-opf-text-end':segment.end}:{}),
+      },segment,part.text.slice(segment.start,segment.end),part.style,bound,bound.design.fontScheme.type,{rtl:partRtl(line.start)})).join(''));
       return tag('text',{x:stableNumber(origin.x),y:stableNumber(origin.baseline),'text-anchor':'start',
         'font-family':fontStack(part.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(part.fit.fontSize),
         'font-weight':part.style.fontWeight,'font-style':part.style.italic?'italic':undefined,
         'xml:space':'preserve',style:'white-space:pre','text-rendering':'geometricPrecision',fill:part.role==='value'?bound.design.colors.primary:bound.design.colors.text,
         ...traceAttrs(options,part.path),...(options.trace?{'data-opf-metric-role':part.role,'data-opf-text-start':line.start,
           'data-opf-text-end':line.end,'data-opf-text-next-start':line.nextStart,'data-opf-line-boundary':line.boundary}:{}),
-      },line.segments.map(segment=>tag('tspan',{x:stableNumber(origin.x+segment.x),
+      },line.segments.map(segment=>segmentSpan({x:stableNumber(origin.x+segment.x),
         ...(segment.kind==='tab'?{textLength:stableNumber(segment.width),lengthAdjust:'spacingAndGlyphs'}:{}),
         ...(options.trace?{'data-opf-segment':segment.kind,'data-opf-text-start':segment.start,'data-opf-text-end':segment.end}:{}),
-      },escapeText(part.text.slice(segment.start,segment.end)))).join(''));
+      },segment,part.text.slice(segment.start,segment.end),part.style,bound,bound.design.fontScheme.type,{rtl:partRtl(line.start)})).join(''));
     });
     children.push(tag('g',{...traceAttrs(options,part.path),...(options.trace?{'data-opf-metric-role':part.role,
       'data-opf-box-x':part.box.x,'data-opf-box-y':part.box.y,'data-opf-box-width':part.box.width,'data-opf-box-height':part.box.height}:{}),
@@ -1148,7 +1351,126 @@ function renderBranding(bound,presentation,width,height,options) {
 
 function fontStack(family, type) {
   const fallback = type === "serif" ? "serif" : type === "monospace" ? "monospace" : "sans-serif";
-  return `${family}, ${fallback}`;
+  return `${[family].flat().join(", ")}, ${fallback}`;
+}
+
+// Unicode directional isolates (FF-19): each paragraph (text between hard line
+// breaks) of a right-to-left-language deck takes one base direction from
+// paragraphDirection(text, deckDirection), the rule the PPTX export uses for
+// a:pPr rtl. Every wrapped line of a right-to-left paragraph is laid out as a
+// right-to-left isolate, so its lines never differ in direction. Absolute
+// alignment and measured advances are unchanged.
+const RIGHT_TO_LEFT_ISOLATE = "\u2067", POP_DIRECTIONAL_ISOLATE = "\u2069";
+// Core owns the rule (paragraphDirection, core #134), so preview and export agree.
+// Without it (published core 0.11.0) every paragraph is left to right, as in export.
+const coreParagraphDirection = typeof opfCore.paragraphDirection === "function" ? opfCore.paragraphDirection : null;
+/** Maps a source offset of the text to whether its paragraph is right to left. */
+function paragraphRtl(bound, text) {
+  if (bound.scriptFonts?.rtl !== true || !coreParagraphDirection) return () => false;
+  const source = String(text ?? ""), spans = [];
+  let start = 0;
+  for (const match of source.matchAll(/\r\n|\r|\n/g)) { spans.push([start, match.index]); start = match.index + match[0].length; }
+  spans.push([start, source.length]);
+  const rtl = spans.map(([from, to]) => coreParagraphDirection(source.slice(from, to), "rtl") === "rtl");
+  return offset => { for (let index = spans.length - 1; index >= 0; index--) if (offset >= spans[index][0]) return rtl[index]; return rtl[0]; };
+}
+
+/**
+ * SVG content for `text` drawn in `style` (FF-19). Text in the style's own
+ * family is emitted unchanged. A single run in another family returns that
+ * family for the enclosing element. Several runs become tspans naming their
+ * script slot's family. With `placement` ({x, width, fontSize}) the runs are
+ * positioned at their measured advances, each with its own textLength, because
+ * a textLength spanning differently fonted tspans does not rasterize reliably;
+ * the caller then drops its own textLength and anchors at the start.
+ */
+// Nested script runs of a line drawn with a flagged face (Gelasio) opt back into default shaping,
+// unless the run itself uses a flagged family (tag() then adds that family's own style).
+function nestedReset(style, run) {
+  const parent = disabledFeaturesStyle(style?.fontFamily);
+  return parent && !disabledFeaturesStyle([run.stack ?? run.family].flat()[0]) ? RESET_POLICY_FEATURES : undefined;
+}
+
+function scriptLine(text, style, bound, type, { rtl = false, placement, trace } = {}) {
+  const value = String(text ?? "");
+  const scripts = bound.scriptFonts;
+  rtl = rtl && value !== "";
+  const isolate = content => rtl ? `${RIGHT_TO_LEFT_ISOLATE}${content}${POP_DIRECTIONAL_ISOLATE}` : content;
+  const runs = value && scripts ? scripts.plan(value, style) : [{ text: value, own: true }];
+  if (runs.length === 1) {
+    const [run] = runs;
+    return { content: isolate(escapeText(value)), family: run.own ? undefined : fontStack(run.stack ?? run.family, type) };
+  }
+  const widths = placement && placement.width > 0 ? scripts.runWidths(runs, placement.fontSize, style) : undefined;
+  if (!widths) {
+    return { content: isolate(runs.map(run => run.own ? escapeText(run.text)
+      : tag("tspan", { "font-family": fontStack(run.stack ?? run.family, type), style: nestedReset(style, run) }, escapeText(run.text))).join("")) };
+  }
+  const total = widths.reduce((sum, width) => sum + width, 0), factor = total > 0 ? placement.width / total : 1;
+  let advance = 0, offset = 0;
+  const content = runs.map((run, index) => {
+    const width = widths[index] * factor, left = rtl ? placement.width - advance - width : advance;
+    advance += width;
+    const start = offset;
+    offset += run.text.length;
+    return tag("tspan", {
+      x: stableNumber(placement.x + left),
+      textLength: width > 0 ? stableNumber(width) : undefined, lengthAdjust: width > 0 ? "spacingAndGlyphs" : undefined,
+      "font-family": run.own ? undefined : fontStack(run.family, type),
+      style: run.own ? undefined : nestedReset(style, run),
+      ...(trace ? trace(start, offset) : {})
+    }, isolate(escapeText(run.text)));
+  }).join("");
+  return { content, positioned: true };
+}
+
+/** One positioned code/metric segment tspan; its script runs flow inside it (no textLength). */
+function segmentSpan(attrs, segment, text, style, bound, type, options) {
+  const scripted = segment.kind === "tab" ? { content: escapeText(text) } : scriptLine(text, style, bound, type, options);
+  return tag("tspan", { ...attrs, "font-family": scripted.family }, scripted.content);
+}
+
+// Faces flagged embed:"used" (the vendored open, Intos and script-pack faces) are embedded only when the slide's own markup draws
+// them: the family in a font-family list, at a font-weight and font-style some text of the slide takes (attributes are
+// inherited down the element tree, as in SVG). A used family none of whose faces matches a drawn weight and style keeps all
+// its faces, so the browser can always choose. Every other face (the npm packs) is embedded as before.
+function embeddedFontsFor(fonts = [], content) {
+  if (!fonts.some(font => font?.embed === "used")) return fonts;
+  const drawn = drawnFaces(content.join("\n"));
+  const wanted = font => {
+    const triples = drawn.get(String(font.family).toLowerCase());
+    if (!triples) return false;
+    const family = fonts.filter(other => other?.embed === "used" && String(other.family).toLowerCase() === String(font.family).toLowerCase());
+    const matching = family.filter(other => triples.has(`${other.weight}|${other.italic ? "italic" : "normal"}`));
+    return matching.length ? matching.includes(font) : true;
+  };
+  return fonts.filter(font => font?.embed !== "used" || wanted(font));
+}
+
+const FONT_WEIGHT_KEYWORDS = { normal: "400", bold: "700" };
+/** family (lowercase) to the set of "weight|style" pairs the markup draws text in. */
+function drawnFaces(markup) {
+  const drawn = new Map();
+  const tokens = /<(\/?)([A-Za-z][\w:.-]*)((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>|<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>|[^<]+/g;
+  const stack = [{ families: [], weight: "400", style: "normal", text: false }];
+  const attribute = (attributes, name) => { const found = new RegExp(`\\s${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`).exec(attributes); return found ? found[1] ?? found[2] : undefined; };
+  for (const [token, close, name, attributes, selfClose] of markup.matchAll(tokens)) {
+    const top = stack.at(-1);
+    if (name === undefined) {
+      if (top.text && /\S/.test(token)) for (const family of top.families) { const set = drawn.get(family) ?? new Set(); set.add(`${top.weight}|${top.style}`); drawn.set(family, set); }
+      continue;
+    }
+    if (close) { if (stack.length > 1) stack.pop(); continue; }
+    const family = attribute(attributes, "font-family"), weight = attribute(attributes, "font-weight"), style = attribute(attributes, "font-style");
+    const next = {
+      families: family === undefined ? top.families : family.split(",").map(item => item.trim().replace(/^&quot;|&quot;$|^["']|["']$/g, "").toLowerCase()).filter(Boolean),
+      weight: weight === undefined ? top.weight : FONT_WEIGHT_KEYWORDS[weight.trim()] ?? weight.trim(),
+      style: style === undefined ? top.style : /italic|oblique/.test(style) ? "italic" : "normal",
+      text: top.text || name === "text",
+    };
+    if (!selfClose) stack.push(next);
+  }
+  return drawn;
 }
 
 function renderEmbeddedFonts(fonts = []) {
@@ -1172,6 +1494,7 @@ function renderRichLines(value,fit,box,bound,config) {
   const alignment=fit.placement?.alignment??config.align??bound.design.contentAlignment;
   let textOffset=0;
   const runOffsets=value.map(run=>{const start=textOffset;textOffset+=(typeof run==='string'?run:run.text).length;return start;});
+  const richRtl=paragraphRtl(bound,value.map(run=>typeof run==='string'?run:run.text).join(''));
   // With no measurement provider, fragment advances are estimates. Let SVG
   // shape adjacent runs naturally inside each estimated line instead of turning
   // those estimates into visible gaps. Supplied measurements keep exact origins.
@@ -1183,34 +1506,43 @@ function renderRichLines(value,fit,box,bound,config) {
     const offset=alignment==='right'?box.width-line.width:alignment==='center'?(box.width-line.width)/2:0;
     const placed=fit.placement?.lines[lineIndex];
     const originX=placed?.x??box.x+offset,baseline=placed?.baseline??box.y+line.baseline;
-    const renderFragment=(fragment,asFlow)=>{
+    const firstFragment=line.fragments[0],rtl=richRtl(firstFragment?runOffsets[firstFragment.runIndex]+firstFragment.start:0);
+    const renderFragment=(fragment,asFlow,edges={})=>{
     const run=fragment.run;
     // Accepted outline placement owns the horizontal advance. Geometric precision
     // avoids hinted browser advances; textLength also removes fractional-size
     // quantization drift. Height and baseline retain the selected font size.
-    const position=asFlow?{'baseline-shift':fragment.baselineShift?stableNumber(-fragment.baselineShift):undefined}:{x:stableNumber(originX+fragment.x),y:stableNumber(baseline+fragment.baselineShift)};
+    // A right-to-left line places its fragments from the right edge (FF-19).
+    // Estimated (natural-flow) lines keep logical order; the browser reorders them.
+    const fragmentX=rtl&&!naturalFlow?line.width-fragment.x-fragment.width:fragment.x;
+    const position=asFlow?{'baseline-shift':fragment.baselineShift?stableNumber(-fragment.baselineShift):undefined}:{x:stableNumber(originX+fragmentX),y:stableNumber(baseline+fragment.baselineShift)};
     const runFill = run.color == null
       ? config.fill
       : resolveColorRef(run.color, bound, config.fill);
-    const fixedAdvance=(fragment.kind==='tab'||placed)&&fragment.width>0;
-    const rendered=tag(asFlow?'tspan':'text',{...(config.options.trace?{'data-opf-text-start':runOffsets[fragment.runIndex]+fragment.start,'data-opf-text-end':runOffsets[fragment.runIndex]+fragment.end,'data-opf-segment':fragment.kind}:{}),...position,'xml:space':'preserve','text-rendering':asFlow?undefined:'geometricPrecision',textLength:fixedAdvance?stableNumber(fragment.width):undefined,lengthAdjust:fixedAdvance?'spacingAndGlyphs':undefined,'font-family':fontStack(fragment.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(fragment.fontSize),'font-weight':fragment.style.fontWeight,'font-style':fragment.style.italic?'italic':asFlow?'normal':undefined,'text-decoration':[run.underline?'underline':'',run.strikethrough?'line-through':''].filter(Boolean).join(' ')||undefined,fill:runFill},escapeText(fragment.text));
+    let fixedAdvance=(fragment.kind==='tab'||placed)&&fragment.width>0;
+    const scripted=fragment.kind==='tab'?{content:escapeText(fragment.text)}:scriptLine(fragment.text,fragment.style,bound,bound.design.fontScheme.type,{rtl:rtl&&!asFlow,
+      placement:fixedAdvance&&!asFlow?{x:originX+fragmentX,width:fragment.width,fontSize:fragment.fontSize}:undefined});
+    if(scripted.positioned)fixedAdvance=false;
+    const content=`${edges.first?RIGHT_TO_LEFT_ISOLATE:''}${scripted.content}${edges.last?POP_DIRECTIONAL_ISOLATE:''}`;
+    const rendered=tag(asFlow?'tspan':'text',{...(config.options.trace?{'data-opf-text-start':runOffsets[fragment.runIndex]+fragment.start,'data-opf-text-end':runOffsets[fragment.runIndex]+fragment.end,'data-opf-segment':fragment.kind}:{}),...position,'xml:space':'preserve','text-rendering':asFlow?undefined:'geometricPrecision',textLength:fixedAdvance?stableNumber(fragment.width):undefined,lengthAdjust:fixedAdvance?'spacingAndGlyphs':undefined,'font-family':scripted.family??fontStack(fragment.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(fragment.fontSize),'font-weight':fragment.style.fontWeight,'font-style':fragment.style.italic?'italic':asFlow?'normal':undefined,'text-decoration':[run.underline?'underline':'',run.strikethrough?'line-through':''].filter(Boolean).join(' ')||undefined,fill:runFill},content);
     if(run.link&&/^(https?:|mailto:)/i.test(run.link))return tag('a',{href:run.link,target:'_blank',rel:'noopener noreferrer'},rendered);
     return rendered;
     };
     if(naturalFlow&&lineHasTab) {
       const chunks=[];let textChunk=[];
-      const flush=()=>{if(!textChunk.length)return;const first=textChunk[0];chunks.push(tag('text',{x:stableNumber(originX+first.x),y:stableNumber(baseline),'xml:space':'preserve'},textChunk.map(fragment=>renderFragment(fragment,true)).join('')));textChunk=[];};
+      const flush=()=>{if(!textChunk.length)return;const first=textChunk[0];chunks.push(tag('text',{x:stableNumber(originX+first.x),y:stableNumber(baseline),'xml:space':'preserve'},textChunk.map((fragment,index)=>renderFragment(fragment,true,{first:rtl&&!index,last:rtl&&index===textChunk.length-1})).join('')));textChunk=[];};
       for(const fragment of line.fragments) {
         if(fragment.kind==='tab'){flush();chunks.push(renderFragment(fragment,false));}
         else textChunk.push(fragment);
       }
       flush();return chunks.join('\n');
     }
-    const fragments=line.fragments.map(fragment=>renderFragment(fragment,flow));
+    // A flowing right-to-left line is one isolate across its fragments.
+    const fragments=line.fragments.map((fragment,index)=>renderFragment(fragment,flow,flow?{first:rtl&&!index,last:rtl&&index===line.fragments.length-1}:{}));
     if(!flow)return fragments.join('\n');
     const x=alignment==='right'?box.x+box.width:alignment==='center'?box.x+box.width/2:box.x;
     const first=line.fragments[0];
-    return tag('text',{x:stableNumber(x),y:stableNumber(box.y+line.baseline),'text-anchor':alignment==='right'?'end':alignment==='center'?'middle':'start','xml:space':'preserve','font-family':fontStack(first?.style.fontFamily??config.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(first?.fontSize??fit.fontSize),'font-weight':first?.style.fontWeight??config.fontWeight??400,'font-style':first?.style.italic?'italic':undefined},fragments.join(''));
+    return tag('text',{x:stableNumber(x),y:stableNumber(box.y+line.baseline),'text-anchor':alignment==='right'?'end':alignment==='center'?'middle':'start','xml:space':'preserve','font-family':fontStack(first?.style.fontFamily??config.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(first?.fontSize??fit.fontSize),'font-weight':first?.style.fontWeight??config.fontWeight??400,'font-style':first?.style.italic?'italic':undefined,[NO_POLICY_FEATURES]:true},fragments.join(''));
   });
   let cursor=0;
   const whole=value.map(run=>typeof run==='string'?run:run.text).join('');
@@ -1246,21 +1578,39 @@ function renderTextBox(text, box, bound, config) {
   const alignment=fit.placement?.alignment??config.align??bound.design.contentAlignment;
   const anchor = alignment === "center" ? "middle" : alignment === "right" ? "end" : "start";
   const x = alignment === "center" ? box.x + box.width / 2 : alignment === "right" ? box.x + box.width : box.x;
+  const type = config.fontFamily === bound.design.fonts.code ? "monospace" : bound.design.fontScheme.type;
+  const source = String(text ?? ""), boxRtl = paragraphRtl(bound, source);
+  let cursor = 0;
   const lines = fit.lines.map((line, index) => {
     const sourceLine=fit.sourceLines?.[index],placed=fit.placement?.lines[index],factor=alignment==='right'?1:alignment==='center'?.5:0;
+    // The line's paragraph decides its direction: source offsets when layout has them, else the next match.
+    const found=sourceLine?sourceLine.start:source.indexOf(line,cursor),lineStart=found>=0?found:cursor;cursor=lineStart+line.length;
+    const rtl=boxRtl(lineStart);
     const origin=placed?.x??x-(sourceLine?.width??0)*factor;
     const tabs=sourceLine?.segments.some(segment=>segment.kind==='tab');
-    const content=tabs?sourceLine.segments.map(segment=>tag('tspan',{
-      x:stableNumber(origin+segment.x),textLength:segment.kind==='tab'||placed?stableNumber(segment.width):undefined,
-      lengthAdjust:segment.kind==='tab'||placed?'spacingAndGlyphs':undefined,
-      ...(config.options.trace?{'data-opf-source-start':segment.start,'data-opf-source-end':segment.end,'data-opf-segment':segment.kind}:{}),
-    },escapeText(line.slice(segment.start-sourceLine.start,segment.end-sourceLine.start)))).join(''):escapeText(line);
+    let content,family,positioned=false;
+    if(tabs) content=sourceLine.segments.map(segment=>{
+      const segmentText=line.slice(segment.start-sourceLine.start,segment.end-sourceLine.start),fixed=segment.kind==='tab'||placed;
+      const traced=(start,end)=>config.options.trace?{'data-opf-source-start':start,'data-opf-source-end':end,'data-opf-segment':segment.kind}:{};
+      const scripted=segment.kind==='tab'?{content:escapeText(segmentText)}:scriptLine(segmentText,style,bound,type,{rtl,
+        placement:placed?{x:origin+segment.x,width:segment.width,fontSize:size}:undefined,
+        trace:config.options.trace?(start,end)=>traced(segment.start+start,segment.start+end):undefined});
+      if(scripted.positioned)return scripted.content;
+      return tag('tspan',{
+        x:stableNumber(origin+segment.x),textLength:fixed?stableNumber(segment.width):undefined,
+        lengthAdjust:fixed?'spacingAndGlyphs':undefined,'font-family':scripted.family,
+        ...traced(segment.start,segment.end),
+      },scripted.content);
+    }).join('');
+    else ({content,family,positioned=false}=scriptLine(line,style,bound,type,{rtl,placement:placed?.width>0?{x:placed.x,width:placed.width,fontSize:size}:undefined}));
+    // Positioned script runs carry their own x and textLength (FF-19).
+    const start=tabs||positioned;
     return tag("text", {
-    x: stableNumber(tabs?origin:placed?placed.x+placed.width*factor:x), y: stableNumber(placed?.baseline??startY + index * fit.lineHeight),
-    "text-anchor": tabs?'start':anchor, "font-family": fontStack(style.fontFamily, config.fontFamily === bound.design.fonts.code ? "monospace" : bound.design.fontScheme.type),
+    x: stableNumber(tabs?origin:positioned?placed.x:placed?placed.x+placed.width*factor:x), y: stableNumber(placed?.baseline??startY + index * fit.lineHeight),
+    "text-anchor": start?'start':anchor, "font-family": family ?? fontStack(style.fontFamily, type),
     "font-size": stableNumber(size), "font-weight": style.fontWeight, "font-style": style.italic ? "italic" : undefined, fill: config.fill,
     'xml:space':'preserve',style:'white-space:pre','text-rendering':config.options.textMeasurement?.measure?'geometricPrecision':undefined,
-    textLength:!tabs&&placed?.width>0?stableNumber(placed.width):undefined,lengthAdjust:!tabs&&placed?.width>0?'spacingAndGlyphs':undefined,
+    textLength:!start&&placed?.width>0?stableNumber(placed.width):undefined,lengthAdjust:!start&&placed?.width>0?'spacingAndGlyphs':undefined,
     ...traceAttrs(config.options, config.path),
     ...(config.options.trace&&sourceLine?{'data-opf-source-start':sourceLine.start,'data-opf-source-end':sourceLine.end,'data-opf-source-next-start':sourceLine.nextStart,'data-opf-line-boundary':sourceLine.boundary}:{}),
   }, content);
@@ -1345,7 +1695,22 @@ function escapeAttr(value) {
   return escapeText(value).replaceAll('"', "&quot;");
 }
 
+// FF-31: text drawn with a face whose features the font policy turns off (Gelasio for Georgia) says so, so
+// browsers do not ligate what the measurement did not. Only text or tspan elements that name such a family.
+// A flow line's outer text element, which only carries the first fragment's family, opts out: each of its
+// tspans names its own family and gets its own style, so other faces do not inherit ligatures:none.
+const NO_POLICY_FEATURES = Symbol("noPolicyFeatures");
+// Text in another script nested in a flagged run (scriptLine tspans) goes back to default shaping.
+const RESET_POLICY_FEATURES = "font-variant-ligatures:normal;font-feature-settings:normal";
+function withPolicyFeatures(name, attrs) {
+  if (attrs[NO_POLICY_FEATURES]) return attrs;
+  const family = (name === "text" || name === "tspan") && typeof attrs["font-family"] === "string" ? attrs["font-family"].split(",")[0].trim() : undefined;
+  const features = family && disabledFeaturesStyle(family);
+  return features ? { ...attrs, style: attrs.style ? `${attrs.style};${features}` : features } : attrs;
+}
+
 function tag(name, attrs = {}, children = "") {
+  attrs = withPolicyFeatures(name, attrs);
   const serializedAttrs = Object.keys(attrs)
     .filter((key) => attrs[key] !== undefined && attrs[key] !== null && attrs[key] !== false)
     .sort()

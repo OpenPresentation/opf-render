@@ -1,7 +1,10 @@
+import { FONT_POLICY } from "./font-policy.js";
 /** Curated substitution policy. Metric means upstream intent, not universal pixel identity. */
 const metric = (requestedFamily, substitutes, source, note = "Standard regular, bold, italic and bold italic styles; verify coverage and font versions.") => ({requestedFamily, substitutes, compatibility:"metric", weights:[400,700], source, note});
 const visual = (requestedFamily, substitutes, note = "Approximate appearance; measure again and expect reflow.") => ({requestedFamily, substitutes, compatibility:"visual", note});
-export const FONT_COMPATIBILITY = Object.freeze([
+// Rules before FF-31. Families that the OPF font policy table (src/font-policy.js) lists take their
+// rule from the table below; the remaining legacy rules keep working for other families.
+const LEGACY = [
   metric("Calibri",["Carlito"],"https://github.com/googlefonts/carlito"),
   metric("Cambria",["Caladea"],"https://chromium.googlesource.com/external/fontconfig/+/refs/heads/main/conf.d/30-metric-aliases.conf","Fontconfig compatibility mapping; font-version and repertoire differences require verification."),
   metric("Arial",["Arimo","Liberation Sans"],"https://github.com/google/fonts/blob/main/ofl/arimo/DESCRIPTION.en_us.html"),
@@ -44,5 +47,71 @@ export const FONT_COMPATIBILITY = Object.freeze([
   ...["SimHei","Microsoft YaHei"].map(name=>visual(name,["Noto Sans CJK SC"])),
   visual("Malgun Gothic",["Noto Sans CJK KR"]),
   visual("Microsoft JhengHei",["Noto Sans CJK TC"]),
-].map(rule=>Object.freeze({...rule,substitutes:Object.freeze(rule.substitutes),...(rule.weights?{weights:Object.freeze(rule.weights)}:{})})));
-export const EXPERIMENTAL_FONT_CANDIDATES = Object.freeze([Object.freeze({requestedFamily:"Aptos",substitute:"Akasia",source:"https://codeberg.org/bloudraad/akasia",note:"Upstream claims metric compatibility in twelve styles. Not bundled or automatically selected; OPF conformance testing is pending. No Narrow or Display compatibility is implied."})]);
+];
+const percent = value => `${(value*100).toFixed(1)}%`;
+const describe = replacement => replacement.measured
+  ? `Measured against ${replacement.measured.reference}: mean width difference ${percent(replacement.measured.meanAbsWidthDelta)} (signed ${percent(replacement.measured.meanWidthDelta)}), max ${percent(replacement.measured.maxAbsWidthDelta)}.`
+  : "Not measured against the real font.";
+/**
+ * FF-31: substitution rules from the OPF font policy table. Substitutes are the declared open
+ * replacement, then its alternates; the last alternate is usually a face opf-render bundles, so a
+ * preview never needs a download. Replacements drive measurement and drawing only; exporters keep
+ * writing the chosen family.
+ */
+const FROM_POLICY = FONT_POLICY.filter(row => row.replacement).map(row => ({
+  requestedFamily: row.family,
+  substitutes: [row.replacement.family, ...(row.alternates ?? [])],
+  compatibility: row.replacement.compatibility,
+  ...(row.replacement.compatibility === "metric" ? {weights: [400, 700]} : {}),
+  ...(row.replacement.weight ? {weight: row.replacement.weight} : {}),
+  ...(row.replacement.disabledFeatures ? {disabledFeatures: row.replacement.disabledFeatures} : {}),
+  ...(row.replacement.source ? {source: row.replacement.source} : {}),
+  ...(row.replacement.measured ? {measured: row.replacement.measured} : {}),
+  ...(row.replacement.decision ? {decision: row.replacement.decision} : {}),
+  ...(row.replacement.metricModeFallback ? {metricModeFallback: true} : {}),
+  licenseClass: row.licenseClass,
+  note: row.replacement.compatibility === "metric"
+    ? `Standard regular, bold, italic and bold italic styles. ${describe(row.replacement)}`
+    : `Approximate appearance; expect reflow against the real font. ${describe(row.replacement)}`,
+}));
+const listed = new Set(FROM_POLICY.map(rule => rule.requestedFamily.toLowerCase()));
+export const FONT_COMPATIBILITY = Object.freeze([...FROM_POLICY, ...LEGACY.filter(rule => !listed.has(rule.requestedFamily.toLowerCase()))].map(rule=>Object.freeze({...rule,substitutes:Object.freeze(rule.substitutes),...(rule.weights?{weights:Object.freeze(rule.weights)}:{}),...(rule.measured?{measured:Object.freeze({...rule.measured})}:{})})));
+// FF-31: OpenType features a policy row turns off in its replacement face (Georgia -> Gelasio: liga, clig).
+// The row's metric claim is measured that way, so the renderer must shape (fonts.js) and draw (svg.js)
+// the face that way too. Keyed by the replacement family: a Georgia deck is measured and drawn with
+// Gelasio, and Gelasio requested by name is treated identically, so measurement and drawing never disagree.
+const DISABLED_FEATURES = new Map(FONT_POLICY.filter(row => row.replacement?.disabledFeatures?.length).map(row => [row.replacement.family.toLowerCase(), Object.freeze([...row.replacement.disabledFeatures])]));
+/** OpenType feature tags to turn off for a preview face, from the font policy; undefined when none. */
+export function disabledFeaturesFor(family) {
+  return typeof family === "string" ? DISABLED_FEATURES.get(family.trim().toLowerCase()) : undefined;
+}
+/** CSS for SVG text drawn with a face whose features the policy turns off (`liga` and `clig` map to font-variant-ligatures), or undefined. */
+export function disabledFeaturesStyle(family) {
+  const tags = disabledFeaturesFor(family);
+  if (!tags) return undefined;
+  const ligatures = tags.some(tag => tag === "liga" || tag === "clig") ? "font-variant-ligatures:none;" : "";
+  return `${ligatures}font-feature-settings:${tags.map(tag => `'${tag}' 0`).join(",")}`;
+}
+/**
+ * Raster (resvg) ignores font-variant-ligatures and font-feature-settings, so it would still draw Gelasio's
+ * fi/fl/ffi/ffl ligature glyphs. For SVG about to be rasterized only (never the emitted SVG), put a zero-width
+ * non-joiner after each f that a ligature would join to the next letter, in text drawn with a face whose
+ * policy row turns liga or clig off. ZWNJ has zero advance, so the glyphs follow the unligated measurement.
+ */
+export function separateLigatures(svg) {
+  if (!DISABLED_FEATURES.size || !/<text[\s>]/.test(svg)) return svg;
+  const tokens = /<(\/?)([A-Za-z][\w:.-]*)((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>|<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>|[^<]+/g;
+  const stack = [], ligatureFree = family => DISABLED_FEATURES.get(family)?.some(tag => tag === "liga" || tag === "clig") === true;
+  return svg.replace(tokens, (token, close, name, attributes, selfClose) => {
+    if (name === undefined) return stack.at(-1) ? token.replace(/f(?=[fil])/g, "f\u200C") : token;
+    if (name !== "text" && name !== "tspan") return token;
+    if (close) { stack.pop(); return token; }
+    const declared = /\sfont-family\s*=\s*(?:"([^"]*)"|'([^']*)')/.exec(attributes);
+    const family = declared ? (declared[1] ?? declared[2]).split(",")[0].trim().replace(/^['"]|['"]$/g, "").toLowerCase() : undefined;
+    if (!selfClose) stack.push(family === undefined ? stack.at(-1) ?? false : ligatureFree(family));
+    return token;
+  });
+}
+// Candidates that were measured and did not qualify. Never bundled or selected automatically.
+// Akasia (Aptos) was dropped: its repository is gone and Intos, pinned and measured identical to Aptos 2.01, replaces it.
+export const EXPERIMENTAL_FONT_CANDIDATES = Object.freeze([Object.freeze({requestedFamily:"Segoe UI",substitute:"Selawik",source:"https://github.com/microsoft/Selawik/releases/tag/1.01",note:"Microsoft's OFL Segoe UI fallback, measured 2026-09-29 against Segoe UI 5.71: mean width difference 0.16% and up to 2.5% in regular, 2.65% in italic (no italic faces), 1.75% in Semibold, 349 code points, lowercase 5% shorter, hhea ascent 8% smaller. Fails the metric bar; not bundled. See docs/evidence/font-replacements-20260923/metric-candidates-20260929.json in core."})]);

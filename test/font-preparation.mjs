@@ -12,8 +12,12 @@ import {paginatePresentation} from '@openpresentation/opf/pagination';
 const require=createRequire(import.meta.url),hash=b=>createHash('sha256').update(b).digest('hex');
 const root=fileURLToPath(new URL('../',import.meta.url)),report={node:process.version,faces:[],guards:[]};
 const {registry,options}=await prepareNodeFonts();
-assert.equal(BUNDLED_FONT_MANIFEST.packages.length,8);
-assert.equal(BUNDLED_FONT_MANIFEST.packages.reduce((n,p)=>n+p.faces.length,0),33);
+// Base, office and open-family (FF-31) packs are runtime dependencies; the FF-19 script pack is an optional peer.
+const runtimePacks=BUNDLED_FONT_MANIFEST.packages.filter(p=>p.pack!=='scripts'),scriptPack=BUNDLED_FONT_MANIFEST.packages.filter(p=>p.pack==='scripts');
+assert.equal(runtimePacks.length,27);
+assert.equal(runtimePacks.reduce((n,p)=>n+p.faces.length,0),119);
+assert.equal(scriptPack.length,31);
+assert.equal(scriptPack.reduce((n,p)=>n+p.faces.length,0),63);
 assert.throws(()=>{BUNDLED_FONT_MANIFEST.packages[0].faces[0].sha256='changed';},TypeError);
 assert.equal(registry.embeddedFonts.length,9);
 assert.equal(options.useBundledFonts,false);
@@ -40,9 +44,13 @@ const aptosDeck={slides:[{title:'Explicit Office substitute',text:'The source fo
 const aptosSource=JSON.stringify(aptosDeck);
 renderSvg(aptosDeck,office.options);
 assert.equal(JSON.stringify(aptosDeck),aptosSource);
-assert.ok(office.registry.substitutions.some(item=>item.requestedFamily==='Aptos'&&item.resolvedFamily==='Carlito'&&item.compatibility==='visual'));
+// FF-31 (owner policy 2026-09-29): the font policy previews Aptos with the metric-compatible Intos.
+assert.ok(office.registry.substitutions.some(item=>item.requestedFamily==='Aptos'&&item.resolvedFamily==='Intos'&&item.compatibility==='metric'&&item.substitute));
 const metric=await prepareNodeFonts({pack:'office'});
-assert.throws(()=>renderSvg(aptosDeck,metric.options),{code:'font-unavailable'});
+assert.doesNotThrow(()=>renderSvg(aptosDeck,metric.options));
+assert.ok(metric.registry.substitutions.some(item=>item.requestedFamily==='Aptos'&&item.resolvedFamily==='Intos'&&item.compatibility==='metric'));
+const baseMetric=await prepareNodeFonts({pack:'base',substitutionPolicy:'metric'});
+assert.throws(()=>renderSvg(aptosDeck,baseMetric.options),{code:'font-unavailable'});
 await assert.rejects(prepareNodeFonts({pack:'unknown'}),{code:'invalid-font-pack'});
 assert.throws(()=>renderSvg({design:{fontScheme:'roboto'},slides:[{text:'你好'}]},options),{code:'missing-glyph'});
 
@@ -80,6 +88,22 @@ try{
   await writeFile(file,originalFont);
   await isolated.loadBundledFontRegistry();
   assert.ok((await raster.svgToPng(emptySvg)).length>0,'a repaired installation must recover from a rejected default-font load');
+  // FF-31: a vendored entry (fonts/carlito) resolves from the package root and has the same integrity guards.
+  for(const pkg of BUNDLED_FONT_MANIFEST.packages.filter(p=>(p.pack==='office'&&!p.vendored)||p.name==='@expo-google-fonts/noto-sans')){
+    await cp(path.dirname(require.resolve(`${pkg.name}/package.json`)),path.join(temporary,'node_modules',pkg.name),{recursive:true});
+  }
+  const vendored=BUNDLED_FONT_MANIFEST.packages.find(p=>p.vendored);
+  await assert.rejects(isolated.loadOfficeFontRegistry(),{code:'font-resource-unavailable'});report.guards.push('missing vendored directory');
+  for(const pkg of BUNDLED_FONT_MANIFEST.packages.filter(p=>p.vendored))await cp(path.join(root,pkg.vendored),path.join(temporary,pkg.vendored),{recursive:true});
+  const office=await isolated.loadOfficeFontRegistry();
+  const vendoredFile=path.join(temporary,vendored.vendored,vendored.faces[0].file),vendoredFont=await readFile(vendoredFile);
+  assert.ok(office.fontFiles.includes(vendoredFile),'vendored faces load from the package root');
+  await writeFile(vendoredFile,Buffer.concat([vendoredFont,Buffer.from('corrupt')]));
+  await assert.rejects(isolated.loadOfficeFontRegistry(),{code:'font-integrity-mismatch'});report.guards.push('modified vendored font bytes');
+  await writeFile(vendoredFile,vendoredFont);
+  const vendoredLicense=path.join(temporary,vendored.vendored,vendored.licenseFile);
+  await writeFile(vendoredLicense,'Missing original notice');
+  await assert.rejects(isolated.loadOfficeFontRegistry(),{code:'font-integrity-mismatch'});report.guards.push('modified vendored license');
 }finally{await rm(temporary,{recursive:true,force:true});}
 if(process.argv[2]){await mkdir(path.dirname(path.resolve(process.argv[2])),{recursive:true});await writeFile(process.argv[2],JSON.stringify(report,null,2)+'\n');}
-console.log('Prepared fonts: 33 pinned faces/notices, nine exact raster styles, deterministic document workflow, explicit substitutions and integrity failure/recovery passed.');
+console.log('Prepared fonts: 119 pinned faces/notices, nine exact raster styles, deterministic document workflow, explicit substitutions and integrity failure/recovery passed.');

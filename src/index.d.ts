@@ -1,4 +1,4 @@
-import type { EmbeddedFont } from "./fonts.js";
+import type { EmbeddedFont, ScriptFonts } from "./fonts.js";
 import type { SlideComposition, LayoutDiagnostic, TextMeasurement } from "@openpresentation/opf/composition";
 export declare const packageName = "@openpresentation/opf-render";
 
@@ -32,9 +32,25 @@ export declare const engineDefaults: Readonly<{
 }>;
 
 export type RenderDiagnostic = LayoutDiagnostic | {
-  code: "unsupported-pattern" | "date-needs-value";
+  /** A face lacked glyphs for the text; a bundled fallback face draws them in the preview. A note, not an error. */
+  code: "font-glyph-fallback";
+  path?: string;
+  message: string;
+  fontFamily: string;
+  fallbackFamily: string;
+  scripts: string[];
+  characters: string[];
+} | {
+  code: "unsupported-pattern" | "date-needs-value" | "language-preview-unavailable" | "language-preview-unresolved" | "paragraph-direction-unavailable";
   path: string;
   message: string;
+} | {
+  /** A font-scheme id matched no record; the default font scheme (`aptos`) was used as the base. */
+  code: "unresolved-font-scheme";
+  path: string;
+  message: string;
+  id: string;
+  fallback: string;
 } | {
   code: "unresolved-asset";
   path: string;
@@ -48,12 +64,21 @@ export type RenderDiagnostic = LayoutDiagnostic | {
 
 export interface RenderSvgOptions {
   textMeasurement?: TextMeasurement;
+  /** `"chain"` (default): a character the resolved face lacks is drawn with the first bundled face that has it, and reported as `font-glyph-fallback`. `"none"`: exact faces, a missing glyph raises `missing-glyph`. */
+  glyphFallback?: "chain" | "none";
+  /** Unscaled reference-pixel clearance around supplied vector text outlines; default 1. */
+  textRasterPadding?: number;
   embeddedFonts?: EmbeddedFont[];
   strictAssets?: boolean;
   imageResolver?: (src: string | undefined, context: { asset: unknown; path: string }) => string | null | undefined;
   onDiagnostic?: (diagnostic: RenderDiagnostic) => void;
   validate?: boolean;
   slideIndex?: number;
+  /**
+   * Today's calendar date (ISO YYYY-MM-DD) for `date: true` header/footer furniture. The renderer
+   * never reads a clock; without it a current date is reported as unresolved content.
+   */
+  date?: string;
   trace?: boolean;
   catalogs?: Record<string, { records?: unknown[] } | unknown[]>;
   catalogSources?: Record<string, { records?: unknown[] } | unknown[]>;
@@ -82,6 +107,10 @@ export interface ResolvedPresentation {
 
 export interface ResolvedSlide {
   geometry: SlideComposition;
+  /** Script font plan for this slide (FF-19): slots, language tags and direction. */
+  scriptFonts: ScriptFonts;
+  /** The script-aware measurement composition used; undefined for estimated layout. */
+  textMeasurement?: TextMeasurement;
   index: number;
   path: string;
   slide: unknown;
