@@ -1444,6 +1444,57 @@ export const BUNDLED_FONT_MANIFEST=freeze({
       ]
     },
     {
+      "name": "@expo-google-fonts/bitter",
+      "vendored": "fonts/bitter",
+      "version": "0.4.2",
+      "pack": "open",
+      "source": "https://www.npmjs.com/package/@expo-google-fonts/bitter/v/0.4.2",
+      "license": "OFL-1.1",
+      "licenseFile": "OFL.txt",
+      "licenseSha256": "152a1e283e23b42c4940da4c72f2f5bebaa17969cb77c76d7af05903846006f1",
+      "npmLicenseFile": "LICENSE_FONT",
+      "integrity": "sha512-7nAQQhj1k7CTn77ivgRnR39HqrVbzezJ3d8N9EWeDIfFDpZ9ACUNzHI7sg++JmvDnx1wuXwmfpjagTPTg2ZgWw==",
+      "reservedFontNames": [
+        "Bitter Pro"
+      ],
+      "upstream": "https://github.com/solmatas/BitterPro",
+      "copyright": "Copyright 2011 The Bitter Project Authors (https://github.com/solmatas/BitterPro)",
+      "faces": [
+        {
+          "file": "Bitter_400Regular.ttf",
+          "family": "Bitter",
+          "weight": 400,
+          "italic": false,
+          "sha256": "46a52a6b4e3202563bac5134c02e4d9db63685c439104a803a0b4fbf9e8ceaf4",
+          "npmFile": "400Regular/Bitter_400Regular.ttf"
+        },
+        {
+          "file": "Bitter_400Regular_Italic.ttf",
+          "family": "Bitter",
+          "weight": 400,
+          "italic": true,
+          "sha256": "4eda5cb005b1af2d5a733e0dcd727f65e2bddd0ea0466893f6d9259929ef20b2",
+          "npmFile": "400Regular_Italic/Bitter_400Regular_Italic.ttf"
+        },
+        {
+          "file": "Bitter_700Bold.ttf",
+          "family": "Bitter",
+          "weight": 700,
+          "italic": false,
+          "sha256": "391582a3004c7600b7234123c3c810b8c2c5ed3c90af7f087fe55f003cc075bf",
+          "npmFile": "700Bold/Bitter_700Bold.ttf"
+        },
+        {
+          "file": "Bitter_700Bold_Italic.ttf",
+          "family": "Bitter",
+          "weight": 700,
+          "italic": true,
+          "sha256": "65fad0650e416aebb4a7f6893633907f0e10ea153974b0c69f9074b611c259c4",
+          "npmFile": "700Bold_Italic/Bitter_700Bold_Italic.ttf"
+        }
+      ]
+    },
+    {
       "name": "@expo-google-fonts/noto-sans-jp",
       "version": "0.4.3",
       "pack": "scripts",

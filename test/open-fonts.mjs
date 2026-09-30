@@ -2,9 +2,9 @@
 // Merriweather Sans, Source Sans Pro) and the Red Hat families that the policy names as replacements (Segoe UI, Tahoma)
 // draw with vendored faces in the office pack, so a strict registry no longer throws for them.
 // FF-43 adds the open replacement families the policy routes to (Barlow, Anton, Figtree, Work Sans, EB Garamond, Archivo Narrow,
-// Libre Caslon Text) and completes Red Hat Display (300 to 700 with italics, including 600) and Red Hat Text (italics).
-//   - Bitter is not bundled: its OFL declares the Reserved Font Name "Bitter Pro", so only the copyright holder's unmodified files
-//     may be served, and upstream ships Bitter only as variable fonts (resvg ignores the wght axis).
+// Libre Caslon Text, and Bitter for Rockwell) and completes Red Hat Display (300 to 700 with italics, including 600) and Red Hat Text (italics).
+//   - Bitter reserves the name "Bitter Pro". OFL only stops a MODIFIED font from carrying its Reserved Font Name in its name, so the
+//     instanced statics (family and files named "Bitter") are allowed (test/font-licenses.mjs implements the name-contains rule).
 //   - Libre Caslon Text has no bold italic: upstream's static releases and the Google Fonts instances stop at Regular, Italic and Bold.
 //   - Red Hat statics are the @expo-google-fonts instances (OS/2 italic bit and weights correct). The RedHatFont repository's own statics
 //     are unusable in resvg: its italics lack the OS/2 italic bit, SemiBold declares weight 707 and Bold 799.
@@ -29,14 +29,14 @@ const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const root = fileURLToPath(new URL('../', import.meta.url));
 const rootPackage = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 const SCHEME_FAMILIES = ['Open Sans', 'Montserrat', 'Poppins', 'PT Serif', 'Bebas Neue', 'Lora', 'Merriweather Sans', 'Source Sans Pro'];
-const NOT_BUNDLED = ['Raleway', 'Playfair Display', 'Bitter'];
+const NOT_BUNDLED = ['Raleway', 'Playfair Display'];
 // Styles each FF-43 family ships (weight, italic); every other family ships the four standard styles.
 const STYLES = {'Anton': [[400, false]], 'Libre Caslon Text': [[400, false], [400, true], [700, false]]};
 const open = BUNDLED_FONT_MANIFEST.packages.filter(item => item.pack === 'open');
 
 // Manifest: vendored, pinned, license read from the shipped notice, Reserved Font Names recorded.
-assert.equal(open.length, 17);
-assert.equal(open.reduce((total, item) => total + item.faces.length, 0), 66);
+assert.equal(open.length, 18);
+assert.equal(open.reduce((total, item) => total + item.faces.length, 0), 70);
 assert.ok(rootPackage.files.includes('fonts'), 'the published package includes the vendored fonts');
 for (const item of open) {
   assert.ok(/^fonts\/[a-z0-9-]+$/.test(item.vendored), item.vendored);
@@ -52,7 +52,7 @@ for (const item of open) {
   // A family with a Reserved Font Name in its own name must be the copyright holder's byte-identical file at a pinned commit.
   if (item.faces.every(face => face.upstreamFile)) for (const face of item.faces) {
     assert.ok(isUnmodifiedUpstreamUrl(face.upstreamFile.url) && face.upstreamFile.sha256 === face.sha256, `${item.name} ${face.file} is byte-identical to its pinned upstream file`);
-  } else assert.deepEqual(item.reservedFontNames, [], `${item.name}: an npm-derived (instanced) family must not declare a Reserved Font Name`);
+  } else assert.ok(!item.reservedFontNames.some(name => [item.faces[0].family, ...item.faces.map(face => face.file)].some(text => text.toLowerCase().includes(name.toLowerCase()))), `${item.name}: an npm-derived (instanced) face must not carry the Reserved Font Name in its family or file name`);
   // PROVENANCE.json says where every byte came from and agrees with the manifest.
   const provenance = JSON.parse(await readFile(path.join(directory, 'PROVENANCE.json'), 'utf8'));
   assert.deepEqual([provenance.license, provenance.licenseSha256, provenance.reservedFontNames, provenance.copyright, provenance.renamedFrom, provenance.upstream.source], [item.license, item.licenseSha256, item.reservedFontNames, item.copyright, item.renamedFrom, item.source]);
@@ -97,7 +97,8 @@ const strict = await loadOfficeFontRegistry();
 const selected = new Set(SCHEME_FAMILIES);
 for (const record of fontSchemes.records ?? fontSchemes) for (const family of [record.major, record.minor]) if (fontPolicyFor(family)?.licenseClass === 'open' && !/^Noto /.test(family)) selected.add(family);
 for (const family of SCHEME_FAMILIES) assert.ok(selected.has(family) || family === 'Source Sans Pro', `${family} is selected by a font scheme`);
-const NEW_FAMILIES = ['Barlow', 'Anton', 'Figtree', 'Work Sans', 'EB Garamond', 'Archivo Narrow', 'Libre Caslon Text'];
+const NEW_FAMILIES = ['Barlow', 'Anton', 'Figtree', 'Work Sans', 'EB Garamond', 'Archivo Narrow', 'Libre Caslon Text', 'Bitter'];
+assert.deepEqual(byName('@expo-google-fonts/bitter').reservedFontNames, ['Bitter Pro']);
 for (const family of [...selected, 'Source Sans 3', 'Red Hat Display', 'Red Hat Text', ...NEW_FAMILIES]) {
   if (NOT_BUNDLED.includes(family)) { assert.throws(() => strict.resolveFont({fontFamily: family, fontWeight: 400}), {code: 'font-unavailable'}, family); continue; }
   assert.equal(fontPolicyFor(family).licenseClass, 'open', family);
@@ -169,9 +170,9 @@ assert.throws(() => without.resolveFont({fontFamily: 'Source Sans Pro', fontWeig
 assert.equal(strict.embeddedFonts.length, 33);
 assert.ok(strict.embeddedFonts.every(font => font.embed === undefined));
 const defaults = await prepareNodeFonts({pack: 'office'});
-assert.equal(defaults.options.embeddedFonts.length, 119, 'prepareNodeFonts supplies every face (99 office, base, open and Intos faces, plus the four Noto Sans fallback faces); the SVG picks the ones its text uses');
-assert.equal(defaults.options.embeddedFonts.filter(font => font.embed === 'used').length, 66 + 16 + 4, 'the 66 open faces, the 16 Intos faces and the 4 Noto Sans fallback faces');
-assert.equal(defaults.options.fontFiles.length, 119);
+assert.equal(defaults.options.embeddedFonts.length, 123, 'prepareNodeFonts supplies every face (103 office, base, open and Intos faces, plus the four Noto Sans fallback faces); the SVG picks the ones its text uses');
+assert.equal(defaults.options.embeddedFonts.filter(font => font.embed === 'used').length, 70 + 16 + 4, 'the 70 open faces, the 16 Intos faces and the 4 Noto Sans fallback faces');
+assert.equal(defaults.options.fontFiles.length, 123);
 assert.equal((await prepareNodeFonts({pack: 'base'})).options.embeddedFonts.length, 9);
 const schemeDocument = family => ({
   design: {fontScheme: 'x-open'},
@@ -224,4 +225,4 @@ for (const family of [...SCHEME_FAMILIES, 'Red Hat Display', 'Red Hat Text', ...
   assert.ok(!hashes.has(digest), `${family} differs from ${hashes.get(digest)}`);
   hashes.set(digest, family);
 }
-console.log('Open families passed: 17 vendored packs and 66 pinned faces (RFN families byte-identical to pinned upstream), notices verified, strict mode does not throw, every face paints as itself and distinctly in resvg, open faces embed only when named, Red Hat (300 to 700 with italics) used for Segoe UI and Tahoma.');
+console.log('Open families passed: 18 vendored packs and 70 pinned faces (RFN families byte-identical to pinned upstream), notices verified, strict mode does not throw, every face paints as itself and distinctly in resvg, open faces embed only when named, Red Hat (300 to 700 with italics) used for Segoe UI and Tahoma.');

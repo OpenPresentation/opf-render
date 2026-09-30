@@ -107,7 +107,7 @@ assert.equal(strict.registry.resolveFont({fontFamily: 'Calibri', fontWeight: 700
 assert.equal(strict.registry.resolveFont({fontFamily: 'Cambria', fontWeight: 400}).compatibility, 'visual');
 assert.equal(strict.registry.resolveFont({fontFamily: 'Georgia', fontWeight: 400}).compatibility, 'metric');
 assert.throws(() => strict.registry.resolveFont({fontFamily: 'Georgia', fontWeight: 500}), {code: 'font-unavailable'});
-// An open family that no pack ships yet (Raleway and Playfair Display: variable-only upstream, resvg ignores the weight axis; Bitter: Reserved Font Name, no unmodified statics) says so; one the office pack ships (Montserrat, FF-31) points at that pack when only the base pack is loaded.
+// An open family that no pack ships yet (Raleway and Playfair Display: variable-only upstream, resvg ignores the weight axis) says so; one the office pack ships (Montserrat, FF-31) points at that pack when only the base pack is loaded.
 assert.throws(() => strict.registry.resolveFont({fontFamily: 'Raleway', fontWeight: 400}), error => error.details.licenseClass === 'open' && /no pinned renderer pack ships it yet/.test(error.message));
 assert.equal(strict.registry.resolveFont({fontFamily: 'Montserrat', fontWeight: 400}).compatibility, 'exact');
 const baseOnly = await prepareNodeFonts({pack: 'base'});

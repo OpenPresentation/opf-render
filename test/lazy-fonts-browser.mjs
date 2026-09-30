@@ -34,6 +34,7 @@ const REPLACEMENT_PAIRS = [
   {name: 'trebuchet-century', major: 'Trebuchet MS', minor: 'Century Gothic', families: ['Figtree', 'Work Sans']},
   {name: 'garamond-narrow', major: 'Garamond', minor: 'Arial Narrow', families: ['EB Garamond', 'Archivo Narrow']},
   {name: 'bookman-impact', major: 'Bookman Old Style', minor: 'Impact', families: ['Libre Caslon Text', 'Anton']},
+  {name: 'rockwell-tahoma', major: 'Rockwell', minor: 'Tahoma', families: ['Bitter', 'Red Hat Text']},
 ];
 const vendoredFaces = family => BUNDLED_FONT_MANIFEST.packages.filter(pkg => pkg.vendored).flatMap(pkg => pkg.faces.filter(face => face.family === family).map(face => ({file: `${pkg.vendored}/${face.file}`, weight: face.weight, italic: face.italic})));
 const pairDeck = pair => ({
