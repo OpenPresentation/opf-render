@@ -1130,6 +1130,7 @@ export const BUNDLED_FONT_MANIFEST=freeze({
       "license": "OFL-1.1",
       "licenseFile": "OFL.txt",
       "licenseSha256": "7e946cf1171784d1015279e7dc35f827957a6b5d1f1f659ae0c98e5f5e37ed9b",
+      "upstreamLicenseUrl": "https://raw.githubusercontent.com/googlefonts/Raleway/7e0be846a3097743b9bf442eb8e65bc1fd96c934/OFL.txt",
       "reservedFontNames": [
         "Raleway"
       ],
@@ -1191,6 +1192,7 @@ export const BUNDLED_FONT_MANIFEST=freeze({
       "license": "OFL-1.1",
       "licenseFile": "OFL.txt",
       "licenseSha256": "e414e07f7a4da16ed47ebec80d52dd79f21d3ca42bc92385a755d8078a038814",
+      "upstreamLicenseUrl": "https://raw.githubusercontent.com/clauseggers/Playfair/6e115d70ee7ff6ed887babf3829ccd1de65fd2bd/OFL.txt",
       "reservedFontNames": [
         "Playfair Display"
       ],

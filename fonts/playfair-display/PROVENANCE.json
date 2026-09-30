@@ -1,7 +1,8 @@
 {
   "upstream": {
     "source": "https://github.com/clauseggers/Playfair/tree/6e115d70ee7ff6ed887babf3829ccd1de65fd2bd/fonts/TTF",
-    "commit": "6e115d70ee7ff6ed887babf3829ccd1de65fd2bd"
+    "commit": "6e115d70ee7ff6ed887babf3829ccd1de65fd2bd",
+    "licenseUrl": "https://raw.githubusercontent.com/clauseggers/Playfair/6e115d70ee7ff6ed887babf3829ccd1de65fd2bd/OFL.txt"
   },
   "license": "OFL-1.1",
   "licenseFile": "OFL.txt",

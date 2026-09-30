@@ -1,7 +1,8 @@
 {
   "upstream": {
     "source": "https://github.com/googlefonts/Raleway/tree/7e0be846a3097743b9bf442eb8e65bc1fd96c934/fonts/TTF",
-    "commit": "7e0be846a3097743b9bf442eb8e65bc1fd96c934"
+    "commit": "7e0be846a3097743b9bf442eb8e65bc1fd96c934",
+    "licenseUrl": "https://raw.githubusercontent.com/googlefonts/Raleway/7e0be846a3097743b9bf442eb8e65bc1fd96c934/OFL.txt"
   },
   "license": "OFL-1.1",
   "licenseFile": "OFL.txt",
