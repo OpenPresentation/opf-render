@@ -14,6 +14,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {examples} from '@openpresentation/opf/examples';
 import {createFontRegistry} from '../dist/fonts.js';
+import {renderSvg} from '../dist/svg.js';
 import {prepareNodeFonts} from '../dist/fonts-node.js';
 import {lazyFacesNeeded, loadBrowserFontRegistry, presentationFaces, splitStartupFaces} from '../dist/fonts-browser.js';
 
@@ -61,7 +62,13 @@ const deck = (slides, design = {fontScheme: 'roboto'}) => ({name: 'extra faces',
 const faceNames = registry => registry.describeFaces().map(face => `${face.family} ${face.weight}${face.italic ? 'i' : ''}`).sort();
 
 // ---- validation ----
-const invalid = (options, pattern) => assert.rejects(load(fake(), options), error => error.code === 'invalid-font-source' && pattern.test(error.message));
+// A bad list is refused before any startup face is fetched or added to the document (nothing to dispose afterwards).
+const invalid = async (options, pattern) => {
+  const host = fake();
+  await assert.rejects(load(host, options), error => error.code === 'invalid-font-source' && pattern.test(error.message));
+  assert.equal(host.fonts.size, 0, 'no face is left in the document');
+  assert.deepEqual(host.served, [], 'and nothing was fetched');
+};
 await invalid({extraLazyFonts: 'nope'}, /array/);
 await invalid({extraLazyFonts: [{...extras[0], sha256: undefined}]}, /SHA-256/);
 await invalid({extraLazyFonts: [{...extras[0], sha256: 'abc'}]}, /SHA-256/);
@@ -108,6 +115,12 @@ await invalid({extraLazyFonts: [extras[0], extras[0]]}, /repeats url/);
   assert.ok(host.served.some(url => url.startsWith('https://fonts.example/fonts/intos/')) && host.served.some(url => url.startsWith('https://host.test/')));
   assert.deepEqual(registry.pendingLazyFonts(both), []);
   assert.ok(registry.describeFaces().some(face => /^Intos/.test(face.family)) && registry.describeFaces().some(face => face.family === 'Roboto Mono'));
+
+  // Host faces are embed "used" like the vendored ones: registry.embeddedFonts holds the startup face only, and an SVG embeds a host face
+  // only when it is passed explicitly and the slide's text uses its family.
+  assert.deepEqual(registry.embeddedFonts.map(face => `${face.family} ${face.weight}`), ['Roboto 400']);
+  const svg = renderSvg(plain, {textMeasurement: registry.textMeasurement, embeddedFonts: registry.selectEmbeddedFonts(() => true)});
+  assert.deepEqual([...svg.matchAll(/@font-face\{font-family:"([^"]+)";font-weight:(\d+)/g)].map(match => `${match[1]} ${match[2]}`).sort(), ['Roboto 400', 'Roboto 700'], 'Roboto Bold embeds because the title uses it; the other loaded faces do not exist yet');
 
   // The vendored loader still needs lazyFontsBaseUrl, the host's faces do not.
   const noBase = await load(fake(), {lazyFontsBaseUrl: undefined});

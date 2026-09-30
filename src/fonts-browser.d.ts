@@ -72,7 +72,8 @@ export declare function loadBrowserFontRegistry(
      * FF-41: faces the host serves itself, loaded on demand like the vendored ones: hash-verified, all or nothing, in the same
      * `lazyFacesNeeded` pass (a document that draws a vendored and an extra face fetches both in one `ensureLazyFonts`), removed
      * by `dispose()`. They appear in `registry.lazyFonts` with `package: "host"`. Typically the faces of a manifest that
-     * `splitStartupFaces` left out of the startup set. Extra faces are not `embed: "used"`: a standalone SVG does not embed them.
+     * `splitStartupFaces` left out of the startup set. Like the vendored faces they are `embed: "used"`: not in `registry.embeddedFonts` (only the startup faces are);
+     * pass `registry.selectEmbeddedFonts(...)` to embed them in a standalone SVG, and then only when a slide's text uses their family.
      * A missing or malformed `sha256`, a duplicate `url` or an invalid family throws `invalid-font-source`.
      */
     extraLazyFonts?: readonly ExtraLazyFont[];
