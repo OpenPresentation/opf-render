@@ -40,7 +40,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OpenPresentation/opf
-          ref: 07cd9d4fc400725293e4e697640662333a2eb356
+          # FF-45 (RR-17): the font policy snapshot comes from the core branch of opf#255 (its head commit) until that PR merges; repin to the core main commit that includes it before or when merging.
+          ref: 1584d0dd7fab33f235d94089bd8cc2d43bfcc6c9
           path: opf
           fetch-depth: 0
           persist-credentials: false
