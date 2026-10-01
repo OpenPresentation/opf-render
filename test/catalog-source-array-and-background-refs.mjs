@@ -90,4 +90,9 @@ assert.deepEqual([...gradient.matchAll(/<stop[^>]*stop-color="([^"]+)"/g)].map(m
 const pattern = renderSvg(withBackground({type: 'pattern', pattern: {preset: 'pct5', foregroundColor: 'var:brand', backgroundColor: 'accent2'}}));
 assert.ok(pattern.includes(`fill="${scheme.accent2.toUpperCase()}"`), 'pattern background resolves a scheme slot');
 assert.ok(pattern.includes('fill="#FF0000"'), 'pattern foreground resolves a variable');
+// A dark var:/slot background chooses the same default text as the equivalent literal (whole SVG identical).
+assert.equal(darkText, renderSvg(withBackground({type: 'solid', color: '#000000'})));
+const patternWith = color => renderSvg(withBackground({type: 'pattern', pattern: {preset: 'pct5', foregroundColor: '#FFFFFF', backgroundColor: color}}, {variables: {night: '#0F172A'}}));
+assert.equal(patternWith('var:night'), patternWith('#0F172A'), 'dark pattern background via var: matches the literal');
+assert.ok(patternWith('var:night').includes(`fill="${scheme.light1.toUpperCase()}"`), 'dark pattern background gets light text');
 console.log('Catalog source arrays and ColorRef backgrounds passed.');
