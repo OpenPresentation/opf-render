@@ -15,9 +15,14 @@ assert.equal(fixture.layouts.length, 57, 'the 50 partial and 7 gallery-only layo
 const anchors = {left: 'start', center: 'middle', right: 'end'};
 const attribute = (attrs, name) => new RegExp(`(?:^|\\s)${name}="([^"]*)"`).exec(attrs)?.[1];
 const tokens = text => text.split(/(?=<)/);
+// The gallery also derives the layout hints core composes (contentDirection, chartPrimary, listBullet);
+// they move boxes by design, so the default keeps them and drops only what is alignment (and the layout itself).
+const LAYOUT_HINTS = ['contentDirection', 'chartPrimary', 'listBullet'];
 const withoutLayout = document => {
-  const base = structuredClone(document);
+  const base = structuredClone(document), design = document.slides[0].design ?? {};
   delete base.slides[0].layout; delete base.slides[0].design; delete base.slides[0].composition; delete base.catalogs;
+  const hints = Object.fromEntries(LAYOUT_HINTS.filter(key => design[key] !== undefined).map(key => [key, design[key]]));
+  if (Object.keys(hints).length) base.slides[0].design = hints;
   return base;
 };
 // The alignment the gallery design asks for, restated independently of core.
