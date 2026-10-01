@@ -572,6 +572,10 @@ function renderCategoryChart(c, spec) {
   const series = c.series();
   const categories = c.rows.map((row) => c.label(row[0]));
   const count = categories.length;
+  // Right to left (RR-05): column, line and area charts run their category axis from the right (PowerPoint's reversed categories,
+  // c:catAx orientation maxMin), which also puts the value axis at the right. Bar charts keep their vertical category axis.
+  const rtl = c.bound.geometry?.direction === "rtl" && !horizontal;
+  const categorySlot = (i) => rtl ? count - 1 - i : i;
   const stacks = stackCategoryValues(series, count, spec.kind, spec.grouping, c.path);
   // The scale follows the plotted values. Only stacked bars and areas plot from a
   // base (the running total below them); an unstacked series has a synthetic zero
@@ -582,7 +586,7 @@ function renderCategoryChart(c, spec) {
   const legendWidth = seriesLegend(c, series, spec.kind === "line" ? "line" : undefined, spec.markers);
   const right = box.x + box.width - pad - legendWidth;
   const top = box.y + pad + c.lineHeight / 2;
-  let plot, scale;
+  let plot, scale, valueTickWidth;
   if (horizontal) {
     const categoryWidth = Math.min(box.width * 0.3, Math.max(0, ...categories.map((name) => c.width(flatLabel(name)))) + fontPx * 0.5);
     const x = box.x + pad + categoryWidth + c.pad / 2;
@@ -597,14 +601,20 @@ function renderCategoryChart(c, spec) {
     drawRowLabels(c, planRowLabels(c, entries, rowBand, categoryWidth), entries, rowBand, categoryWidth, box.x + pad, (i) => plot.y + plot.height - (i + 1) * rowBand);
   } else {
     const entries = categories.map((name, i) => ({ name, path: `${c.path}.data.rows.${i}.0` }));
+    if (rtl) entries.reverse();
     const axis = planCategoryAxis(c, entries, (reserve) => {
       const height = Math.max(1, box.y + box.height - pad - reserve - top);
       const fitted = niceScale(dataMin, dataMax, maxIntervalsFor(height, c.lineHeight * 1.2), { percent });
       const tickWidth = Math.max(...fitted.ticks.map((tick) => c.width(formatTick(tick, percent)))) + fontPx * 0.5;
+      if (rtl) {
+        const x = box.x + pad + fontPx / 2;
+        return { scale: fitted, plot: { x, y: top, width: Math.max(1, right - tickWidth - x), height }, tickWidth };
+      }
       const x = box.x + pad + tickWidth;
       return { scale: fitted, plot: { x, y: top, width: Math.max(1, right - x - fontPx / 2), height } };
     });
     ({ plot, scale } = axis);
+    valueTickWidth = axis.tickWidth;
     drawBottomLabels(c, axis.plan, plot, entries);
   }
   const at = (value) => horizontal ? plot.x + axisFraction(value, scale) * plot.width : plot.y + axisFraction(value, scale, true) * plot.height;
@@ -618,18 +628,20 @@ function renderCategoryChart(c, spec) {
       c.text(label, { x: position - width / 2, y: plot.y + plot.height, width, height: c.lineHeight }, c.path);
     } else {
       gridline(c, plot.x, position, plot.x + plot.width, position);
-      c.text(label, { x: box.x + pad, y: position - c.lineHeight / 2, width: plot.x - box.x - pad - fontPx * 0.35, height: c.lineHeight }, c.path, "right");
+      if (rtl) c.text(label, { x: plot.x + plot.width + fontPx * 0.35, y: position - c.lineHeight / 2, width: Math.max(1, valueTickWidth - fontPx * 0.35), height: c.lineHeight }, c.path, "left");
+      else c.text(label, { x: box.x + pad, y: position - c.lineHeight / 2, width: plot.x - box.x - pad - fontPx * 0.35, height: c.lineHeight }, c.path, "right");
     }
   }
   const band = (horizontal ? plot.height : plot.width) / count;
-  if (spec.kind === "bar") drawBars(c, spec, series, stacks, { plot, band, at, horizontal, scale });
-  else if (spec.kind === "line") drawLines(c, spec, series, stacks, { plot, band, at });
-  else drawAreas(c, series, stacks, { plot, band, at, crossing });
+  if (spec.kind === "bar") drawBars(c, spec, series, stacks, { plot, band, at, horizontal, scale, categorySlot });
+  else if (spec.kind === "line") drawLines(c, spec, series, stacks, { plot, band, at, categorySlot });
+  else drawAreas(c, series, stacks, { plot, band, at, crossing, categorySlot });
   if (horizontal) {
     axisLine(c, crossing, plot.y, crossing, plot.y + plot.height);
     axisLine(c, plot.x, plot.y + plot.height, plot.x + plot.width, plot.y + plot.height);
   } else {
-    axisLine(c, plot.x, plot.y, plot.x, plot.y + plot.height);
+    const valueAxisX = rtl ? plot.x + plot.width : plot.x;
+    axisLine(c, valueAxisX, plot.y, valueAxisX, plot.y + plot.height);
     axisLine(c, plot.x, crossing, plot.x + plot.width, crossing);
   }
 }
@@ -644,7 +656,7 @@ export function barGeometry(band, seriesCount, grouping) {
   return { group: width, width, offset: (band - width) / 2, clustered: false };
 }
 
-function drawBars(c, spec, series, stacks, { plot, band, at, horizontal, scale }) {
+function drawBars(c, spec, series, stacks, { plot, band, at, horizontal, scale, categorySlot = (i) => i }) {
   // Bars grow from zero, or from the axis minimum (maximum, for all-negative data) when zero is off the axis.
   const base = (value) => Math.min(scale.max, Math.max(scale.min, value));
   const geometry = barGeometry(band, series.length, spec.grouping);
@@ -660,14 +672,14 @@ function drawBars(c, spec, series, stacks, { plot, band, at, horizontal, scale }
         const y = plot.y + plot.height - i * band - geometry.offset - slot - geometry.width;
         c.mark("rect", { x: Math.min(a, b), y, width: Math.abs(b - a), height: geometry.width, fill: color }, path);
       } else {
-        const x = plot.x + i * band + geometry.offset + slot;
+        const x = plot.x + categorySlot(i) * band + geometry.offset + slot;
         c.mark("rect", { x, y: Math.min(a, b), width: geometry.width, height: Math.abs(b - a), fill: color }, path);
       }
     });
   });
 }
 
-function drawLines(c, spec, series, stacks, { plot, band, at }) {
+function drawLines(c, spec, series, stacks, { plot, band, at, categorySlot = (i) => i }) {
   const radius = 3 * c.pt;
   series.forEach((s, j) => {
     const color = c.colors[j % c.colors.length];
@@ -678,18 +690,18 @@ function drawLines(c, spec, series, stacks, { plot, band, at }) {
     };
     stacks[j].forEach((point, i) => {
       if (!point) { flush(); return; }
-      run.push([plot.x + (i + 0.5) * band, at(point.to)]);
+      run.push([plot.x + (categorySlot(i) + 0.5) * band, at(point.to)]);
     });
     flush();
     if (spec.markers) stacks[j].forEach((point, i) => {
-      if (point) c.mark("circle", { cx: plot.x + (i + 0.5) * band, cy: at(point.to), r: radius, fill: color, stroke: color, "stroke-width": 0.75 * c.pt }, `${c.path}.data.rows.${i}.${s.column}`);
+      if (point) c.mark("circle", { cx: plot.x + (categorySlot(i) + 0.5) * band, cy: at(point.to), r: radius, fill: color, stroke: color, "stroke-width": 0.75 * c.pt }, `${c.path}.data.rows.${i}.${s.column}`);
     });
   });
 }
 
-function drawAreas(c, series, stacks, { plot, band, at, crossing }) {
+function drawAreas(c, series, stacks, { plot, band, at, crossing, categorySlot = (i) => i }) {
   series.forEach((s, j) => {
-    const points = stacks[j].map((point, i) => ({ x: plot.x + (i + 0.5) * band, from: point.from, to: point.to }));
+    const points = stacks[j].map((point, i) => ({ x: plot.x + (categorySlot(i) + 0.5) * band, from: point.from, to: point.to }));
     const upper = points.map((p) => `${c.num(p.x)} ${c.num(at(p.to))}`);
     const lower = points.slice().reverse().map((p) => `${c.num(p.x)} ${c.num(p.from === 0 ? crossing : at(p.from))}`);
     c.mark("path", { d: `M ${upper.join(" L ")} L ${lower.join(" L ")} Z`, fill: c.colors[j % c.colors.length] }, `${c.path}.data.columns.${s.column}`);
