@@ -380,9 +380,13 @@ function resolveColorRefIn(value, design, fallback) {
 // Background fills: a literal hex keeps normalizeColor's behaviour (uppercase, alpha kept);
 // anything else is a ColorRef (var:id, scheme slot or role) resolved like table fills and run
 // colours, falling back exactly as an unparseable literal did.
+// Roles resolve through the colour scheme only: background, surface and text are derived from the
+// background itself (the contrast text), so a reference must not see them.
 function resolveBackgroundColor(value, design, fallback) {
   const literal = normalizeColor(value, null);
-  return literal ?? resolveColorRefIn(value, design, fallback);
+  if (literal) return literal;
+  const { primary, secondary, accent } = design.colors ?? {};
+  return resolveColorRefIn(value, { colorScheme: design.colorScheme, colors: { primary, secondary, accent }, variables: design.variables }, fallback);
 }
 
 function resolveBackground(background, colorScheme, design) {

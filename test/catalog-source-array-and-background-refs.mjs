@@ -99,4 +99,10 @@ assert.ok(patternWith('var:night').includes(`fill="${scheme.light1.toUpperCase()
 const textRole = renderSvg(withBackground({type: 'pattern', pattern: {preset: 'pct5', foregroundColor: '#FFFFFF', backgroundColor: 'text'}}));
 assert.equal(firstRect(textRole), scheme.dark1.toUpperCase(), 'pattern background text role resolves to its scheme slot');
 assert.ok(textRole.includes(`<text`) && !new RegExp(`<text[^>]*fill="${scheme.dark1.toUpperCase()}"`).test(textRole), 'text is not painted in the pattern background colour');
+// Roles resolve through the colour scheme only: on a dark background the text role is the scheme's dark1, not the contrast text.
+const darkPattern = renderSvg(withBackground({type: 'pattern', pattern: {preset: 'pct5', foregroundColor: 'text', backgroundColor: 'var:night'}}, {variables: {night: '#0F172A'}}));
+assert.ok(darkPattern.includes(`fill="${scheme.dark1.toUpperCase()}"`) && /<circle[^>]*fill="#[0-9A-F]{6}"/.test(darkPattern));
+assert.equal(darkPattern.match(/<circle[^>]*fill="([^"]+)"/)[1], scheme.dark1.toUpperCase(), 'pattern foreground text role is the scheme dark1');
+const textStop = renderSvg(withBackground({type: 'gradient', gradient: {angle: 0, stops: [{position: 0, color: 'text'}, {position: 1, color: 'surface'}]}}));
+assert.deepEqual([...textStop.matchAll(/stop-color="([^"]+)"/g)].map(match => match[1]), [scheme.dark1.toUpperCase(), scheme.light2.toUpperCase()]);
 console.log('Catalog source arrays and ColorRef backgrounds passed.');
