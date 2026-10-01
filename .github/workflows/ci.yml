@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OpenPresentation/opf
-          ref: 4edf1341da2789f67fec6e9e8b96d1df9e19f8b8 # core codex/rr-05-rtl-layout (RR-05 right-to-left composition)
+          ref: 9431cf635976e2afbf293d5dc7e2a2e8eaedc6d4 # core codex/rr-05-rtl-layout source commit (RR-05 right-to-left composition, before the RR-17 merge)
           path: opf
           fetch-depth: 0
           persist-credentials: false
