@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Cover heading alignment (needs the core release that aligns a cover's tag and subtitle with its title): the preview anchors a cover's tag, title and subtitle at one alignment instead of drawing a centered tag and subtitle over a left title. No renderer code changes (it draws core's `item.alignment`); the cover-centering raster baseline changes for 100 of 805 example slides (slide 1 of 100 decks) and `test/item-alignment.mjs` covers the shared, explicit-split and body-slide cases.
+
 - FF-61: the slide `tag` draws in the slide text colour when the scheme primary is under 4.5:1 (WCAG 2.x contrast ratio) against the slide background; otherwise it keeps the primary (FF-59). The background is the solid or pattern colour, or the scheme `light1` for a gradient. opf-pptx applies the identical rule, so the preview and the PPTX agree (the export writes the text colour reference the body text uses, such as `tx1`, instead of `accent1`). 10 of the 805 corpus slides change, each only in the fill of its tag text (contrast 2.15 to 4.10 before, 21:1 after); raster baselines regenerated. Test: `test/tag-colour.mjs`.
 
 - Fix: `catalogs.<kind>.source` may be an ordered array of sources (schema `CatalogEntry.source`, first match wins, the default catalog appended implicitly). `renderSvg` used to throw `source.startsWith is not a function` for any array; each entry now resolves like a single string source (`options.catalogSources[source]`, or the bundled snapshot for the `https://www.pptx.gallery/` and `pkg:@openpresentation/opf/` prefixes), records are searched in array order, non-string entries are ignored and nothing is fetched. Applies to every catalog kind and to the socials platform lookup.
