@@ -171,6 +171,22 @@ for (const { name, deck, expect } of roundTrips) {
   assert.ok(plain.length > first.length);
 }
 
+// ---- Byte-for-byte reproducibility across machines ----------------------------------------------------------------------
+// A frozen SVG (Latin ligatures and kerning, CJK, Arabic and Hebrew runs, a gradient, a hatch pattern, a clip, a translucent
+// group, a link, a rotation) exported with the pinned bundled fonts must hash to the same value on every operating system and
+// Node version. If a dependency or font bump changes the bytes on purpose, review the diff and update the hash.
+{
+  const registry = await loadBundledFontRegistry({ scripts: "all" });
+  const svg = await readFile(new URL("fixtures/pdf/mixed-script-slide.svg", import.meta.url), "utf8");
+  const options = { fontFiles: registry.fontFiles, useBundledFonts: false, metadata: { title: "Fixture", author: "OPF", language: "en-GB", creationDate: "2026-01-01T00:00:00Z" } };
+  const pdf = await svgToPdf(svg, options);
+  assert.deepEqual(pdf, await svgToPdf(svg, options));
+  const digest = createHash("sha256").update(pdf).digest("hex");
+  assert.equal(digest, "cbba6622db67a6e82a561fc41112950f1ec375f97f2fb4f2ef42c5351e83752e", `fixture PDF bytes changed (${pdf.length} bytes, sha256 ${digest})`);
+  const text = nfkc(await pageText(await openPdf(pdf), 1));
+  for (const wanted of ["Résumé: final flow café", "日本語のテキストと漢字", "openpresentation.org", "Stretched to a measured width"]) assert.ok(compact(text).includes(compact(wanted)), `fixture text: ${wanted}`);
+}
+
 // ---- Pages, metadata, language, links, tagging ------------------------------------------------------------------------
 {
   const wide = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450" lang="fr-CA"><rect width="800" height="450" fill="#eef"/><a href="https://example.com/path?q=1&amp;r=%C3%A9"><text x="40" y="100" font-family="Roboto" font-size="30" fill="#06c" text-decoration="underline" xml:space="preserve">Lien de test</text></a><a href="javascript:alert(1)"><text x="40" y="160" font-family="Roboto" font-size="30" xml:space="preserve">Not a link</text></a></svg>`;
