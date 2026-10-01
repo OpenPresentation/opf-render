@@ -79,6 +79,8 @@ Unresolved images produce an `unresolved-asset` diagnostic through `onDiagnostic
 
 Header/footer images and watermarks fit their complete artwork within their allocated regions. `design.imageFill: "crop"` continues to crop content picture placeholders; background images retain their own fit policy.
 
+An `image/svg+xml` data URI (base64 or text) is drawn as an image wherever a raster is (content, header/footer, watermark, logo, slide image, background, picture bullet), with the raster's box and fit, when it is an `<svg>` in the SVG namespace with an intrinsic size (`width` and `height`, or a `viewBox`); anything else keeps the `Image unavailable` placeholder. opf-pptx exports the same picture as a native SVG picture over a PNG fallback. An SVG used as an image never runs script or loads anything outside its own document, in a browser or in PNG/PDF output; PNG and PDF output draw it with resvg, and its text uses the same bundled fonts.
+
 A slide-level image (`design.slideImage`, composed by core as `geometry.slideImage`) is drawn at the shared composition frame, beneath branding and content. `crop` (the slide image default) covers the frame from the center and `fit` centers the whole image, matching the coordinated PPTX `a:srcRect` export. With `trace: true`, `data-opf-slide-image` names the configuring design path and the `<image>` carries the asset's source path. Unresolved slide images use the ordinary placeholder and `unresolved-asset` diagnostic.
 
 Slide-image treatments render from core's normalized geometry in the native picture's paint order:
@@ -224,6 +226,18 @@ Limits:
 - Estimated (unmeasured) rich text keeps logical fragment order and relies on the browser's bidi algorithm.
 
 These browser entrypoints are included in the published package. For coordinated development, the sibling OPF repository's `pnpm pack:ecosystem` prepares local npm tarballs. See the core repository's [live editor guide](https://github.com/OpenPresentation/opf/blob/main/docs/live-editor.md) for installation and the fidelity contract. Identical SVG geometry does not guarantee identical raster pixels across browser engines or PowerPoint.
+
+## Templates and variables (RR-32)
+
+A deck that declares content variables, or is marked `"template": true`, is resolved by core `resolveVariables` before it is composed, so the preview and the PPTX exporter agree. Pass the values as `variables`:
+
+```js
+import { renderSvgDeck } from '@openpresentation/opf-render';
+
+renderSvgDeck(template, { variables: { client: 'Globex', revenue: 1250000 } });
+```
+
+A template previews with each unfilled variable's `example` and reports `variable-example-used` through `onDiagnostic`; a variable with no example keeps its `{{id}}` text. A normal deck with an unfilled required variable throws `OPFRenderError` with code `unfilled-variables`, and a value of the wrong kind throws `invalid-variables`. `resolvePresentation(...).presentation` is the concrete deck. `variables: false` draws the document as authored, with tokens and `var:` references visible (the editor canvas's view of a template, so inline edits never overwrite a token). Decks without content variables are untouched. Needs the core release that ships `resolveVariables`; with an older core the option is ignored. See [templates and variables](https://github.com/OpenPresentation/opf/blob/main/docs/templates-and-variables.md).
 
 ## Runtime Policy
 
