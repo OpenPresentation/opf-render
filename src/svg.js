@@ -181,6 +181,36 @@ function parseInput(input) {
   throw new OPFRenderError("invalid-input", "OPF input must be a parsed object, JSON string, or Uint8Array.");
 }
 
+// Template variables (core resolveVariables, RR-32): a deck that uses content variables, or a template, is resolved
+// to a concrete deck before composition, so the preview and the PPTX exporter see the same text, numbers, dates and
+// images. A template previews with each unfilled variable's example; a normal deck with an unfilled required
+// variable is refused. Decks without content variables are returned untouched. Read from the namespace so an older
+// published core still loads.
+function resolveTemplateInput(presentation, options) {
+  if (typeof opfCore.resolveVariables !== "function" || !isPlainObject(presentation)) return presentation;
+  const values = options.variables;
+  // variables: false draws the document as authored, tokens and var: references included (the template editing view).
+  if (values === false) return presentation;
+  if (values !== undefined && !isPlainObject(values)) {
+    throw new OPFRenderError("invalid-variables", "The variables option must be an object keyed by variable id.", { path: "options.variables" });
+  }
+  const template = opfCore.isTemplate(presentation);
+  if (!template && !opfCore.hasContentVariables(presentation) && !(values && Object.keys(values).length)) return presentation;
+  const result = opfCore.resolveVariables(presentation, values ?? {}, { examples: template });
+  const errors = result.diagnostics.filter((entry) => entry.severity === "error");
+  if (errors.length) {
+    const unfilled = errors.some((entry) => entry.code === "variable-unfilled");
+    throw new OPFRenderError(unfilled ? "unfilled-variables" : "invalid-variables", errors[0].message, {
+      issues: errors,
+      path: errors[0].path
+    });
+  }
+  for (const entry of result.diagnostics) {
+    if (entry.code === "variable-example-used") options.onDiagnostic?.({ code: "variable-example-used", path: entry.path, message: entry.message, id: entry.id });
+  }
+  return result.presentation;
+}
+
 function assertValidBoundary(presentation) {
   const result = validatePresentation(presentation);
   if (!result.valid) {
@@ -711,7 +741,7 @@ function bindSlide(presentation, slide, layout, index, context) {
 }
 
 export function resolvePresentation(input, options = {}) {
-  const presentation = parseInput(input);
+  const presentation = resolveTemplateInput(parseInput(input), options);
   if (options.validate !== false) {
     assertValidBoundary(presentation);
   }
@@ -764,6 +794,12 @@ function renderResolvedSlide(resolved, slideIndex, options) {
     renderFurniture(bound, resolved.presentation, width, height, options, "footer")
   ].filter(Boolean);
   const children = [renderEmbeddedFonts(embeddedFontsFor(options.embeddedFonts, content)), ...content].filter(Boolean);
+  // FF-44: Chromium (123+) trims adjacent fullwidth punctuation by default (CSS text-spacing-trim: normal; a sequence such as
+  // 「」。 is up to 10 percent narrower), but measurement and PowerPoint advance every such character by its full width, so the browser
+  // would stretch the glyphs back to the pinned textLength. space-all keeps the drawn advances equal to the measured ones. Only slides
+  // that draw such punctuation carry it, so other output is unchanged.
+  const drawn = content.join("");
+  const trimsPunctuation = /[　-〿＀-￯]/.test(drawn) || (script?.scriptRole === "eastAsian" && /[‘-”]/.test(drawn));
 
   return tag(
     "svg",
@@ -776,6 +812,7 @@ function renderResolvedSlide(resolved, slideIndex, options) {
       height,
       lang,
       "xml:lang": lang,
+      style: trimsPunctuation ? "text-spacing-trim:space-all" : undefined,
       ...traceAttrs(options, bound.path)
     },
     `\n${children.join("\n")}\n`
