@@ -62,34 +62,71 @@ export function percentile(sortedValues, fraction) {
   return sortedValues[Math.min(sortedValues.length - 1, Math.floor(fraction * (sortedValues.length - 1) + 0.5))];
 }
 
-/**
- * The page text per structure block (one marked-content sequence per SVG text element, so one block is one source line)
- * in content order. pdf.js reports glyph runs left to right as drawn (visual order); a block of a right-to-left paragraph
- * is read from its right-most run, so its runs are joined by descending x when `rtl` is set. Text outside any
- * structure block (artifacts such as bullets) is its own block.
- */
-export async function pageBlocks(doc, pageNumber, { rtl = false } = {}) {
-  const page = await doc.getPage(pageNumber);
-  const content = await page.getTextContent({ includeMarkedContent: true });
-  const blocks = [];
-  let current = null, depth = 0, blockDepth = -1;
-  const flush = () => {
-    if (!current) return;
-    const items = current.sort((a, b) => (rtl ? b.transform[4] - a.transform[4] : 0)).map((item) => item.str);
-    blocks.push(items.join(" ").replace(/\s+/g, " ").trim());
-    current = null;
-  };
-  for (const item of content.items) {
-    if (item.type === "beginMarkedContentProps") {
-      depth++;
-      if (item.tag !== "Span" && current === null && item.id) { current = []; blockDepth = depth; }
-    } else if (item.type === "endMarkedContent") {
-      if (current && depth === blockDepth) { flush(); blockDepth = -1; }
-      depth--;
-    } else if (typeof item.str === "string") {
-      if (current) current.push(item); else blocks.push(item.str.trim());
-    }
+// ---- Other engines (PDFium, MuPDF, poppler) and a structural check (qpdf) ------------------------------------------------
+
+let pdfiumLibrary = null;
+async function pdfium() {
+  if (!pdfiumLibrary) {
+    const { PDFiumLibrary } = await import("@hyzyla/pdfium");
+    pdfiumLibrary = await PDFiumLibrary.init();
   }
-  flush();
-  return blocks.filter(Boolean);
+  return pdfiumLibrary;
+}
+
+/** The text of page 1 as PDFium (Chrome, Edge) extracts it, lines joined with a single space. */
+export async function pdfiumText(bytes) {
+  const document = await (await pdfium()).loadDocument(new Uint8Array(bytes));
+  try { return document.getPage(0).getText().replace(/\s+/g, " ").trim(); } finally { document.destroy(); }
+}
+
+/** The text of page 1 as MuPDF extracts it. */
+export async function mupdfText(bytes) {
+  const mupdf = await import("mupdf");
+  const document = mupdf.Document.openDocument(new Uint8Array(bytes), "application/pdf");
+  return document.loadPage(0).toStructuredText().asText().replace(/\s+/g, " ").trim();
+}
+
+/** poppler's pdftotext when it is installed, else null. */
+export async function popplerText(bytes) {
+  const { spawnSync } = await import("node:child_process");
+  const { mkdtemp, writeFile, rm } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  if (spawnSync("pdftotext", ["-v"], { encoding: "utf8" }).error) return null;
+  const directory = await mkdtemp(join(tmpdir(), "opf-poppler-"));
+  try {
+    const file = join(directory, "in.pdf");
+    await writeFile(file, bytes);
+    const run = spawnSync("pdftotext", ["-enc", "UTF-8", "-nopgbrk", file, "-"], { encoding: "utf8" });
+    if (run.status !== 0) return null;
+    // poppler adds directional marks around right-to-left runs.
+    return run.stdout.replace(/[\u202a-\u202e\u2066-\u2069\u200e\u200f]/g, "").replace(/\s+/g, " ").trim();
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+}
+
+/** `qpdf --check` (WebAssembly build); returns the diagnostics other than the success lines, empty when the file is sound. */
+export async function qpdfCheck(bytes) {
+  // The CommonJS build reads the WebAssembly file itself; the streaming loader would try to fetch it.
+  const { createRequire } = await import("node:module");
+  const { dirname } = await import("node:path");
+  const { readFile } = await import("node:fs/promises");
+  const require = createRequire(import.meta.url);
+  const createModule = require("@jspawn/qpdf-wasm");
+  const wasmBinary = await readFile(`${dirname(require.resolve("@jspawn/qpdf-wasm/package.json"))}/qpdf.wasm`);
+  const output = [];
+  const streaming = WebAssembly.instantiateStreaming;
+  WebAssembly.instantiateStreaming = undefined;
+  let qpdf;
+  try { qpdf = await createModule({ wasmBinary, print: (line) => output.push(line), printErr: (line) => output.push(`E:${line}`) }); } finally { WebAssembly.instantiateStreaming = streaming; }
+  qpdf.FS.writeFile("/in.pdf", new Uint8Array(bytes));
+  let status;
+  // The module also writes its report to the console.
+  const write = process.stdout.write, writeError = process.stderr.write;
+  process.stdout.write = (chunk) => { output.push(String(chunk)); return true; };
+  process.stderr.write = (chunk) => { output.push(`E:${chunk}`); return true; };
+  try { status = qpdf.callMain(["--check", "/in.pdf"]); } catch (error) { status = error.status ?? 99; } finally { process.stdout.write = write; process.stderr.write = writeError; }
+  const text = output.join("\n").replace(/No syntax or stream encoding errors found[^\n]*\s*errors that qpdf cannot detect/g, "").replace(/checking \/in\.pdf/g, "").replace(/PDF Version: [\d.]+/g, "").replace(/File is not encrypted/g, "").replace(/File is not linearized/g, "").trim();
+  return { status, text };
 }

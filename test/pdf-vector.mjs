@@ -10,7 +10,7 @@ import { PDFArray, PDFDict, PDFDocument, PDFName, PDFNumber, PDFRawStream, PDFRe
 import { renderSvgDeck, svgToPdf, svgToPng } from "../dist/index.js";
 import { loadBundledFontRegistry, loadOfficeFontRegistry } from "../dist/fonts-node.js";
 import sharp from "sharp";
-import { compareImages, openPdf, pageBlocks, pageItems, pageText, renderPdfPage } from "./pdf-helpers.mjs";
+import { compareImages, mupdfText, openPdf, pageItems, pageText, pdfiumText, popplerText, qpdfCheck, renderPdfPage } from "./pdf-helpers.mjs";
 
 const TINY_PNG = "data:image/png;base64," + (await sharp({ create: { width: 4, height: 4, channels: 3, background: "#e03030" } }).png().toBuffer()).toString("base64");
 const SCHEMA = "https://openpresentation.org/schema/opf/v1";
@@ -94,7 +94,7 @@ async function lowLevel(bytes) {
   assert.match(await pageText(doc, 1), /Quarterly review.*Revenue grew 12% year on year\..*First point.*Second point/);
 }
 
-// ---- Text round trip: Latin, CJK, right-to-left, mixed ---------------------------------------------------------------
+// ---- Text round trips through the renderer, read by pdf.js ---------------------------------------------------------------
 const roundTrips = [
   {
     name: "latin",
@@ -115,42 +115,75 @@ const roundTrips = [
     deck: { $schema: SCHEMA, name: "CJK", language: "zh-Hans", slides: [{ title: "季度回顾", text: "收入同比增长百分之十二，成本保持稳定。", items: ["분기별 검토", "Ship 日本語 text"] }] },
     expect: ["季度回顾", "收入同比增长百分之十二，成本保持稳定。", "분기별 검토", "Ship 日本語 text"],
   },
-  {
-    name: "arabic",
-    deck: { $schema: SCHEMA, name: "Arabic", language: "ar", slides: [{ title: "مراجعة ربع سنوية", text: "نمت الإيرادات بنسبة 12% مقارنة بالعام الماضي", items: ["الهدف الأول", "الهدف الثاني"] }] },
-    expect: ["مراجعة ربع سنوية", "نمت الإيرادات بنسبة 12% مقارنة بالعام الماضي", "الهدف الأول", "الهدف الثاني"],
-  },
-  {
-    name: "hebrew",
-    deck: { $schema: SCHEMA, name: "Hebrew", language: "he", slides: [{ title: "סקירה רבעונית", text: "ההכנסות צמחו ב־12% לעומת השנה שעברה", items: ["יעד ראשון"] }] },
-    expect: ["סקירה רבעונית", "ההכנסות צמחו ב־12% לעומת השנה שעברה", "יעד ראשון"],
-  },
 ];
 for (const { name, deck, expect } of roundTrips) {
   const { svgs, pdfOptions } = await renderDeck(deck);
   const pdf = await svgToPdf(svgs, pdfOptions);
-  const doc = await openPdf(pdf);
-  const rtl = Boolean(deck.language && /^(ar|he)/.test(deck.language));
-  const text = nfkc((await pageBlocks(doc, 1, { rtl })).join(" "));
-  for (const wanted of expect) {
-    // Within a line, the logical text of each right-to-left run is recovered; compare run by run so a visual-order
-    // reader (pdf.js reports runs left to right) is not penalised for line-level run order in mixed text.
-    assert.ok(compact(text).includes(compact(wanted)), `${name}: extracted text keeps "${wanted}"; got "${text}"`);
-  }
+  const text = nfkc(await pageText(await openPdf(pdf), 1));
+  for (const wanted of expect) assert.ok(compact(text).includes(compact(wanted)), `${name}: extracted text keeps "${wanted}"; got "${text}"`);
 }
 
-// Mixed-direction line: every word survives, and each right-to-left run reads in logical order.
+// ---- Ordered logical text in four independent readers --------------------------------------------------------------------
+// Each case is one line of one script. pdf.js, PDFium (Chrome, Edge), MuPDF and, when it is installed, poppler must return
+// the authored text in logical order, compared as ordered text (no re-sorting of runs). Right-to-left runs are drawn in visual
+// order inside /ReversedChars with per-glyph /ActualText where the glyph map cannot give the text, as Chromium writes them;
+// reordered Indic and Khmer clusters carry /ActualText per cluster. The readers named in `skip` do not read that script
+// correctly from Chromium's own PDF either (PDFium on Thai and Burmese marks) or by design do not honour /ActualText (pdf.js).
 {
-  const deck = { $schema: SCHEMA, name: "Mixed", slides: [{ title: "Roadmap", text: "Revenue شركة 2026 growth and שלום עולם end" }] };
-  const { svgs, pdfOptions } = await renderDeck(deck);
-  const pdf = await svgToPdf(svgs, pdfOptions);
-  const text = nfkc(await pageText(await openPdf(pdf), 1));
-  for (const word of ["Revenue", "شركة", "2026", "growth", "and", "שלום עולם", "end"]) assert.ok(compact(text).includes(compact(word)), `mixed: ${word} in "${text}"`);
-  // /ActualText carries the logical text of each right-to-left run for viewers that honour it (PDFium, Acrobat).
+  const registry = await loadBundledFontRegistry({ scripts: "all" });
+  const options = { fontFiles: registry.fontFiles, useBundledFonts: false };
+  const rtl = (text) => `⁧${text}⁩`;
+  const strip = (text) => text.replace(/[\s​‎‏]/g, "").normalize("NFKC");
+  const cases = [
+    ["latin ligatures", "Roboto", "Résumé: naïve façade ﬁnal ﬂow office ﬃ", "Résumé: naïve façade final flow office ffi", []],
+    ["latin marks", "Roboto", "Café déjà vu é ö", "Café déjà vu é ö", []],
+    ["japanese", "Noto Sans JP", "四半期レビュー 日本語のテキストと漢字、カタカナ。", "四半期レビュー 日本語のテキストと漢字、カタカナ。", []],
+    ["chinese", "Noto Sans SC", "季度回顾 收入同比增长百分之十二，成本保持稳定。", "季度回顾 收入同比增长百分之十二，成本保持稳定。", []],
+    ["korean", "Noto Sans KR", "분기별 검토 매출 성장", "분기별 검토 매출 성장", []],
+    ["hebrew", "Noto Sans Hebrew", rtl("ההכנסות צמחו לעומת השנה שעברה"), "ההכנסות צמחו לעומת השנה שעברה", []],
+    ["arabic", "Noto Naskh Arabic", rtl("نمت الإيرادات بنسبة مقارنة بالعام الماضي"), "نمت الإيرادات بنسبة مقارنة بالعام الماضي", []],
+    ["arabic lam-alef ligature", "Noto Naskh Arabic", rtl("لا يوجد الله"), "لا يوجد الله", []],
+    ["syriac", "Noto Sans Syriac", rtl("ܠܫܢܐ ܣܘܪܝܝܐ"), "ܠܫܢܐ ܣܘܪܝܝܐ", []],
+    ["devanagari", "Noto Sans Devanagari", "किताब हिन्दी क्षत्रिय तिमाही", "किताब हिन्दी क्षत्रिय तिमाही", ["pdfjs"]],
+    ["bengali", "Noto Sans Bengali", "বাংলা ভাষা কিতাব কৌতুক", "বাংলা ভাষা কিতাব কৌতুক", ["pdfjs"]],
+    ["tamil", "Noto Sans Tamil", "தமிழ் மொழி கொடு சௌ", "தமிழ் மொழி கொடு சௌ", ["pdfjs"]],
+    ["gujarati", "Noto Sans Gujarati", "ગુજરાતી ભાષા કિતાબ", "ગુજરાતી ભાષા કિતાબ", ["pdfjs", "poppler"]],
+    ["khmer", "Noto Sans Khmer", "ភាសាខ្មែរ ខ្មែរ", "ភាសាខ្មែរ ខ្មែរ", ["pdfjs"]],
+    ["thai", "Noto Sans Thai", "ภาษาไทย ที่ปรึกษา น้ำ", "ภาษาไทย ที่ปรึกษา น้ำ", ["pdfium", "poppler"]],
+    ["burmese", "Noto Sans Myanmar", "မြန်မာဘာသာ ကျွန်ုပ်", "မြန်မာဘာသာ ကျွန်ုပ်", ["pdfium", "poppler"]],
+  ];
+  const readers = { pdfjs: async (pdf) => pageText(await openPdf(pdf), 1), pdfium: pdfiumText, mupdf: mupdfText, poppler: popplerText };
+  let popplerSeen = false;
+  for (const [name, family, text, expected, skip] of cases) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="140"><text x="40" y="90" font-family="${family}" font-size="32" xml:space="preserve">${text}</text></svg>`;
+    const pdf = await svgToPdf(svg, options);
+    for (const [reader, read] of Object.entries(readers)) {
+      if (skip.includes(reader)) continue;
+      const got = await read(pdf);
+      if (got === null) continue; // poppler is optional
+      if (reader === "poppler") popplerSeen = true;
+      assert.equal(strip(got), strip(expected), `${name}: ${reader} reads "${got}", expected "${expected}"`);
+    }
+  }
+  if (!popplerSeen) console.log("pdf-vector: poppler (pdftotext) is not installed; its extraction was not checked.");
+
+  // Mixed directions: every run reads in logical order inside itself; the order of runs in a line is the reader's.
+  const mixed = `Revenue ${rtl("شركة")} growth and ${rtl("שלום עולם")} end`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="140"><text x="40" y="90" font-family="Roboto" font-size="32" xml:space="preserve">${mixed}</text></svg>`;
+  const pdf = await svgToPdf(svg, options);
+  for (const [reader, read] of Object.entries(readers)) {
+    const got = await read(pdf);
+    if (got === null) continue;
+    for (const word of ["Revenue", "شركة", "growth", "and", "שלום", "עולם", "end"]) assert.ok(strip(got).includes(strip(word)), `mixed: ${reader} keeps "${word}" in "${got}"`);
+  }
+  assert.equal(strip(await pdfiumText(pdf)).startsWith(strip("Revenue")), true);
+
+  // The structure in the file: right-to-left runs are marked reversed, left-to-right runs are not.
   const { document, stream } = await lowLevel(pdf);
   const content = stream(document.context.lookup(document.getPages()[0].node.Contents())).toString("latin1");
-  const actual = [...content.matchAll(/\/ActualText <FEFF([0-9A-F]+)>/g)].map((match) => Buffer.from(match[1], "hex").swap16().toString("utf16le"));
-  assert.ok(actual.some((value) => value.includes("شركة 2026")) && actual.some((value) => value.includes("שלום עולם")), "ActualText holds the logical right-to-left runs");
+  assert.ok(/\/ReversedChars BMC/.test(content), "right-to-left runs are marked /ReversedChars");
+  assert.ok((content.match(/\/ReversedChars BMC/g) ?? []).length >= 2, "each right-to-left run is marked");
+  assert.ok(!/\/ActualText <FEFF>/.test(content), "no empty /ActualText spans");
 }
 
 // ---- Determinism --------------------------------------------------------------------------------------------------------
@@ -182,7 +215,7 @@ for (const { name, deck, expect } of roundTrips) {
   const pdf = await svgToPdf(svg, options);
   assert.deepEqual(pdf, await svgToPdf(svg, options));
   const digest = createHash("sha256").update(pdf).digest("hex");
-  assert.equal(digest, "cbba6622db67a6e82a561fc41112950f1ec375f97f2fb4f2ef42c5351e83752e", `fixture PDF bytes changed (${pdf.length} bytes, sha256 ${digest})`);
+  assert.equal(digest, "60ae05d47ee3b394ff6d6b8cadc5e9740b52f9f2e3eb52388e20c80a185591e9", `fixture PDF bytes changed (${pdf.length} bytes, sha256 ${digest})`);
   const text = nfkc(await pageText(await openPdf(pdf), 1));
   for (const wanted of ["Résumé: final flow café", "日本語のテキストと漢字", "openpresentation.org", "Stretched to a measured width"]) assert.ok(compact(text).includes(compact(wanted)), `fixture text: ${wanted}`);
 }
@@ -321,6 +354,194 @@ for (const { name, deck, expect } of roundTrips) {
   const twice = await svgToPdf(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"><image x="0" y="0" width="40" height="40" href="${png}"/><image x="50" y="0" width="40" height="40" href="${png}"/></svg>`);
   assert.equal((await lowLevel(twice)).objects.filter(([, object]) => object instanceof PDFRawStream && object.dict.get(PDFName.of("Subtype"))?.toString() === "/Image").length, 1, "identical pictures share one image object");
   await assert.rejects(svgToPdf(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"><image x="0" y="0" width="40" height="40" href="https://example.invalid/a.png"/></svg>`, { strict: true }), (error) => error.code === "pdf-image-skipped", "remote pictures are never fetched");
+}
+
+// ---- Arbitrary SVG: nothing is dropped silently, hostile input is bounded ------------------------------------------------------
+{
+  const svgOf = (body, extra = "") => `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100" ${extra}>${body}</svg>`;
+  const contentOf = async (pdf) => {
+    const { document, stream } = await lowLevel(pdf);
+    return stream(document.context.lookup(document.getPages()[0].node.Contents())).toString("latin1");
+  };
+  const collect = async (svg, options = {}) => {
+    const diagnostics = [];
+    const pdf = await svgToPdf(svg, { compress: true, ...options, onDiagnostic: (d) => diagnostics.push(d) });
+    return { pdf, diagnostics, content: await contentOf(pdf) };
+  };
+
+  // Colours: every CSS named colour, hsl(), rgb() and style declarations.
+  {
+    const { content } = await collect(svgOf(`<rect width="10" height="10" fill="rebeccapurple"/><rect width="10" height="10" style="fill:hsl(120,100%,25%)"/><rect width="10" height="10" fill="rgb(100%,0%,0%)"/><rect width="10" height="10" fill="lightgoldenrodyellow"/>`));
+    for (const colour of ["0.4 0.2 0.6 rg", "0 0.5 0 rg", "1 0 0 rg", "0.9804 0.9804 0.8235 rg"]) assert.ok(content.includes(colour), `colour operator ${colour}`);
+    const unknown = await collect(svgOf(`<rect width="10" height="10" fill="notacolour"/>`));
+    assert.ok(unknown.diagnostics.some((d) => d.code === "pdf-unsupported-paint"), "an unknown colour is reported, not dropped silently");
+  }
+  // Style sheets: type, class and id selectors by specificity, under inline styles; unsupported selectors are reported.
+  {
+    const css = `<style>rect{fill:#ff0000}.a{fill:#00ff00}#b{fill:#0000ff}</style>`;
+    const { content, diagnostics } = await collect(svgOf(`${css}<rect id="x" width="10" height="10"/><rect class="a" width="10" height="10"/><rect id="b" class="a" width="10" height="10"/><rect class="a" style="fill:#ffff00" width="10" height="10"/>`));
+    const fills = [...content.matchAll(/([0-9.]+ [0-9.]+ [0-9.]+) rg/g)].map((match) => match[1]).filter((value) => value !== "1 1 1");
+    assert.deepEqual(fills, ["1 0 0", "0 1 0", "0 0 1", "1 1 0"], "type < class < id < inline style");
+    assert.equal(diagnostics.filter((d) => d.code === "pdf-unsupported-css").length, 0);
+    const unsupported = await collect(svgOf(`<style>g > rect{fill:red}</style><g><rect width="10" height="10"/></g>`));
+    assert.ok(unsupported.diagnostics.some((d) => d.code === "pdf-unsupported-css"), "a combinator selector is reported");
+  }
+  // Percentages are of the viewport.
+  {
+    const { content } = await collect(svgOf(`<rect x="10%" y="20%" width="50%" height="25%" fill="#123456"/>`));
+    assert.ok(content.includes("20 20 m 120 20 l 120 45 l 20 45 l h"), "percentage geometry resolves against the 200 x 100 viewBox");
+  }
+  // <symbol> through <use>, nested <svg> and <switch> are drawn where they belong.
+  {
+    const body = `<defs><symbol id="s" viewBox="0 0 10 10"><rect width="10" height="10" fill="#ff0000"/></symbol></defs><use href="#s" x="20" y="10" width="40" height="40"/><svg x="100" y="20" width="50" height="50" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="#0000ff"/></svg><switch><rect x="170" y="10" width="20" height="20" fill="#00aa00"/><rect x="170" y="40" width="20" height="20" fill="#aa0000"/></switch>`;
+    const svg = svgOf(`<rect width="200" height="100" fill="#ffffff"/>${body}`);
+    const pdf = await svgToPdf(svg);
+    const rendered = await renderPdfPage(await openPdf(pdf), 1, 2);
+    const reference = await svgToPng(svg, { scale: 2 });
+    const { mae } = await compareImages(rendered.png, reference, { factor: 1 });
+    assert.ok(mae < 2, `symbol, nested svg and switch match the preview (mean error ${mae.toFixed(2)})`);
+  }
+  // Gradient fill on text keeps the text; clip-rule; spreadMethod and unsupported text features are reported.
+  {
+    const body = `<defs><linearGradient id="g" spreadMethod="reflect"><stop offset="0" stop-color="#ff0000"/><stop offset="1" stop-color="#0000ff"/></linearGradient><clipPath id="c"><path clip-rule="evenodd" d="M0 0H100V100H0Z M20 20H80V80H20Z"/></clipPath></defs><text x="10" y="40" font-family="Roboto" font-size="30" fill="url(#g)">Gradient</text><rect width="100" height="100" fill="#0a0" clip-path="url(#c)"/><text x="10" y="90" font-family="Roboto" font-size="12" rotate="10" dominant-baseline="hanging" text-transform="uppercase">Features</text>`;
+    const { pdf, content, diagnostics } = await collect(svgOf(body));
+    assert.match(await pageText(await openPdf(pdf), 1), /Gradient/, "text with a gradient fill is kept");
+    assert.ok(/\/Pattern cs/.test(content), "the text is painted with the gradient pattern");
+    assert.ok(content.includes("W* n"), "clip-rule evenodd");
+    const features = diagnostics.filter((d) => d.code === "pdf-unsupported-feature").map((d) => d.attribute).sort();
+    assert.deepEqual(features, ["dominant-baseline", "rotate", "text-transform"]);
+    assert.ok(diagnostics.some((d) => d.code === "pdf-unsupported-paint" && /spreadMethod/.test(d.message)));
+    await assert.rejects(svgToPdf(svgOf(body), { strict: true }), (error) => /^pdf-unsupported/.test(error.code));
+  }
+  // A character no supplied font has: reported (strict throws), never a silent .notdef box.
+  {
+    const svg = svgOf(`<text x="10" y="40" font-family="Roboto" font-size="20">A\u{10348}B</text>`);
+    const { diagnostics } = await collect(svg);
+    assert.ok(diagnostics.some((d) => d.code === "pdf-glyph-missing" && d.codePoint === 0x10348), "missing glyph reported");
+    await assert.rejects(svgToPdf(svg, { strict: true }), (error) => error.code === "pdf-glyph-missing");
+  }
+  // Absurd coordinates are clamped to something every reader accepts.
+  {
+    const { content } = await collect(svgOf(`<rect x="1e25" y="-1e30" width="1e22" height="5" fill="#000"/><path d="M0 0L1e40 1e40" stroke="#000"/>`));
+    assert.ok(!/e[+-]?\d/.test(content.replace(/[A-Za-z]{2,}/g, "")), "no exponent in a content stream");
+  }
+  // Hostile input: a <use> chain that doubles at every level, very deep nesting, a very long text.
+  {
+    let defs = `<g id="u0"><rect width="1" height="1"/></g>`;
+    for (let level = 1; level <= 24; level++) defs += `<g id="u${level}"><use href="#u${level - 1}"/><use href="#u${level - 1}"/></g>`;
+    const started = performance.now();
+    const bomb = await collect(svgOf(`<defs>${defs}</defs><use href="#u24"/>`));
+    assert.ok(performance.now() - started < 20000, "the expansion bomb is cut off quickly");
+    assert.ok(bomb.diagnostics.some((d) => d.code === "pdf-expansion-limit"), "expansion limit reported");
+    await assert.rejects(svgToPdf(svgOf(`<defs>${defs}</defs><use href="#u24"/>`), { strict: true }), (error) => error.code === "pdf-expansion-limit");
+    const deep = await collect(svgOf("<g>".repeat(900) + `<rect width="5" height="5"/>` + "</g>".repeat(900)));
+    assert.ok(deep.pdf.length > 100);
+    assert.ok(deep.diagnostics.some((d) => d.code === "pdf-expansion-limit"), "deep groups are cut off with a diagnostic");
+    await assert.rejects(svgToPdf(svgOf("<g>".repeat(60000) + "</g>".repeat(60000))), (error) => ["invalid-svg", "svg-too-deep"].includes(error.code), "absurd nesting is refused cleanly");
+    const long = await collect(svgOf(`<text x="0" y="50" font-family="Roboto" font-size="1">${"ab ".repeat(60000)}</text>`));
+    assert.ok(long.pdf.length > 1000, "a 180,000-character text does not overflow the stack");
+  }
+  // A file reference inside a rasterized fragment is never read.
+  {
+    const directory = await mkdtemp(path.join(os.tmpdir(), "opf-pdf-img-"));
+    try {
+      const red = path.join(directory, "red.png");
+      await writeFile(red, await sharp({ create: { width: 8, height: 8, channels: 3, background: "#ff0000" } }).png().toBuffer());
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><defs><filter id="f"><feColorMatrix type="saturate" values="1"/></filter></defs><g filter="url(#f)"><image x="0" y="0" width="100" height="100" href="${red.replace(/\\/g, "/")}"/></g></svg>`;
+      const rendered = await renderPdfPage(await openPdf(await svgToPdf(svg)), 1);
+      const { data } = await sharp(rendered.png).raw().toBuffer({ resolveWithObject: true });
+      assert.ok(!(data[0] > 200 && data[1] < 60 && data[2] < 60), "the local file was not drawn");
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  }
+}
+
+// ---- Fonts: corrupt and restricted files, declared families -----------------------------------------------------------------
+{
+  const registry = await loadBundledFontRegistry();
+  const roboto = registry.fontFiles.find((file) => /Roboto_400Regular\.ttf$/.test(file));
+  const original = new Uint8Array(await readFile(roboto));
+  const table = (bytes, tag) => {
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    for (let index = 0; index < view.getUint16(4); index++) {
+      const at = 12 + index * 16;
+      if (String.fromCharCode(...bytes.subarray(at, at + 4)) === tag) return { offset: view.getUint32(at + 8), length: view.getUint32(at + 12), view };
+    }
+    throw new Error(`no ${tag}`);
+  };
+  const directory = await mkdtemp(path.join(os.tmpdir(), "opf-pdf-fonts-"));
+  try {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="100"><text x="10" y="50" font-family="Roboto" font-size="20">Corrupt font text</text></svg>`;
+    const medium = registry.fontFiles.find((file) => /Roboto_500Medium\.ttf$/.test(file));
+    // A truncated loca table and an out-of-range glyph count are unreadable fonts, not a RangeError.
+    for (const [name, damage] of [
+      ["numGlyphs", (bytes) => { const maxp = table(bytes, "maxp"); maxp.view.setUint16(maxp.offset + 4, 60000); }],
+      ["loca", (bytes) => { const loca = table(bytes, "loca"); for (let index = 0; index + 3 < loca.length; index += 4) loca.view.setUint32(loca.offset + index, 0x7fffffff); }],
+      ["truncated", (bytes) => bytes.subarray(0, 4000)],
+    ]) {
+      const bytes = original.slice();
+      const damaged = damage(bytes) ?? bytes;
+      const file = path.join(directory, `${name}.ttf`);
+      await writeFile(file, damaged);
+      const diagnostics = [];
+      const pdf = await svgToPdf(svg, { useBundledFonts: false, fontFiles: [file, medium], onDiagnostic: (d) => diagnostics.push(d) });
+      assert.ok(diagnostics.some((d) => d.code === "pdf-font-unreadable"), `${name}: the damaged font is reported unreadable`);
+      assert.match(await pageText(await openPdf(pdf), 1), /Corrupt font text/);
+    }
+    // fsType: preview-and-print is embedded and reported as such; no-embedding never.
+    const preview = original.slice();
+    const os2 = table(preview, "OS/2");
+    os2.view.setUint16(os2.offset + 8, 0x0004);
+    const previewFile = path.join(directory, "preview.ttf");
+    await writeFile(previewFile, preview);
+    const reports = [];
+    await svgToPdf(svg, { useBundledFonts: false, fontFiles: [previewFile], onDiagnostic: (d) => reports.push(d) });
+    const embedded = reports.find((d) => d.code === "pdf-font-embedded");
+    assert.equal(embedded.embeddingRestriction, "preview-and-print");
+    assert.equal(embedded.fsType, 4);
+    // A font declared by @font-face in the SVG is found by its declared family, whatever its name table says.
+    const declared = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="100"><style>@font-face{font-family:"Brand Sans";src:url("data:font/ttf;base64,${Buffer.from(original).toString("base64")}")}</style><text x="10" y="50" font-family="Brand Sans" font-size="20">Declared family</text></svg>`;
+    const notes = [];
+    const declaredPdf = await svgToPdf(declared, { useBundledFonts: false, onDiagnostic: (d) => notes.push(d) });
+    assert.match(await pageText(await openPdf(declaredPdf), 1), /Declared family/);
+    assert.ok(!notes.some((d) => d.code === "pdf-font-substituted"), "the declared family is the one drawn");
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+}
+
+// ---- Dates read as UTC, structure is sound (qpdf --check), the page is painted white ---------------------------------------
+{
+  const { spawnSync } = await import("node:child_process");
+  const script = `import { svgToPdf } from ${JSON.stringify(new URL("../dist/index.js", import.meta.url).href)};
+import { createHash } from "node:crypto";
+const pdf = await svgToPdf('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"><rect width="10" height="10"/></svg>', { metadata: { title: "T\\u0001itle", creationDate: "2026-03-04T05:06:07" } });
+console.log(createHash("sha256").update(pdf).digest("hex"));`;
+  const digests = ["UTC", "Asia/Tokyo", "America/Los_Angeles"].map((zone) => spawnSync(process.execPath, ["--input-type=module", "-e", script], { env: { ...process.env, TZ: zone }, encoding: "utf8" }).stdout.trim());
+  assert.match(digests[0], /^[0-9a-f]{64}$/);
+  assert.equal(new Set(digests).size, 1, "a zone-less creation date is read as UTC whatever the time zone");
+  const dated = await svgToPdf("<svg xmlns='http://www.w3.org/2000/svg' width='100' height='50'/>", { metadata: { title: "T\u0001itle", creationDate: "2026-03-04T05:06:07" } });
+  assert.match(Buffer.from(dated).toString("latin1"), /\/CreationDate\(D:20260304050607Z\)/);
+  assert.equal((await lowLevel(dated)).document.getTitle(), "Title", "control characters are stripped from the metadata");
+
+  const registry = await loadBundledFontRegistry({ scripts: "all" });
+  const fixture = await readFile(new URL("fixtures/pdf/mixed-script-slide.svg", import.meta.url), "utf8");
+  const samples = [
+    await svgToPdf(fixture, { fontFiles: registry.fontFiles, useBundledFonts: false, metadata: { title: "Fixture", language: "en-GB" } }),
+    await svgToPdf(fixture, { fontFiles: registry.fontFiles, useBundledFonts: false, tagged: false, compress: false }),
+    await svgToPdf(["<svg xmlns='http://www.w3.org/2000/svg' width='300' height='200'><rect width='300' height='200' fill='#eee'/><text x='10' y='50' font-family='Roboto'>Page one</text></svg>", "<svg xmlns='http://www.w3.org/2000/svg' width='200' height='300'><text x='10' y='50' font-family='Roboto'>Page two</text></svg>"]),
+  ];
+  for (const [index, bytes] of samples.entries()) {
+    const check = await qpdfCheck(bytes);
+    assert.deepEqual({ status: check.status, text: check.text }, { status: 0, text: "" }, `qpdf --check, sample ${index}: ${check.text}`);
+  }
+  const white = await svgToPdf("<svg xmlns='http://www.w3.org/2000/svg' width='100' height='50'/>");
+  const whiteDoc = await lowLevel(white);
+  assert.ok(whiteDoc.stream(whiteDoc.document.context.lookup(whiteDoc.document.getPages()[0].node.Contents())).toString("latin1").includes("1 1 1 rg 0 0 100 50 re f"), "the page is painted white by default");
+  const clear = await svgToPdf("<svg xmlns='http://www.w3.org/2000/svg' width='100' height='50'/>", { background: "none" });
+  const clearDoc = await lowLevel(clear);
+  assert.ok(!clearDoc.stream(clearDoc.document.context.lookup(clearDoc.document.getPages()[0].node.Contents())).toString("latin1").includes("re f"), "background none leaves the page unpainted");
 }
 
 console.log("pdf-vector: structure, text round trips, determinism, metadata, fonts and fallbacks passed.");

@@ -16,6 +16,7 @@
 <text x="64" y="390" fill="#0F172A" font-family="Noto Sans Hebrew" font-size="28" xml:space="preserve">Mixed &#x2067;שלום עולם&#x2069; text</text>
 <text x="64" y="440" fill="#0F172A" font-family="Roboto" font-size="22" textLength="420" lengthAdjust="spacingAndGlyphs" xml:space="preserve">Stretched to a measured width</text></g>
 <g transform="translate(700 420) rotate(-8)"><text x="0" y="0" fill="#475569" font-family="Roboto Mono" font-size="20" xml:space="preserve">rotated mono</text></g>
+<image aria-label="Specimen picture" x="860" y="200" width="64" height="64" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAB3klEQVQ4yxXMocHQOBgA0IyQETJCR+gIGaEjZITP/ZK4kxeHJA5JHJI6JHFI6k5yr2+Al1KKvznFfyXFnyPF7zPFr5ri55XiR0vxPVJ86ym+jhRfZorPK8W/d4p/dopPT4qPlLIgC7IgC7IgC7IgC7IgC7IgC7IgC7Igv0ERFEERFEERFEERFEERFEERFEERFEERlDc4BIfgEByCQ3AIDsEhOASH4BAcgkNwCA7B8Qan4BScglNwCk7BKTgFp+AUnIJTcApOwSk436AKqqAKqqAKqqAKqqAKqqAKqqAKqqAK6htcgktwCS7BJbgEl+ASXIJLcAkuwSW4BJfgeoMmaIImaIImaIImaIImaIImaIImaIImaG8QghCEIAQhCEEIQhCCEIQgBCEIQQjiDbqgC7qgC7qgC7qgC7qgC7qgC7qgC7qgv8EQDMEQDMEQDMEQDMEQDMEQDMEQDMEQjDeYgimYgimYgimYgimYgimYgimYgimYgvkGS7AES7AES7AES7AES7AES7AES7AES7De4BbcgltwC27BLbgFt+AW3IJbcAtuwS24BfcbbMEWbMEWbMEWbMEWbMEWbMEWbMEWbMF+g0fwCB7BI3gEj+ARPIJH8AgewSN4BI/gETzx8T9pUjMfPwL2egAAAABJRU5ErkJggg=="/>
 <polyline points="600,300 640,260 680,300" fill="none" stroke="#DC2626" stroke-width="4" stroke-linejoin="round"/>
 <path d="M600 440 a40 20 0 1 0 80 0" fill="none" stroke="#16A34A" stroke-width="3"/>
 </svg>

@@ -36,9 +36,12 @@ export class FontLibrary {
   }
 
   /** Register font bytes once (by content hash). Returns the face, or null when the file cannot be used for embedding. */
-  addData(data, origin) {
+  addData(data, origin, declaredFamily) {
     const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
-    return this.adopt(parseFace(bytes, hex(sha256(bytes)), origin), origin);
+    const face = this.adopt(parseFace(bytes, hex(sha256(bytes)), origin), origin);
+    // The family a style sheet declares for the data names the face too (the name table may say something else).
+    if (face && declaredFamily) face.names.add(declaredFamily.toLowerCase());
+    return face;
   }
 
   /** Register a font file through the cross-call cache; `stat` is {size, mtimeMs} and `read` returns the bytes. */
@@ -59,7 +62,7 @@ export class FontLibrary {
       return null;
     }
     if (this.byHash.has(prototype.hash)) return this.byHash.get(prototype.hash);
-    const face = { ...prototype, id: this.faces.length };
+    const face = { ...prototype, names: new Set(prototype.names), id: this.faces.length };
     this.byHash.set(prototype.hash, face);
     this.faces.push(face);
     if (face.unusable) {
@@ -132,6 +135,8 @@ function parseFace(data, hash, origin) {
     let unusable;
     if (!isTrueTypeOutlines(data)) unusable = "pdf-font-unsupported-format";
     else if (fsType.noEmbedding || fsType.bitmapOnly) unusable = "pdf-font-embedding-restricted";
+    // A corrupt loca/glyf/hmtx fails here, as an unreadable font, not later as a RangeError.
+    if (!unusable) subsetTrueType(data, [0]);
     return {
       hash, data, font, origin, names, weight, italic, unusable,
       upem: font.unitsPerEm, postscriptName: font.postscriptName || [...names][0] || "Font",

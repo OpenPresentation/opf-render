@@ -135,7 +135,19 @@ export type PdfDiagnostic = {
   code: "pdf-raster-fallback";
   message: string; path?: string; element: string; reason: string;
 } | {
-  code: "pdf-unsupported-element" | "pdf-unsupported-clip" | "pdf-unsupported-paint" | "pdf-image-skipped" | "pdf-link-skipped";
+  /** No supplied font has the character: the font's missing-glyph box is drawn. */
+  code: "pdf-glyph-missing";
+  message: string; fontFamily: string; codePoint: number;
+} | {
+  /** An attribute with no PDF form here (`rotate`, `dominant-baseline`, `text-transform`, `paint-order`, `mix-blend-mode`, markers, ...). */
+  code: "pdf-unsupported-feature";
+  message: string; path?: string; element: string; attribute: string;
+} | {
+  /** Too much content (more than 50,000 elements on a page, `<use>` expansions included, or groups nested over 256 deep): the rest of the page is not drawn. */
+  code: "pdf-expansion-limit";
+  message: string; path?: string;
+} | {
+  code: "pdf-unsupported-element" | "pdf-unsupported-clip" | "pdf-unsupported-paint" | "pdf-unsupported-css" | "pdf-image-skipped" | "pdf-link-skipped";
   message: string; path?: string; element?: string; kind?: string;
 };
 
@@ -148,7 +160,7 @@ export interface PdfMetadata {
   language?: string;
   /** Default: the package name. */
   creator?: string;
-  /** Omitted from the PDF unless supplied: the export never reads a clock. */
+  /** Omitted from the PDF unless supplied: the export never reads a clock. A date-time without a zone designator is read as UTC. */
   creationDate?: Date | string;
   modificationDate?: Date | string;
 }
@@ -160,6 +172,8 @@ export interface SvgToPdfOptions extends SvgToPngOptions {
    * `fontFiles` / `fontDirs` you supply, never system fonts. `"raster"`: each slide an image, as before.
    */
   mode?: "vector" | "raster";
+  /** Vector mode paints the page this colour first (default white, as raster mode composites on white); `"none"` leaves it unpainted. */
+  background?: string;
   /** Vector only. Family drawn for the generic `serif`; default `defaultFontFamily`. */
   serifFamily?: string;
   /** Vector only. Document title, author, language and dates. */

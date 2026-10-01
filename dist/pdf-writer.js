@@ -11,6 +11,8 @@ const encoder = new TextEncoder();
 /** A coordinate or other real number: at most `digits` decimals, no exponent, no negative zero. */
 export function num(value, digits = 3) {
   if (!Number.isFinite(value)) return "0";
+  // PDF readers keep reals in single precision and some reject exponents: clamp absurd coordinates to a sane range.
+  if (Math.abs(value) > 1e9) value = Math.sign(value) * 1e9;
   const scale = 10 ** digits;
   let rounded = Math.round(value * scale) / scale;
   if (Object.is(rounded, -0)) rounded = 0;

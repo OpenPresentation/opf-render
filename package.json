@@ -263,8 +263,11 @@
     "@expo-google-fonts/noto-sans-thai": "0.4.2",
     "@expo-google-fonts/noto-serif-hebrew": "0.4.2",
     "@expo-google-fonts/noto-serif-tibetan": "0.4.2",
+    "@hyzyla/pdfium": "2.1.13",
+    "@jspawn/qpdf-wasm": "0.0.2",
     "@napi-rs/canvas": "1.0.9",
     "esbuild": "0.28.2",
+    "mupdf": "1.28.1",
     "pdfjs-dist": "6.3.289",
     "playwright": "1.63.0"
   }

@@ -17,12 +17,18 @@ function readTables(data) {
     tables.set(tag, { offset: view.getUint32(at + 8), length: view.getUint32(at + 12) });
   }
   for (const required of ["head", "hhea", "maxp", "hmtx", "loca", "glyf"]) if (!tables.has(required)) throw new Error(TABLE_ORDER_ERROR);
+  // Every table must lie inside the file and be long enough for what is read from it (corrupt fonts must fail cleanly).
+  for (const [tag, { offset, length }] of tables) if (offset > data.length || offset + length > data.length) throw new Error(`Font table ${tag} lies outside the file.`);
+  const minimum = { head: 54, hhea: 36, maxp: 6 };
+  for (const [tag, size] of Object.entries(minimum)) if (tables.get(tag).length < size) throw new Error(`Font table ${tag} is truncated.`);
   return { view, tables };
 }
 
 /** Whether `data` is an sfnt with TrueType outlines (the only outline format this subsetter writes). */
 export function isTrueTypeOutlines(data) {
-  try { readTables(data); return true; } catch { return false; }
+  if (data.length < 12) return false;
+  const signature = new DataView(data.buffer, data.byteOffset, data.byteLength).getUint32(0);
+  return signature === 0x00010000 || signature === 0x74727565;
 }
 
 export function subsetTrueType(data, wantedGlyphs) {
@@ -32,12 +38,16 @@ export function subsetTrueType(data, wantedGlyphs) {
   const longLoca = view.getInt16(head.offset + 50) !== 0;
   const numGlyphs = view.getUint16(maxp.offset + 4);
   const metricCount = view.getUint16(hhea.offset + 34);
+  if (numGlyphs < 1 || metricCount < 1 || metricCount > numGlyphs) throw new Error("Font glyph counts are inconsistent.");
+  if (loca.length < (numGlyphs + 1) * (longLoca ? 4 : 2) || hmtx.length < metricCount * 4) throw new Error("Font loca or hmtx table is truncated.");
   const glyphRange = (id) => {
     if (id >= numGlyphs) return [0, 0];
     const at = loca.offset + id * (longLoca ? 4 : 2);
-    return longLoca
+    const range = longLoca
       ? [view.getUint32(at), view.getUint32(at + 4)]
       : [view.getUint16(at) * 2, view.getUint16(at + 2) * 2];
+    if (range[1] < range[0] || range[1] > glyf.length) throw new Error(`Font glyph ${id} lies outside the glyf table.`);
+    return range;
   };
 
   // Close over composite glyph components.

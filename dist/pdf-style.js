@@ -45,15 +45,7 @@ export function parseTransform(value) {
   return matrix;
 }
 
-const NAMED = {
-  black: "000000", white: "ffffff", red: "ff0000", green: "008000", blue: "0000ff", yellow: "ffff00", gray: "808080", grey: "808080",
-  silver: "c0c0c0", maroon: "800000", purple: "800080", fuchsia: "ff00ff", magenta: "ff00ff", lime: "00ff00", olive: "808000",
-  navy: "000080", teal: "008080", aqua: "00ffff", cyan: "00ffff", orange: "ffa500", pink: "ffc0cb", brown: "a52a2a", gold: "ffd700",
-  lightgray: "d3d3d3", lightgrey: "d3d3d3", darkgray: "a9a9a9", darkgrey: "a9a9a9", whitesmoke: "f5f5f5", transparent: "00000000",
-  crimson: "dc143c", indigo: "4b0082", violet: "ee82ee", coral: "ff7f50", salmon: "fa8072", tomato: "ff6347", khaki: "f0e68c",
-  beige: "f5f5dc", ivory: "fffff0", lavender: "e6e6fa", turquoise: "40e0d0", skyblue: "87ceeb", steelblue: "4682b4", slategray: "708090",
-  darkblue: "00008b", darkgreen: "006400", darkred: "8b0000", orangered: "ff4500", dimgray: "696969", dimgrey: "696969", gainsboro: "dcdcdc",
-};
+const NAMED = { "aliceblue":"f0f8ff", "antiquewhite":"faebd7", "aqua":"00ffff", "aquamarine":"7fffd4", "azure":"f0ffff", "beige":"f5f5dc", "bisque":"ffe4c4", "black":"000000", "blanchedalmond":"ffebcd", "blue":"0000ff", "blueviolet":"8a2be2", "brown":"a52a2a", "burlywood":"deb887", "cadetblue":"5f9ea0", "chartreuse":"7fff00", "chocolate":"d2691e", "coral":"ff7f50", "cornflowerblue":"6495ed", "cornsilk":"fff8dc", "crimson":"dc143c", "cyan":"00ffff", "darkblue":"00008b", "darkcyan":"008b8b", "darkgoldenrod":"b8860b", "darkgray":"a9a9a9", "darkgreen":"006400", "darkgrey":"a9a9a9", "darkkhaki":"bdb76b", "darkmagenta":"8b008b", "darkolivegreen":"556b2f", "darkorange":"ff8c00", "darkorchid":"9932cc", "darkred":"8b0000", "darksalmon":"e9967a", "darkseagreen":"8fbc8f", "darkslateblue":"483d8b", "darkslategray":"2f4f4f", "darkslategrey":"2f4f4f", "darkturquoise":"00ced1", "darkviolet":"9400d3", "deeppink":"ff1493", "deepskyblue":"00bfff", "dimgray":"696969", "dimgrey":"696969", "dodgerblue":"1e90ff", "firebrick":"b22222", "floralwhite":"fffaf0", "forestgreen":"228b22", "fuchsia":"ff00ff", "gainsboro":"dcdcdc", "ghostwhite":"f8f8ff", "gold":"ffd700", "goldenrod":"daa520", "gray":"808080", "green":"008000", "greenyellow":"adff2f", "grey":"808080", "honeydew":"f0fff0", "hotpink":"ff69b4", "indianred":"cd5c5c", "indigo":"4b0082", "ivory":"fffff0", "khaki":"f0e68c", "lavender":"e6e6fa", "lavenderblush":"fff0f5", "lawngreen":"7cfc00", "lemonchiffon":"fffacd", "lightblue":"add8e6", "lightcoral":"f08080", "lightcyan":"e0ffff", "lightgoldenrodyellow":"fafad2", "lightgray":"d3d3d3", "lightgreen":"90ee90", "lightgrey":"d3d3d3", "lightpink":"ffb6c1", "lightsalmon":"ffa07a", "lightseagreen":"20b2aa", "lightskyblue":"87cefa", "lightslategray":"778899", "lightslategrey":"778899", "lightsteelblue":"b0c4de", "lightyellow":"ffffe0", "lime":"00ff00", "limegreen":"32cd32", "linen":"faf0e6", "magenta":"ff00ff", "maroon":"800000", "mediumaquamarine":"66cdaa", "mediumblue":"0000cd", "mediumorchid":"ba55d3", "mediumpurple":"9370db", "mediumseagreen":"3cb371", "mediumslateblue":"7b68ee", "mediumspringgreen":"00fa9a", "mediumturquoise":"48d1cc", "mediumvioletred":"c71585", "midnightblue":"191970", "mintcream":"f5fffa", "mistyrose":"ffe4e1", "moccasin":"ffe4b5", "navajowhite":"ffdead", "navy":"000080", "oldlace":"fdf5e6", "olive":"808000", "olivedrab":"6b8e23", "orange":"ffa500", "orangered":"ff4500", "orchid":"da70d6", "palegoldenrod":"eee8aa", "palegreen":"98fb98", "paleturquoise":"afeeee", "palevioletred":"db7093", "papayawhip":"ffefd5", "peachpuff":"ffdab9", "peru":"cd853f", "pink":"ffc0cb", "plum":"dda0dd", "powderblue":"b0e0e6", "purple":"800080", "rebeccapurple":"663399", "red":"ff0000", "rosybrown":"bc8f8f", "royalblue":"4169e1", "saddlebrown":"8b4513", "salmon":"fa8072", "sandybrown":"f4a460", "seagreen":"2e8b57", "seashell":"fff5ee", "sienna":"a0522d", "silver":"c0c0c0", "skyblue":"87ceeb", "slateblue":"6a5acd", "slategray":"708090", "slategrey":"708090", "snow":"fffafa", "springgreen":"00ff7f", "steelblue":"4682b4", "tan":"d2b48c", "teal":"008080", "thistle":"d8bfd8", "tomato":"ff6347", "turquoise":"40e0d0", "violet":"ee82ee", "wheat":"f5deb3", "white":"ffffff", "whitesmoke":"f5f5f5", "yellow":"ffff00", "yellowgreen":"9acd32", "transparent":"00000000" };
 
 /** A color as {r, g, b, a} in 0..1, `null` for none, or `undefined` when the text is not a color this reader knows. */
 export function parseColor(value, current) {
@@ -76,6 +68,21 @@ export function parseColor(value, current) {
     const channel = (part) => Math.min(1, Math.max(0, part.endsWith("%") ? parseFloat(part) / 100 : parseFloat(part) / 255));
     const alpha = parts[3] === undefined ? 1 : Math.min(1, Math.max(0, parts[3].endsWith("%") ? parseFloat(parts[3]) / 100 : parseFloat(parts[3])));
     const result = { r: channel(parts[0]), g: channel(parts[1]), b: channel(parts[2]), a: alpha };
+    return Object.values(result).every(Number.isFinite) ? result : undefined;
+  }
+  match = /^hsla?\(([^)]*)\)$/.exec(text);
+  if (match) {
+    const parts = match[1].split(/[\s,/]+/).filter(Boolean);
+    if (parts.length < 3) return undefined;
+    const hue = (((parseFloat(parts[0]) % 360) + 360) % 360) / 360;
+    const saturation = Math.min(1, Math.max(0, parseFloat(parts[1]) / 100)), lightness = Math.min(1, Math.max(0, parseFloat(parts[2]) / 100));
+    const alpha = parts[3] === undefined ? 1 : Math.min(1, Math.max(0, parts[3].endsWith("%") ? parseFloat(parts[3]) / 100 : parseFloat(parts[3])));
+    const q = lightness < 0.5 ? lightness * (1 + saturation) : lightness + saturation - lightness * saturation, p = 2 * lightness - q;
+    const channel = (t) => {
+      t = (t + 1) % 1;
+      return t < 1 / 6 ? p + (q - p) * 6 * t : t < 1 / 2 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p;
+    };
+    const result = { r: channel(hue + 1 / 3), g: channel(hue), b: channel(hue - 1 / 3), a: alpha };
     return Object.values(result).every(Number.isFinite) ? result : undefined;
   }
   if (NAMED[text]) return parseColor("#" + NAMED[text]);
@@ -120,7 +127,7 @@ export function parseDeclarations(style) {
 /** The element's attributes with its style declarations merged over them (declarations win). */
 export function attributesOf(node) {
   if (node.__attributes) return node.__attributes;
-  const merged = { ...node.attrs, ...parseDeclarations(node.attrs.style) };
+  const merged = { ...node.attrs, ...node.__css, ...parseDeclarations(node.attrs.style) };
   Object.defineProperty(node, "__attributes", { value: merged, enumerable: false });
   return merged;
 }
@@ -244,13 +251,15 @@ function arcToCurves(x1, y1, rx, ry, rotationDegrees, large, sweep, x2, y2) {
 }
 
 /** Path commands for a basic shape element, or null. */
-export function shapeToPath(node, attrs, resolve) {
-  const length = (key, reference = 0) => resolve(attrs[key], reference) ?? 0;
+/** Percentages in shape attributes are of the viewport: width for x-like keys, height for y-like keys, the normalized diagonal for r. */
+export function shapeToPath(node, attrs, resolve, viewport = { w: 0, h: 0 }) {
+  const axis = { x: viewport.w, cx: viewport.w, x1: viewport.w, x2: viewport.w, width: viewport.w, rx: viewport.w, y: viewport.h, cy: viewport.h, y1: viewport.h, y2: viewport.h, height: viewport.h, ry: viewport.h, r: Math.sqrt((viewport.w ** 2 + viewport.h ** 2) / 2) };
+  const length = (key) => resolve(attrs[key], axis[key]) ?? 0;
   switch (node.name) {
     case "rect": {
       const x = length("x"), y = length("y"), width = length("width"), height = length("height");
       if (!(width > 0 && height > 0)) return null;
-      let rx = attrs.rx === undefined ? undefined : resolve(attrs.rx, width), ry = attrs.ry === undefined ? undefined : resolve(attrs.ry, height);
+      let rx = attrs.rx === undefined ? undefined : resolve(attrs.rx, axis.rx), ry = attrs.ry === undefined ? undefined : resolve(attrs.ry, axis.ry);
       if (rx === undefined && ry === undefined) { rx = ry = 0; } else { rx ??= ry; ry ??= rx; }
       rx = Math.min(Math.max(rx, 0), width / 2); ry = Math.min(Math.max(ry, 0), height / 2);
       if (!rx || !ry) return [["M", x, y], ["L", x + width, y], ["L", x + width, y + height], ["L", x, y + height], ["Z"]];
@@ -355,4 +364,66 @@ export function parseFontWeight(value, parent = 400) {
 export function parseFontFamilies(value) {
   if (!value) return [];
   return String(value).split(",").map((item) => item.trim().replace(/^["']|["']$/g, "")).filter(Boolean);
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Style sheets: type, class, id and universal selectors, comma lists (what generator output uses). Anything else in a
+// selector (combinators, attribute and pseudo selectors) is reported through `unsupported` and the rule is skipped.
+
+/** Apply the <style> rules of an SVG tree: each matching element gets `__css`, merged by `attributesOf` under inline styles. */
+export function applyStyleSheets(root, unsupported) {
+  const rules = [];
+  const sheets = [];
+  const collect = (node) => {
+    if (node.name === "style" && (!node.attrs.type || /css/i.test(node.attrs.type))) sheets.push(node.children.map((child) => child.text ?? "").join(""));
+    for (const child of node.children ?? []) if (child.name) collect(child);
+  };
+  collect(root);
+  let order = 0;
+  for (const sheet of sheets) {
+    const css = sheet.replace(/\/\*[\s\S]*?\*\//g, "");
+    for (const rule of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+      const selectorText = rule[1].trim();
+      if (selectorText.startsWith("@")) continue;
+      const declarations = parseDeclarations(rule[2].replace(/!important/g, ""));
+      for (const raw of selectorText.split(",")) {
+        const selector = raw.trim();
+        const match = /^(\*|[A-Za-z][\w-]*)?((?:[.#][\w-]+)*)$/.exec(selector);
+        if (!match || !selector) {
+          unsupported(`The CSS selector "${selector.slice(0, 60)}" is not supported (only type, class, id and universal selectors); its rule is not applied.`);
+          continue;
+        }
+        const parts = [...match[2].matchAll(/([.#])([\w-]+)/g)].map((part) => ({ kind: part[1], name: part[2] }));
+        const specificity = (match[1] && match[1] !== "*" ? 1 : 0) + parts.filter((part) => part.kind === ".").length * 10 + parts.filter((part) => part.kind === "#").length * 100;
+        rules.push({ tag: match[1], parts, specificity, order: order++, declarations });
+      }
+    }
+  }
+  if (!rules.length) return;
+  rules.sort((a, b) => a.specificity - b.specificity || a.order - b.order);
+  const visit = (node) => {
+    if (node.name) {
+      const classes = (node.attrs.class ?? "").split(/\s+/).filter(Boolean);
+      let merged;
+      for (const rule of rules) {
+        if (rule.tag && rule.tag !== "*" && rule.tag !== node.name) continue;
+        if (!rule.parts.every((part) => (part.kind === "." ? classes.includes(part.name) : node.attrs.id === part.name))) continue;
+        merged = { ...merged, ...rule.declarations };
+      }
+      if (merged) Object.defineProperty(node, "__css", { value: merged, enumerable: false });
+    }
+    for (const child of node.children ?? []) visit(child);
+  };
+  visit(root);
+}
+
+/** The matrix mapping a viewBox [minX, minY, width, height] into the viewport (x, y, width, height) under preserveAspectRatio. */
+export function viewBoxTransform(viewBox, preserveAspectRatio, x, y, width, height) {
+  const [minX, minY, boxWidth, boxHeight] = viewBox;
+  const align = String(preserveAspectRatio ?? "xMidYMid meet").trim().split(/\s+/);
+  if (align[0] === "none") return [width / boxWidth, 0, 0, height / boxHeight, x - minX * width / boxWidth, y - minY * height / boxHeight];
+  const slice = align[1] === "slice";
+  const scale = slice ? Math.max(width / boxWidth, height / boxHeight) : Math.min(width / boxWidth, height / boxHeight);
+  const alignX = /xMin/.test(align[0]) ? 0 : /xMax/.test(align[0]) ? 1 : 0.5, alignY = /YMin/.test(align[0]) ? 0 : /YMax/.test(align[0]) ? 1 : 0.5;
+  return [scale, 0, 0, scale, x - minX * scale + (width - boxWidth * scale) * alignX, y - minY * scale + (height - boxHeight * scale) * alignY];
 }

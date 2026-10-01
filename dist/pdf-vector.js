@@ -1,8 +1,8 @@
 import { readdir, readFile, stat as fsStat } from "node:fs/promises";
 import path from "node:path";
 import { FontEmbedder, FontLibrary, nominalAdvance } from "./pdf-fonts.js";
-import { layoutText } from "./pdf-text.js";
-import { IDENTITY, applyPoint, attributesOf, inheritStyle, invert, multiply, parseColor, parseFontWeight, parseLength, parseNumberList, parsePath, parseTransform, pathBounds, ROOT_STYLE, shapeToPath, transformPath } from "./pdf-style.js";
+import { actualTextFor, layoutText, textClusters } from "./pdf-text.js";
+import { IDENTITY, viewBoxTransform, applyPoint, applyStyleSheets, attributesOf, inheritStyle, invert, multiply, parseColor, parseFontWeight, parseLength, parseNumberList, parsePath, parseTransform, pathBounds, ROOT_STYLE, shapeToPath, transformPath } from "./pdf-style.js";
 import { PdfFile, asciiString, name, num, ref, sha256, hex, textString, utf16Hex, utf8Encoder } from "./pdf-writer.js";
 import { isElement, parseXml, serialize, escapeAttribute } from "./pdf-xml.js";
 
@@ -15,6 +15,16 @@ import { isElement, parseXml, serialize, escapeAttribute } from "./pdf-xml.js";
 const VIEWPORT_FALLBACK = { width: 1280, height: 720 };
 // Space separators other than U+0020: they are copied as plain spaces, so text that uses one carries /ActualText.
 const NON_ASCII_SPACE = new RegExp("[" + ["\u00a0", "\u1680", "\u2000-\u200a", "\u202f", "\u205f", "\u3000"].join("") + "]");
+// Per page: elements drawn (a <use> expansion counts every copy) and group nesting.
+const MAX_ELEMENTS = 50000;
+const MAX_NESTING = 256;
+// Attributes with no PDF equivalent here, and the values that mean "default" (nothing to report).
+const UNSUPPORTED_ATTRIBUTES = [
+  ["rotate", /^(0|)$/], ["dominant-baseline", /^(auto|alphabetic|normal)$/], ["alignment-baseline", /^(auto|baseline|alphabetic)$/],
+  ["baseline-shift", /^(baseline|0|0px|)$/], ["paint-order", /^(normal)$/], ["mix-blend-mode", /^(normal)$/], ["text-transform", /^(none)$/],
+  ["font-variant", /^(normal|none)$/], ["font-variant-caps", /^(normal)$/], ["writing-mode", /^(lr|lr-tb|horizontal-tb)$/],
+  ["marker-start", /^none$/], ["marker-mid", /^none$/], ["marker-end", /^none$/], ["vector-effect", /^none$/], ["mask-image", /^none$/],
+].map(([key, ignored]) => [key, ignored]);
 const SKIPPED = new Set(["defs", "title", "desc", "metadata", "style", "script", "clipPath", "mask", "marker", "pattern", "linearGradient", "radialGradient", "symbol", "filter", "font", "font-face"]);
 const SHAPES = new Set(["rect", "circle", "ellipse", "line", "polyline", "polygon", "path"]);
 
@@ -74,6 +84,13 @@ class Converter {
       fonts: this.fonts,
       defaults: this.defaults,
       diagnostic: (d) => this.diagnostic(d),
+      // A feature the PDF cannot give: reported once per character and family, fatal under `strict`.
+      missing: (d) => {
+        const key = d.code + d.fontFamily + d.codePoint;
+        if (this.reported.has(key)) return;
+        this.reported.add(key);
+        this.unsupported(d.code, d.message, { fontFamily: d.fontFamily, codePoint: d.codePoint });
+      },
       unavailable: (families) => this.error("pdf-font-unavailable", `No embeddable font face is available for ${families.length ? `'${families.join("', '")}'` : "the requested text"}. Supply font files (fontFiles/fontDirs) or keep useBundledFonts enabled.`, {}),
     };
   }
@@ -143,7 +160,8 @@ class Converter {
           const header = source[2].slice(0, comma), payload = source[2].slice(comma + 1);
           try {
             const bytes = /;base64/i.test(header) ? Buffer.from(decodeURIComponent(payload), "base64") : Buffer.from(decodeURIComponent(payload), "binary");
-            this.fonts.addData(new Uint8Array(bytes), "svg @font-face");
+            const declared = /font-family\s*:\s*(?:"([^"]*)"|'([^']*)'|([^;"']+))/.exec(rule[1]);
+            this.fonts.addData(new Uint8Array(bytes), "svg @font-face", (declared?.[1] ?? declared?.[2] ?? declared?.[3])?.trim());
           } catch { /* a malformed embedded font is skipped; text falls back to the loaded faces */ }
         }
       }
@@ -155,27 +173,20 @@ class Converter {
   // Pages
 
   async addPage(source, index) {
-    const svg = parseXml(source);
+    let svg;
+    try { svg = parseXml(source); } catch (error) {
+      throw this.error("svg-too-deep", error instanceof Error ? error.message : String(error), {});
+    }
     if (!svg) throw this.error("invalid-svg", "SVG input must contain a root <svg> element.", {});
     this.addEmbeddedFontFaces(svg);
+    applyStyleSheets(svg, (message) => this.unsupported("pdf-unsupported-css", message, {}));
     const attrs = attributesOf(svg);
     const viewBox = parseNumberList(attrs.viewBox);
     const hasBox = viewBox.length === 4 && viewBox[2] > 0 && viewBox[3] > 0;
     const width = positive(parseLength(attrs.width), hasBox ? viewBox[2] : VIEWPORT_FALLBACK.width);
     const height = positive(parseLength(attrs.height), hasBox ? viewBox[3] : VIEWPORT_FALLBACK.height);
     // viewBox to page: scale to fit (xMidYMid meet unless the SVG says otherwise).
-    let root = IDENTITY;
-    if (hasBox) {
-      const [minX, minY, boxWidth, boxHeight] = viewBox;
-      const align = String(attrs.preserveAspectRatio ?? "xMidYMid meet").trim().split(/\s+/);
-      if (align[0] === "none") root = [width / boxWidth, 0, 0, height / boxHeight, -minX * width / boxWidth, -minY * height / boxHeight];
-      else {
-        const slice = align[1] === "slice";
-        const scale = slice ? Math.max(width / boxWidth, height / boxHeight) : Math.min(width / boxWidth, height / boxHeight);
-        const alignX = /xMin/.test(align[0]) ? 0 : /xMax/.test(align[0]) ? 1 : 0.5, alignY = /YMin/.test(align[0]) ? 0 : /YMax/.test(align[0]) ? 1 : 0.5;
-        root = [scale, 0, 0, scale, -minX * scale + (width - boxWidth * scale) * alignX, -minY * scale + (height - boxHeight * scale) * alignY];
-      }
-    }
+    const root = hasBox ? viewBoxTransform(viewBox, attrs.preserveAspectRatio, 0, 0, width, height) : IDENTITY;
     const defs = new Map();
     const collect = (node) => { if (node.attrs?.id) defs.set(node.attrs.id, node); for (const child of node.children ?? []) if (isElement(child)) collect(child); };
     collect(svg);
@@ -183,14 +194,22 @@ class Converter {
     const content = new Content(this);
     const page = {
       index, width, height, source, defs, root, svg,
+      viewport: hasBox ? { w: viewBox[2], h: viewBox[3] } : { w: width, h: height },
+      elements: 0, limited: false, reportedAttributes: new Set(),
       object: this.file.reserve(), content, annotations: [], mcids: [], blocks: new Map(),
       section: { role: "Sect", kids: [], page: null },
       label: attrs["aria-label"], language: attrs.lang ?? attrs["xml:lang"],
     };
     page.section.page = page;
     this.pages.push(page);
-    const background = this.options.background === undefined ? null : parseColor(this.options.background);
-    if (background && background.a > 0) content.op(`q ${rgb(background)} rg 0 0 ${num(width)} ${num(height)} re f Q`);
+    // The page is painted white unless `background` says otherwise (raster mode composites on white too), so the page looks
+    // the same in viewers that show a dark or transparent paper.
+    const background = parseColor(this.options.background ?? "#FFFFFF");
+    if (background && background.a > 0) {
+      if (this.tagged) content.op("/Artifact BMC");
+      content.op(`q ${rgb(background)} rg 0 0 ${num(width)} ${num(height)} re f Q`);
+      if (this.tagged) content.op("EMC");
+    }
     content.op(`q 1 0 0 -1 0 ${num(height)} cm ${matrixOps(root)}`);
     const style = inheritStyle({ ...ROOT_STYLE, "font-family": this.defaults[0] ?? "Roboto" }, attrs);
     const ctx = { page, content, matrix: root, rel: multiply([1, 0, 0, -1, 0, height], root), T: IDENTITY, style, alpha: 1, link: null, inForm: false };
@@ -203,14 +222,42 @@ class Converter {
 
   async walk(node, ctx) {
     if (!isElement(node) || SKIPPED.has(node.name)) return;
+    // Budgets against hostile input (a <use> chain that doubles at every level, enormous trees).
+    if (ctx.page.limited) return;
+    if (++ctx.page.elements > MAX_ELEMENTS) { this.expansionLimit(ctx, node, `more than ${MAX_ELEMENTS} elements`); return; }
+    if ((ctx.nesting ?? 0) > MAX_NESTING) { this.expansionLimit(ctx, node, `groups nested deeper than ${MAX_NESTING}`); return; }
     const attrs = attributesOf(node);
     if (attrs.display === "none") return;
-    if (node.name === "g" || node.name === "a" || node.name === "svg" || node.name === "switch") return this.element(node, attrs, ctx, (inner) => this.children(node, inner));
+    this.checkAttributes(node, attrs, ctx);
+    if (node.name === "svg") return this.viewport(node, attrs, ctx, attrs, node);
+    if (node.name === "switch") {
+      // The first child that is an element (conditional processing attributes are not evaluated).
+      const first = node.children.find((child) => isElement(child) && !SKIPPED.has(child.name));
+      return first ? this.walk(first, ctx) : undefined;
+    }
+    if (node.name === "g" || node.name === "a") return this.element(node, attrs, ctx, (inner) => this.children(node, inner));
     if (node.name === "use") return this.use(node, attrs, ctx);
     if (SHAPES.has(node.name)) return this.element(node, attrs, ctx, (inner) => this.shape(node, attrs, inner), { leaf: "shape" });
     if (node.name === "text") return this.element(node, attrs, ctx, (inner) => this.text(node, attrs, inner), { leaf: "text" });
     if (node.name === "image") return this.element(node, attrs, ctx, (inner) => this.image(node, attrs, inner), { leaf: "image" });
     this.unsupported("pdf-unsupported-element", `The <${node.name}> element is not drawn in the vector PDF.`, { path: node.attrs["data-opf-path"], element: node.name });
+  }
+
+  /** Presentation features this export does not draw: reported once per page and attribute, never silently dropped. */
+  checkAttributes(node, attrs, ctx) {
+    const page = ctx.page;
+    for (const [key, ignored] of UNSUPPORTED_ATTRIBUTES) {
+      const value = attrs[key];
+      if (value === undefined || ignored.test(String(value).trim())) continue;
+      const mark = `${key}=${value}`;
+      if (page.reportedAttributes.has(mark)) continue;
+      page.reportedAttributes.add(mark);
+      this.unsupported("pdf-unsupported-feature", `${key}="${String(value).slice(0, 40)}" on <${node.name}> is not drawn in the vector PDF.`, { path: node.attrs["data-opf-path"], element: node.name, attribute: key });
+    }
+    if (node.name === "textPath" && !page.reportedAttributes.has("textPath")) {
+      page.reportedAttributes.add("textPath");
+      this.unsupported("pdf-unsupported-feature", "<textPath> text is drawn along a straight line, not along its path.", { path: node.attrs["data-opf-path"], element: node.name });
+    }
   }
 
   async children(node, ctx) {
@@ -219,10 +266,49 @@ class Converter {
 
   async use(node, attrs, ctx) {
     const target = ctx.page.defs.get(String(attrs.href ?? attrs["xlink:href"] ?? "").replace(/^#/, ""));
-    if (!target || target === node || (ctx.depth ?? 0) > 20) return;
+    if (!target || target === node) return;
+    if ((ctx.depth ?? 0) > 12) { this.expansionLimit(ctx, node, "nested <use> references"); return; }
+    const deeper = { ...ctx, depth: (ctx.depth ?? 0) + 1 };
+    // A <symbol> or <svg> target is a viewport: <use> width and height (default 100%) size it.
+    if (target.name === "symbol" || target.name === "svg") {
+      const own = attributesOf(target);
+      return this.viewport(target, { ...own, ...attrs, viewBox: own.viewBox, preserveAspectRatio: own.preserveAspectRatio }, deeper, own, node);
+    }
     const wrapper = { name: "g", attrs: { ...node.attrs, transform: `${node.attrs.transform ?? ""} translate(${parseLength(attrs.x) ?? 0} ${parseLength(attrs.y) ?? 0})` }, children: [target], parent: node.parent };
     delete wrapper.attrs.href; delete wrapper.attrs["xlink:href"];
-    return this.walk(wrapper, { ...ctx, depth: (ctx.depth ?? 0) + 1 });
+    return this.walk(wrapper, deeper);
+  }
+
+  /**
+   * Draw a nested <svg> (or a <symbol> a <use> instantiates): its x, y, width and height place a viewport, its viewBox is
+   * fitted into it, and content outside it is clipped unless overflow is visible. `sizing` gives x, y, width, height and the
+   * viewBox, `source` the element whose children are drawn, `origin` the element whose presentation attributes apply.
+   */
+  async viewport(source, sizing, ctx, source2, origin) {
+    const page = ctx.page;
+    const fontSize = parseFloat(ctx.style["font-size"]) || 16;
+    const length = (value, reference, fallback) => parseLength(value, { reference, fontSize }) ?? fallback;
+    const x = length(sizing.x, page.viewport.w, 0), y = length(sizing.y, page.viewport.h, 0);
+    const width = length(sizing.width, page.viewport.w, page.viewport.w), height = length(sizing.height, page.viewport.h, page.viewport.h);
+    if (!(width > 0 && height > 0)) return;
+    const box = parseNumberList(source2.viewBox ?? sizing.viewBox);
+    const matrix = box.length === 4 && box[2] > 0 && box[3] > 0 ? viewBoxTransform(box, source2.preserveAspectRatio ?? sizing.preserveAspectRatio, x, y, width, height) : [1, 0, 0, 1, x, y];
+    const inherited = { ...origin.attrs };
+    for (const key of ["x", "y", "width", "height", "viewBox", "preserveAspectRatio", "transform", "overflow", "href", "xlink:href", "id"]) delete inherited[key];
+    const wrapper = { name: "g", attrs: { ...inherited, transform: `matrix(${matrix.join(" ")})` }, children: source.children, parent: source.parent };
+    const content = ctx.content;
+    content.op("q");
+    if (attributesOf(source).overflow !== "visible" && attributesOf(origin).overflow !== "visible") content.op(`${num(x)} ${num(y)} ${num(width)} ${num(height)} re W n`);
+    await this.element(wrapper, attributesOf(wrapper), ctx, (inner) => this.children(wrapper, inner));
+    content.op("Q");
+  }
+
+  /** The `<use>`-expansion and element budgets: report once per page, stop expanding. */
+  expansionLimit(ctx, node, what) {
+    const page = ctx.page;
+    if (page.limited) return;
+    page.limited = true;
+    this.unsupported("pdf-expansion-limit", `Too much content to draw (${what}); the rest of this page is not drawn.`, { path: node.attrs?.["data-opf-path"] });
   }
 
   /** Common element handling: transform, clip, opacity, link, and the fallback for filters and masks. */
@@ -241,6 +327,7 @@ class Converter {
       rel: isIdentity ? ctx.rel : multiply(ctx.rel, transform),
       T: isIdentity ? ctx.T : multiply(ctx.T, transform),
       parentStyle: ctx.style,
+      nesting: (ctx.nesting ?? 0) + 1,
     };
     if (node.name === "a") {
       const href = attrs.href ?? attrs["xlink:href"];
@@ -297,15 +384,17 @@ class Converter {
     }
     const base = parseTransform(attrs.transform);
     const ops = [];
+    let evenOdd = false;
     for (const child of def.children) {
       if (!isElement(child) || !(SHAPES.has(child.name))) continue;
       const childAttrs = attributesOf(child);
-      let commands = shapeToPath(child, childAttrs, (v, ref) => parseLength(v, { reference: ref }));
+      if (childAttrs["clip-rule"] === "evenodd") evenOdd = true;
+      let commands = shapeToPath(child, childAttrs, (v, ref) => parseLength(v, { reference: ref }), parentCtx.page.viewport);
       if (!commands) continue;
       commands = transformPath(commands, multiply(base, parseTransform(childAttrs.transform)));
       ops.push(pathOps(commands));
     }
-    if (ops.length) ctx.content.op(`${ops.join(" ")} W n`);
+    if (ops.length) ctx.content.op(`${ops.join(" ")} ${evenOdd ? "W*" : "W"} n`);
   }
 
   // -----------------------------------------------------------------------------------------------------------
@@ -368,9 +457,9 @@ class Converter {
   async shape(node, attrs, ctx) {
     const style = ctx.style;
     const fontSize = parseFloat(style["font-size"]) || 16;
-    const viewport = { w: ctx.page.width, h: ctx.page.height };
+    const viewport = ctx.page.viewport;
     const resolve = (value, reference) => parseLength(value, { reference: reference ?? viewport.w, fontSize });
-    const commands = shapeToPath(node, attrs, (value, reference) => resolve(value, reference));
+    const commands = shapeToPath(node, attrs, (value, reference) => resolve(value, reference), ctx.page.viewport);
     if (!commands) return;
     const isLine = node.name === "line";
     const fill = isLine ? null : await this.paint(style.fill, style, ctx, commands, "fill");
@@ -430,7 +519,10 @@ class Converter {
       return null;
     }
     const color = parseColor(text, parseColor(style.color));
-    if (!color) return null;
+    if (!color) {
+      if (!/^(none|inherit|context-(fill|stroke))$/i.test(text)) this.unsupported("pdf-unsupported-paint", `The colour "${text.slice(0, 40)}" is not understood; nothing is drawn for it.`, { kind });
+      return null;
+    }
     return color.a === 0 ? null : { color };
   }
 
@@ -477,6 +569,10 @@ class Converter {
     if (stops.length === 1) return { color: stops[0].color };
     if (stops.some((stop) => stop.color.a < 1)) {
       this.unsupported("pdf-unsupported-paint", "A gradient with transparent stops is drawn opaque in the vector PDF.", { element: def.attrs.id });
+    }
+    const spread = this.inheritedAttribute(def, "spreadMethod", ctx);
+    if (spread === "reflect" || spread === "repeat") {
+      this.unsupported("pdf-unsupported-paint", `spreadMethod="${spread}" is drawn as pad in the vector PDF.`, { element: def.attrs.id });
     }
     const units = this.inheritedAttribute(def, "gradientUnits", ctx) ?? "objectBoundingBox";
     const bbox = pathBounds(commands);
@@ -602,7 +698,7 @@ class Converter {
     let result = null;
     try {
       const { default: sharp } = await import("sharp");
-      const decoder = sharp(bytes, { limitInputPixels: 80_000_000, animated: false });
+      const decoder = sharp(bytes, { limitInputPixels: 40_000_000, animated: false });
       const meta = await decoder.metadata();
       const resource = `Im${++this.counters.Im}`;
       const isJpeg = meta.format === "jpeg" && (meta.orientation === undefined || meta.orientation === 1) && (meta.channels === 3 || meta.channels === 1) && meta.space !== "cmyk";
@@ -641,28 +737,20 @@ class Converter {
     const { runs } = layoutText(node, this.env, ctx.parentStyle, ctx.link);
     if (!runs.length) return;
     for (const run of runs) {
-      run.fill = await this.paint(run.style.fill, run.style, ctx, [["M", run.x, run.y]], "fill");
-      run.stroke = await this.paint(run.style.stroke, run.style, ctx, [["M", run.x, run.y]], "stroke");
+      // Gradients and patterns on text are fitted to the run's box.
+      const box = runBox(run);
+      run.fill = await this.paint(run.style.fill, run.style, ctx, box, "fill");
+      run.stroke = await this.paint(run.style.stroke, run.style, ctx, box, "stroke");
     }
-    // Runs of one text chunk are drawn in visual order. A chunk whose copied text cannot be recovered from the
-    // glyph-to-Unicode map alone (right-to-left or reordered text, a glyph that stands for two different
-    // characters, a ligature or cluster that does not map one to one) carries its logical text as /ActualText.
+    // Runs are drawn in visual (left to right) order. Right-to-left runs are marked /ReversedChars so extractors read
+    // their characters back to front, and a cluster whose glyph-to-Unicode map cannot give its text (a ligature, a
+    // letter split into base and dots, a mirrored bracket) carries /ActualText; a left-to-right run the map cannot
+    // recover (reordered Indic or Khmer clusters, a no-break space) carries one /ActualText for its text object.
     for (const run of runs) {
       run.entry = this.embedder.use(run.face);
       for (const glyph of run.glyphs) glyph.cid = this.embedder.record(run.entry, glyph);
     }
-    const draw = () => {
-      for (let index = 0; index < runs.length;) {
-        let end = index;
-        while (end + 1 < runs.length && runs[end + 1].chunk === runs[index].chunk) end++;
-        const group = runs.slice(index, end + 1);
-        const needsActual = group.some((run) => run.level % 2 === 1 || !sameText(run) || NON_ASCII_SPACE.test(run.logical));
-        if (needsActual) ctx.content.op(`/Span <</ActualText <FEFF${utf16Hex(runs[index].chunk.logical)}> >> BDC`);
-        for (const run of group) this.drawRun(run, ctx);
-        if (needsActual) ctx.content.op("EMC");
-        index = end + 1;
-      }
-    };
+    const draw = () => { for (const run of runs) this.drawRun(run, ctx); };
     if (attrs["aria-hidden"] === "true") this.markArtifact(ctx, draw);
     else this.markContent(ctx, node, "P", {}, draw);
   }
@@ -675,49 +763,115 @@ class Converter {
     const fill = run.fill;
     const strokeWidth = parseLength(run.style["stroke-width"], { fontSize: size }) ?? 1;
     const stroke = run.stroke;
-    const solidFill = fill?.color ?? (fill ? firstStop(fill) : null);
+    const solidFill = fill;
     if (!solidFill && !stroke) return;
-    const segments = [];
-    let current = { rise: 0, items: [], pending: 0, hex: "" };
-    segments.push(current);
-    const flush = () => { if (current.hex) { current.items.push(`<${current.hex}>`); current.hex = ""; } };
-    const addNumber = () => { if (current.pending) { flush(); current.items.push(num(current.pending, 3)); current.pending = 0; } };
+    const rtl = run.level % 2 === 1;
+    const runActual = !rtl && (!sameText(run) || NON_ASCII_SPACE.test(run.logical)) ? run.logical : null;
+    const operations = [];
+    let current = null, pending = 0, hex = "";
+    const flushHex = () => { if (hex) { current.items.push(`<${hex}>`); hex = ""; } };
+    // Adjustments are whole thousandths of an em; the remainder is carried to the next one, so rounding never accumulates.
+    const addNumber = () => {
+      const whole = Math.round(pending);
+      if (whole !== 0) { flushHex(); current.items.push(String(whole)); pending -= whole; }
+    };
     const extra = run.extraSpacing ?? 0;
-    for (const glyph of run.glyphs) {
+    const scale = size / upem;
+    let pen = 0;
+    const decorations = [];
+    // A glyph the font displaced (a mark placed by GPOS) is shown alone with its own text matrix, and so is the glyph after
+    // it, so no text rise or large kerning number splits it into text objects that PDFium reads twice inside one span.
+    let placedBefore = false;
+    const showGlyph = (glyph, penBefore) => {
       const nominal = nominalAdvance(run.face, glyph.gid, nominalCache);
       const shaped = glyph.advance * 1000 / upem + (glyph.spacing + extra) * 1000 / size;
-      const offset = glyph.xOffset * 1000 / upem;
-      const rise = glyph.yOffset * size / upem;
-      if (rise !== current.rise) {
-        addNumber(); flush();
-        current = { rise, items: [], pending: 0, hex: "" };
-        segments.push(current);
+      const placed = Math.abs(glyph.xOffset * scale) > 0.025 * size || Math.abs(glyph.yOffset * scale) > 0.03 * size;
+      const code = glyph.cid.toString(16).toUpperCase().padStart(4, "0");
+      if (placed || placedBefore) {
+        if (current) { addNumber(); flushHex(); }
+        // The text object starts at the glyph's natural position (PDFium merges an /ActualText span across adjacent objects only),
+        // and the font's horizontal placement is a leading adjustment inside it.
+        const shift = glyph.xOffset ? [num(-glyph.xOffset * 1000 / upem, 3)] : [];
+        operations.push({ at: [run.x + run.scaleX * penBefore, run.y - glyph.yOffset * scale], items: [...shift, `<${code}>`] });
+        current = null;
+        pending = 0;
+        placedBefore = placed;
+        return;
       }
-      current.pending -= offset;
+      if (current === null) { current = { items: [] }; operations.push(current); }
       addNumber();
-      current.hex += glyph.cid.toString(16).toUpperCase().padStart(4, "0");
-      current.pending += nominal + offset - shaped;
+      hex += code;
+      pending += nominal - shaped;
+    };
+    // Each unit is a glyph, or for a left-to-right run the glyph map cannot give back (reordered Indic or Khmer clusters, a
+    // no-break space) a cluster of glyphs. A unit whose text the map cannot give carries it as /ActualText, one span per
+    // unit as Chromium writes them; a run that cannot be split into clusters gets one span for the whole run.
+    let units, wholeRun = false;
+    if (runActual === null) units = run.glyphs.map((glyph) => ({ glyphs: [glyph], actual: actualTextFor(run, glyph) }));
+    else {
+      units = textClusters(run);
+      if (units === null) { wholeRun = true; units = [{ glyphs: run.glyphs, actual: null }]; }
     }
-    addNumber(); flush();
+    const openSpan = (text) => {
+      if (current) { addNumber(); flushHex(); }
+      current = null;
+      operations.push({ actual: text });
+    };
+    const closeSpan = () => {
+      if (current) { addNumber(); flushHex(); }
+      current = null;
+      operations.push({ end: true });
+    };
+    if (wholeRun) openSpan(runActual);
+    for (const unit of units) {
+      if (unit.actual !== null) openSpan(unit.actual);
+      for (const glyph of unit.glyphs) {
+        const advance = glyph.advance * scale + glyph.spacing + extra;
+        if (glyph.codePoints.length === 0) {
+          // A glyph that stands for no character (a dot or mark the font split off a letter) is drawn as a filled outline,
+          // so extractors see only the letters.
+          decorations.push({ glyph, pen });
+          pending -= advance * 1000 / size;
+        } else showGlyph(glyph, pen);
+        pen += advance;
+      }
+      if (unit.actual !== null) closeSpan();
+    }
+    if (wholeRun) closeSpan();
+    if (current) { addNumber(); flushHex(); }
     const alpha = ctx.alpha;
-    const ca = alpha * (solidFill ? solidFill.a * num2(run.style["fill-opacity"]) : 1), CA = alpha * (stroke?.color ? stroke.color.a * num2(run.style["stroke-opacity"]) : 1);
+    const ca = alpha * (solidFill ? (solidFill.color?.a ?? 1) * num2(run.style["fill-opacity"]) : 1), CA = alpha * (stroke?.color ? stroke.color.a * num2(run.style["stroke-opacity"]) : 1);
     content.op("q");
     if (ca < 1 || CA < 1) content.op(`/${content.graphicsState(ca, CA)} gs`);
-    if (solidFill) content.op(`${rgb(solidFill)} rg`);
+    if (solidFill) this.setPaint(content, solidFill, "fill");
     if (stroke) { this.setPaint(content, stroke, "stroke"); content.op(`${num(strokeWidth, 3)} w`); }
     content.op("BT");
+    if (rtl) content.op("/ReversedChars BMC");
     content.op(`/${resource} ${num(size, 3)} Tf`);
     const mode = solidFill && stroke ? 2 : stroke ? 1 : 0;
     if (mode) content.op(`${mode} Tr`);
     if (run.scaleX !== 1) content.op(`${num(run.scaleX * 100, 4)} Tz`);
     content.op(`1 0 0 -1 ${num(run.x, 4)} ${num(run.y, 4)} Tm`);
-    let rise = 0;
-    for (const segment of segments) {
-      if (!segment.items.length) continue;
-      if (segment.rise !== rise) { content.op(`${num(segment.rise, 4)} Ts`); rise = segment.rise; }
-      content.op(`[${segment.items.join("")}] TJ`);
+    let line = [run.x, run.y];
+    for (const operation of operations) {
+      if (operation.actual !== undefined) content.op(`/Span <</ActualText <FEFF${utf16Hex(operation.actual)}> >> BDC`);
+      else if (operation.end) content.op("EMC");
+      else {
+        if (!operation.items.length) continue;
+        if (operation.at) {
+          // Td moves from the start of the current line, which is where the last Td or Tm put it.
+          content.op(`${num(operation.at[0] - line[0], 4)} ${num(line[1] - operation.at[1], 4)} Td`);
+          line = operation.at;
+        }
+        content.op(operation.items.length === 1 && operation.items[0][0] === "<" ? `${operation.items[0]} Tj` : `[${operation.items.join("")}] TJ`);
+      }
     }
+    if (rtl) content.op("EMC");
     content.op("ET");
+    for (const { glyph, pen: origin } of decorations) {
+      const commands = glyphOutline(run.face.font, glyph.gid, (x, y) => [run.x + (origin + (glyph.xOffset + x) * scale) * run.scaleX, run.y - (glyph.yOffset + y) * scale]);
+      if (commands.length) content.op(`${pathOps(commands)} f`);
+    }
     // Underline / strike-through / overline in the text colour, from the font's own metrics.
     if (run.decoration.size && solidFill) {
       const font = run.face.font, scale = size / upem;
@@ -768,10 +922,10 @@ class Converter {
     const inheritedKeys = ["fill", "fill-opacity", "fill-rule", "stroke", "stroke-opacity", "stroke-width", "stroke-linecap", "stroke-linejoin", "stroke-dasharray", "font-family", "font-size", "font-style", "font-weight", "color", "text-anchor", "transform", "direction", "style"];
     const open = chain.map((parent) => `<g${inheritedKeys.filter((key) => parent.attrs[key] !== undefined).map((key) => ` ${key}="${escapeAttribute(parent.attrs[key])}"`).join("")}>`).join("");
     const defs = [];
-    const collect = (element) => { for (const child of element.children ?? []) if (isElement(child)) { if (child.name === "defs") defs.push(serialize(child)); collect(child); } };
+    const collect = (element) => { for (const child of element.children ?? []) if (isElement(child)) { if (child.name === "defs") defs.push(serialize(child, onlyLocalReferences)); collect(child); } };
     collect(page.svg);
     const rootAttrs = page.svg.attrs;
-    const standalone = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${page.width}" height="${page.height}" viewBox="${escapeAttribute(rootAttrs.viewBox ?? `0 0 ${page.width} ${page.height}`)}">${defs.join("")}${open}${serialize(node)}${"</g>".repeat(chain.length)}</svg>`;
+    const standalone = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${page.width}" height="${page.height}" viewBox="${escapeAttribute(rootAttrs.viewBox ?? `0 0 ${page.width} ${page.height}`)}">${defs.join("")}${open}${serialize(node, onlyLocalReferences)}${"</g>".repeat(chain.length)}</svg>`;
     const scale = this.options.rasterFallbackScale;
     const { png } = await this.options.rasterize(standalone, scale);
     const { default: sharp } = await import("sharp");
@@ -804,7 +958,10 @@ class Converter {
   // Document assembly
 
   async finish(metadata, language) {
-    const reports = this.embedder.finish();
+    let reports;
+    try { reports = this.embedder.finish(); } catch (error) {
+      throw this.error("pdf-font-unreadable", `A font could not be embedded: ${error instanceof Error ? error.message : String(error)}`, {});
+    }
     for (const report of reports) this.diagnostic(report);
     const file = this.file;
     const pagesObject = file.reserve();
@@ -932,6 +1089,25 @@ function pathOps(commands) {
   }).join(" ");
 }
 
+/** A glyph's outline as absolute path commands, each point mapped by `place(fontX, fontY)`. */
+function glyphOutline(font, gid, place) {
+  const commands = [];
+  let x = 0, y = 0;
+  for (const { command, args } of font.getGlyph(gid).path.commands) {
+    if (command === "moveTo") { [x, y] = args; commands.push(["M", ...place(x, y)]); }
+    else if (command === "lineTo") { [x, y] = args; commands.push(["L", ...place(x, y)]); }
+    else if (command === "quadraticCurveTo") {
+      const [cx, cy, ex, ey] = args;
+      commands.push(["C", ...place(x + 2 / 3 * (cx - x), y + 2 / 3 * (cy - y)), ...place(ex + 2 / 3 * (cx - ex), ey + 2 / 3 * (cy - ey)), ...place(ex, ey)]);
+      x = ex; y = ey;
+    } else if (command === "bezierCurveTo") {
+      commands.push(["C", ...place(args[0], args[1]), ...place(args[2], args[3]), ...place(args[4], args[5])]);
+      x = args[4]; y = args[5];
+    } else if (command === "closePath") commands.push(["Z"]);
+  }
+  return commands;
+}
+
 function boundsOf(points) {
   const xs = points.map((point) => point[0]), ys = points.map((point) => point[1]);
   const x = Math.min(...xs), y = Math.min(...ys);
@@ -948,9 +1124,17 @@ function countLeaves(node) {
   return count;
 }
 
-function firstStop(fill) {
-  return fill.color ?? { r: 0, g: 0, b: 0, a: 1 };
+// The rasterizer may read files: a rasterized fragment keeps only embedded (data:) and in-document (#id) references.
+function onlyLocalReferences(key, value) {
+  return !(key === "href" || key === "xlink:href") || /^(data:|#)/i.test(String(value).trim());
 }
+
+function runBox(run) {
+  const scale = run.size / run.face.upem;
+  const top = run.y - run.face.font.ascent * scale, bottom = run.y - run.face.font.descent * scale;
+  return [["M", run.x, top], ["L", run.x + run.width, top], ["L", run.x + run.width, bottom], ["L", run.x, bottom], ["Z"]];
+}
+
 
 function sameText(run) {
   if (run.level % 2 === 1) return false;
@@ -970,14 +1154,17 @@ function safeUri(value) {
 
 function pdfDate(value) {
   if (value === undefined || value === null) return null;
-  const date = value instanceof Date ? value : new Date(value);
+  // A date-time without a zone designator would be read in the machine's time zone; the export reads it as UTC.
+  const text = typeof value === "string" && /^\d{4}-\d{2}-\d{2}[T ][\d:.]+$/.test(value.trim()) ? value.trim().replace(" ", "T") + "Z" : value;
+  const date = text instanceof Date ? text : new Date(text);
   if (Number.isNaN(date.getTime())) return null;
   const pad = (number, length = 2) => String(number).padStart(length, "0");
   return `D:${pad(date.getUTCFullYear(), 4)}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}${pad(date.getUTCHours())}${pad(date.getUTCMinutes())}${pad(date.getUTCSeconds())}Z`;
 }
 
 function xmpEscape(value) {
-  return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const control = new RegExp("[" + [0,8,11,12].map((c) => "\\x" + c.toString(16).padStart(2, "0")).join("") + "\\x0e-\\x1f\\ufffe\\uffff]", "g");
+  return String(value).replace(control, "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 function xmpPacket(metadata, language, producer) {
@@ -1010,7 +1197,9 @@ export async function svgsToVectorPdf(svgs, options) {
   await converter.loadFontFiles(options.fontFiles ?? [], options.fontDirs ?? []);
   for (const [index, source] of svgs.entries()) await converter.addPage(source, index);
   const first = converter.pages[0];
-  const metadata = { ...options.metadata };
+  // Control characters have no place in document properties.
+  const control = new RegExp("[" + String.fromCharCode(0) + "-" + String.fromCharCode(31) + String.fromCharCode(127) + "]", "g");
+  const metadata = Object.fromEntries(Object.entries(options.metadata ?? {}).map(([key, value]) => [key, typeof value === "string" ? value.replace(control, "") : Array.isArray(value) ? value.map((item) => String(item).replace(control, "")) : value]));
   const language = metadata.language ?? first?.language;
   return converter.finish(metadata, language);
 }

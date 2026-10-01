@@ -149,8 +149,9 @@ function collapseWhitespace(chars) {
     kept.push(char);
   }
   while (kept.length && !kept.at(-1).preserve && kept.at(-1).ch === " ") kept.pop();
+  // Not chars.push(...kept): a spread of a very long text overflows the call stack.
   chars.length = 0;
-  chars.push(...kept);
+  for (const char of kept) chars.push(char);
 }
 
 function buildRuns(chunk, env, styleIds, faceCache) {
@@ -214,6 +215,9 @@ function pickFace(char, env, styleIds, faceCache) {
     if (fallback) {
       face = fallback;
       env.diagnostic({ code: "pdf-font-fallback", message: `'${[...base.face.names][0]}' has no glyph for U+${codePoint.toString(16).toUpperCase().padStart(4, "0")}; '${[...face.names][0]}' draws it.`, fontFamily: [...base.face.names][0], fallbackFamily: [...face.names][0], codePoint });
+    } else if (!/[\p{Cc}\p{Cf}\p{Zs}]/u.test(char.ch)) {
+      // No supplied face has the character: the font's .notdef box is drawn, which is never what was written.
+      env.missing({ code: "pdf-glyph-missing", message: `No supplied font has a glyph for U+${codePoint.toString(16).toUpperCase().padStart(4, "0")} (${JSON.stringify(char.ch)}); the font's missing-glyph box is drawn instead.`, fontFamily: [...base.face.names][0], codePoint });
     }
   }
   return { face, styleId, weight: base.weight, italic: base.italic };
@@ -265,3 +269,63 @@ function reorder(runs) {
 }
 
 
+
+/**
+ * The logical text of a glyph when the glyph-to-Unicode map cannot give it in a right-to-left run (read back to front by
+ * extractors): a ligature of several characters, or a mirrored bracket whose glyph is the other bracket. Otherwise null.
+ */
+export function actualTextFor(run, glyph) {
+  if (run.level % 2 !== 1) return null;
+  const text = String.fromCodePoint(...glyph.codePoints);
+  if (glyph.codePoints.length > 1) return text;
+  return bidi.getMirroredCharacter(text) ?? null;
+}
+
+const NON_ASCII_SPACE = new RegExp("[" + [" ", " ", " - ", " ", " ", "　"].join("") + "]");
+
+/**
+ * Split a left-to-right run into clusters: the shortest glyph groups whose characters are exactly the next characters of
+ * the logical text (a reordered Indic syllable is one cluster). Each cluster gets `actual`, its logical text, when its
+ * glyphs do not give that text in order or it holds a space the glyph map copies as a plain space. Null when the glyphs
+ * and the text do not line up.
+ */
+export function textClusters(run) {
+  // Fonts decompose some characters (a Bengali two-part vowel becomes its parts) and compose others, so try the text as
+  // written first and its canonical decomposition second.
+  return alignClusters(run, run.logical) ?? alignClusters(run, run.logical.normalize("NFD"));
+}
+
+function alignClusters(run, text) {
+  const logical = [...text].map((character) => character.codePointAt(0));
+  const balance = new Map();
+  let open = 0;
+  const add = (point, delta) => {
+    const before = balance.get(point) ?? 0, after = before + delta;
+    balance.set(point, after);
+    if (before === 0 && after !== 0) open++;
+    else if (before !== 0 && after === 0) open--;
+  };
+  const clusters = [];
+  let group = [], taken = [], consumed = 0, start = 0;
+  for (const glyph of run.glyphs) {
+    group.push(glyph);
+    for (const point of glyph.codePoints) {
+      if (consumed >= logical.length) return null;
+      add(point, 1);
+      add(logical[consumed++], -1);
+      taken.push(point);
+    }
+    if (open === 0 && taken.length) {
+      const slice = logical.slice(start, consumed);
+      const exact = slice.every((point, index) => point === taken[index]) && !slice.some((point) => NON_ASCII_SPACE.test(String.fromCodePoint(point)));
+      clusters.push({ glyphs: group, actual: exact ? null : String.fromCodePoint(...slice).normalize("NFC") });
+      group = []; taken = []; start = consumed;
+    }
+  }
+  if (group.length || consumed !== logical.length) {
+    // Trailing glyphs without characters join the last cluster; anything else means no alignment.
+    if (!group.length || taken.length || !clusters.length) return null;
+    clusters.at(-1).glyphs.push(...group);
+  }
+  return clusters;
+}

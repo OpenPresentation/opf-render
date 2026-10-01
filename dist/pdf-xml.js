@@ -4,6 +4,7 @@
 
 const TOKEN = /<!--[\s\S]*?-->|<!\[CDATA\[([\s\S]*?)\]\]>|<\?[\s\S]*?\?>|<!DOCTYPE(?:[^>[]|\[[\s\S]*?\])*>|<(\/?)([A-Za-z_][\w:.-]*)((?:"[^"]*"|'[^']*'|[^'">])*?)(\/?)>|[^<]+|</g;
 const ATTRIBUTE = /([^\s=/>"']+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g;
+const MAX_DEPTH = 1000;
 const ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" };
 
 export function decodeEntities(text) {
@@ -20,6 +21,7 @@ export function decodeEntities(text) {
 export function parseXml(source) {
   const root = { name: "#document", attrs: {}, children: [], parent: null };
   let current = root;
+  let depth = 0;
   for (const match of source.matchAll(TOKEN)) {
     const [token, cdata, closing, tagName, attrText, selfClosing] = match;
     if (tagName !== undefined) {
@@ -28,14 +30,18 @@ export function parseXml(source) {
         // Tolerate stray end tags: close up to the nearest matching open element.
         let node = current;
         while (node && node.name !== local) node = node.parent;
-        if (node?.parent) current = node.parent;
+        if (node?.parent) { let up = current; while (up !== node) { up = up.parent; depth--; } depth--; current = node.parent; }
         continue;
       }
       const attrs = {};
       for (const attribute of attrText.matchAll(ATTRIBUTE)) attrs[attribute[1]] = decodeEntities(attribute[2] ?? attribute[3] ?? "");
       const element = { name: local, attrs, children: [], parent: current };
       current.children.push(element);
-      if (!selfClosing) current = element;
+      if (!selfClosing) {
+        current = element;
+        // Every walk over the tree is recursive: refuse trees deep enough to overflow the stack.
+        if (++depth > MAX_DEPTH) throw new RangeError(`SVG elements are nested more than ${MAX_DEPTH} deep.`);
+      }
     } else if (cdata !== undefined) {
       current.children.push({ text: cdata });
     } else if (token[0] !== "<" || token === "<") {
@@ -50,11 +56,11 @@ export function isElement(node) {
 }
 
 /** Serialize an element subtree back to XML (used to rasterize the few effects the PDF cannot draw as vectors). */
-export function serialize(node) {
+export function serialize(node, keepAttribute = () => true) {
   if (node.text !== undefined) return escapeText(node.text);
-  const attrs = Object.entries(node.attrs).map(([key, value]) => ` ${key}="${escapeAttribute(value)}"`).join("");
+  const attrs = Object.entries(node.attrs).filter(([key, value]) => keepAttribute(key, value, node)).map(([key, value]) => ` ${key}="${escapeAttribute(value)}"`).join("");
   if (!node.children.length) return `<${node.name}${attrs}/>`;
-  return `<${node.name}${attrs}>${node.children.map(serialize).join("")}</${node.name}>`;
+  return `<${node.name}${attrs}>${node.children.map((child) => serialize(child, keepAttribute)).join("")}</${node.name}>`;
 }
 
 export function escapeText(value) {
