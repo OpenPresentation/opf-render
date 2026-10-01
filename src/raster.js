@@ -1,6 +1,7 @@
 import {prepareRasterImages} from './raster-images.js';
 import {OPFRenderError,packageName} from './svg.js';
 import {separateLigatures} from './font-compatibility.js';
+import {monochromeColorFonts,rasterFontFiles} from './color-fonts.js';
 const DEFAULT_DIMENSIONS = { width: 1280, height: 720 };
 const DEFAULT_RASTER_SCALE = 1;
 const DEFAULT_RASTER_BACKGROUND = "#FFFFFF";
@@ -42,12 +43,13 @@ export async function svgToPdf(svgs, options = {}) {
 async function rasterizeSvg(svgInput, options) {
   const { Resvg } = await loadResvg();
   // FF-31: resvg ignores the SVG's ligature properties, so separate the letters a Gelasio ligature would join.
-  const svg = separateLigatures(await prepareRasterImages(normalizeSvgInput(svgInput)));
+  // FF-45: resvg draws no COLRv1 or OT-SVG colour glyphs, so colour families (Noto Color Emoji) are drawn with their monochrome stand-in.
+  const svg = separateLigatures(monochromeColorFonts(await prepareRasterImages(normalizeSvgInput(svgInput))));
   const scale = positiveNumber(options.scale, "scale", DEFAULT_RASTER_SCALE);
-  const fontFiles = [
+  const fontFiles = rasterFontFiles([
     ...(options.useBundledFonts === false ? [] : await bundledFontFiles()),
     ...stringArray(options.fontFiles)
-  ];
+  ]);
   const renderOptions = {
     fitTo: { mode: "zoom", value: scale },
     background: options.background ?? DEFAULT_RASTER_BACKGROUND,

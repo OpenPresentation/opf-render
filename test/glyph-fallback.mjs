@@ -125,7 +125,7 @@ for (const [scheme, language] of [['calibri', 'russian'], ['calibri', 'greek'], 
   assert.deepEqual(chain('ρ', latin), chain('ρ', latin), 'deterministic');
 }
 function designatedFamiliesAll() {
-  return ['Latn', 'Jpan', 'Hans', 'Hant', 'Kore', 'Arab', 'Hebr', 'Deva', 'Beng', 'Guru', 'Gujr', 'Orya', 'Taml', 'Telu', 'Knda', 'Mlym', 'Sinh', 'Thai', 'Laoo', 'Khmr', 'Mymr', 'Ethi', 'Armn', 'Geor', 'Mong', 'Thaa', 'Syrc', 'Tibt'].flatMap((script) => designatedFamilies(script));
+  return ['Latn', 'Jpan', 'Hans', 'Hant', 'Kore', 'Arab', 'Hebr', 'Deva', 'Beng', 'Guru', 'Gujr', 'Orya', 'Taml', 'Telu', 'Knda', 'Mlym', 'Sinh', 'Thai', 'Laoo', 'Khmr', 'Mymr', 'Ethi', 'Armn', 'Geor', 'Mong', 'Thaa', 'Syrc', 'Tibt', 'Zsye', 'Zmth'].flatMap((script) => designatedFamilies(script));
 }
 
 // 6. Planner API: notes, options and the unmeasured stack.
