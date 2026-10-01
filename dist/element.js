@@ -14,11 +14,11 @@ export { loadPreviewFonts, previewBaseFaces, previewFontLayout } from "./preview
 export const OPF_DECK_TAG = "opf-deck";
 
 const SHEET = `
-:host { display: block; max-width: 100%; color: var(--opf-deck-fg, CanvasText); font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+:host { display: block; min-width: 0; max-width: 100%; color: var(--opf-deck-fg, CanvasText); font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
 :host([hidden]) { display: none; }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-.deck { display: flex; flex-direction: column; gap: 8px; }
+.deck { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .viewport { position: relative; width: 100%; aspect-ratio: var(--ratio, 16 / 9); overflow: hidden; border-radius: var(--opf-deck-radius, 6px); background: var(--opf-deck-stage, #f1f1f1); border: 1px solid var(--opf-deck-border, rgb(128 128 128 / 0.35)); touch-action: pan-y; outline-offset: 2px; }
 .viewport:focus-visible { outline: 3px solid var(--opf-deck-focus, Highlight); }
 .slide { position: absolute; inset: 0; }
@@ -33,7 +33,8 @@ button:hover:not([aria-disabled="true"]) { background: var(--opf-deck-hover, rgb
 button:focus-visible { outline: 3px solid var(--opf-deck-focus, Highlight); outline-offset: 1px; }
 button[aria-disabled="true"] { opacity: 0.45; cursor: default; }
 .counter { min-width: 4.5em; text-align: center; font-variant-numeric: tabular-nums; }
-.thumbs { display: flex; gap: 8px; margin: 0; padding: 4px 2px; list-style: none; overflow-x: auto; scroll-snap-type: x proximity; }
+.thumbs-wrap { min-width: 0; }
+.thumbs { position: relative; display: flex; gap: 8px; margin: 0; padding: 4px 2px; list-style: none; overflow-x: auto; scroll-snap-type: x proximity; }
 .thumbs li { flex: 0 0 auto; width: 132px; scroll-snap-align: center; }
 .thumb { display: block; width: 100%; padding: 0; min-height: 0; overflow: hidden; background: var(--opf-deck-stage, #f1f1f1); }
 .thumb[aria-current="true"] { outline: 3px solid var(--opf-deck-accent, Highlight); outline-offset: 0; }
@@ -474,7 +475,9 @@ function createElementClass() {
       });
       const li = items[cursor.position];
       if (li && parts.thumbs.scrollWidth > parts.thumbs.clientWidth) {
-        const left = li.offsetLeft - (parts.thumbs.clientWidth - li.offsetWidth) / 2;
+        // Measured against the strip itself (not offsetLeft, which depends on where the page positions the element).
+        const strip = parts.thumbs.getBoundingClientRect(), item = li.getBoundingClientRect();
+        const left = parts.thumbs.scrollLeft + (item.left - strip.left) - (strip.width - item.width) / 2;
         parts.thumbs.scrollTo({ left: Math.max(0, left), behavior: reducedMotion() ? "auto" : "smooth" });
       }
     }

@@ -200,6 +200,18 @@ try {
   assert.equal(await page.evaluate(() => document.getElementById('d').shadowRoot.activeElement.getAttribute('aria-label')), 'Go to Slide 3 of 5: Revenue grew 18 percent', 'arrow keys move between thumbnails');
   await page.keyboard.press('Enter');
   assert.equal(await counter(page).innerText(), '3 / 5');
+  // In a narrow column the strip scrolls and the current thumbnail is centred in it, wherever the page puts the element
+  // (a host that is not positioned is the case that breaks offset arithmetic).
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.evaluate(() => { const element = document.getElementById('d'); element.style.position = 'static'; element.style.width = '320px'; element.style.marginTop = '700px'; element.style.marginLeft = '300px'; element.goto(3); });
+  await page.waitForFunction(() => {
+    const root = document.getElementById('d').shadowRoot;
+    const strip = root.querySelector('.thumbs').getBoundingClientRect(), current = root.querySelector('.thumbs [aria-current="true"]').getBoundingClientRect();
+    return Math.abs((current.left + current.right) / 2 - (strip.left + strip.right) / 2) < 3;
+  }, null, {timeout: 3000});
+  assert.equal(await page.evaluate(() => { const strip = document.getElementById('d').shadowRoot.querySelector('.thumbs'); return strip.scrollWidth > strip.clientWidth; }), true, 'the strip scrolls');
+  await page.evaluate(() => { const element = document.getElementById('d'); element.style.position = ''; element.style.width = ''; element.style.marginTop = ''; element.style.marginLeft = ''; element.goto(3); });
+  await page.emulateMedia({reducedMotion: 'no-preference'});
   const thumbIds = await page.evaluate(() => [...document.getElementById('d').shadowRoot.querySelectorAll('.thumbs [id], .slide [id]')].map(node => node.id));
   assert.equal(new Set(thumbIds).size, thumbIds.length, 'a thumbnail and its slide never share an id');
   // The attribute and the property.

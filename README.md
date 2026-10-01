@@ -142,7 +142,7 @@ useEffect(() => { defineOpfDeck(); }, []);
 // ...and render <opf-deck src="/deck.opf.json" fonts="/opf-fonts/" />.
 ```
 
-Entry points (all exported from the package root's `exports`): `/element` (`defineOpfDeck`, `getOpfDeckElement`, `renderDeckHtml`, `loadPreviewFonts`), `/element/define` (importing it registers the tag; the only file with a side effect), `/player` (`present`), `/preview-fonts` (the font root layout and `loadPreviewFonts`) and `/preview-fonts-node` (`copyPreviewFonts`, also the `opf-preview-fonts` command). The element loads the player on first use, so a page that only embeds decks does not carry slideshow code.
+Entry points (package `exports`): `/element` (`defineOpfDeck`, `getOpfDeckElement`, `renderDeckHtml`, `loadPreviewFonts`), `/element/define` (importing it registers the tag; the only file with a side effect), `/player` (`present`), `/preview-fonts` (the font root layout and `loadPreviewFonts`) and `/preview-fonts-node` (`copyPreviewFonts`, also the `opf-preview-fonts` command). The element loads the player on first use, so a page that only embeds decks does not carry slideshow code.
 
 ### Fonts: one self-hosted directory
 
