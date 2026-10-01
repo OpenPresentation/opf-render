@@ -815,10 +815,14 @@ function renderBackground(bound, width, height, options) {
   }
   if(isPlainObject(background) && background.type==='pattern'){
     const pattern=background.pattern??{},id=`opf-s${bound.index+1}-pattern`,color=resolveBackgroundColor(pattern.foregroundColor,bound.design,bound.design.colors.text),preset=pattern.preset;
-    // 8px cells approximating DrawingML presets. diagStripe is the engine id that
-    // PPTX export writes as wdUpDiag, so both draw the same rising stripe.
+    // Without core's pattern table (an older core) five presets keep their hand-drawn approximation. diagStripe is the
+    // engine id that PPTX export writes as wdUpDiag, so both draw the same rising stripe.
     const stroke=(d,width=1)=>tag('path',{d,fill:'none',stroke:color,'stroke-width':width});
-    const mark=preset==='ltHorz'?tag('path',{d:'M0 4H8',stroke:color,'stroke-width':1}):preset==='diagStripe'||preset==='wdUpDiag'?tag('path',{d:'M-2 2L2 -2M0 8L8 0M6 10L10 6',stroke:color,'stroke-width':2}):preset==='pct5'?tag('circle',{cx:2,cy:2,r:.8,fill:color}):preset==='openDmnd'?stroke('M0 4L4 0L8 4L4 8Z'):preset==='wave'?stroke('M0 4C2 1 2 1 4 4S6 7 8 4'):'';
+    // RR-07: every DrawingML preset (core PATTERN_PRESETS) is an 8x8 bitmap, one unit per 1/96 inch, anchored at the slide origin.
+    const runs=typeof opfCore.patternRuns==='function'?opfCore.patternRuns(preset):undefined;
+    const bitmap=runs?tag('path',{d:runs.map(run=>`M${run.x} ${run.y}h${run.width}v1h-${run.width}z`).join(''),fill:color,'shape-rendering':'crispEdges'}):'';
+    const legacy=preset==='ltHorz'?tag('path',{d:'M0 4H8',stroke:color,'stroke-width':1}):preset==='diagStripe'||preset==='wdUpDiag'?tag('path',{d:'M-2 2L2 -2M0 8L8 0M6 10L10 6',stroke:color,'stroke-width':2}):preset==='pct5'?tag('circle',{cx:2,cy:2,r:.8,fill:color}):preset==='openDmnd'?stroke('M0 4L4 0L8 4L4 8Z'):preset==='wave'?stroke('M0 4C2 1 2 1 4 4S6 7 8 4'):'';
+    const mark=bitmap||legacy;
     if(!mark)reportDiagnostic({code:'unsupported-pattern',path:`${bound.path}.design.background.pattern.preset`,message:`Pattern ${preset} is not implemented by the SVG preview.`},options);
     return tag('g',{opacity:background.opacity??1},tag('rect',{width,height,fill:bound.design.backgroundColor??'#FFFFFF'})+tag('defs',{},tag('pattern',{id,width:8,height:8,patternUnits:'userSpaceOnUse'},mark))+tag('rect',{width,height,fill:`url(#${id})`}));
   }
@@ -1101,6 +1105,7 @@ function renderCode(item, box, bound, options) {
     const invalid = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\uD800-\uDFFF\uFFFE\uFFFF]/u.exec(part.text);
     if (invalid) throw new OPFRenderError('invalid-code-text', `Code text contains U+${invalid[0].codePointAt(0).toString(16).toUpperCase().padStart(4,'0')} at UTF-16 offset ${invalid.index}, which XML cannot represent; edit that character before rendering.`, {path:part.path});
   }
+  const syntax = codeSyntax(item, layout, bound, options);
   const children = [
     tag("rect", {
       x: box.x,
@@ -1128,7 +1133,7 @@ function renderCode(item, box, bound, options) {
       ...(segment.kind==='tab'?{textLength:stableNumber(segment.width),lengthAdjust:'spacingAndGlyphs'}:{}),
       ...(options.trace?{'data-opf-segment':segment.kind,'data-opf-text-start':segment.start,'data-opf-text-end':segment.end}:{}),
       // Code stays left to right; script runs still take their slot fonts.
-    },segment,part.text.slice(segment.start,segment.end),part.style,bound,'monospace',{rtl:false})).join('')));
+    },segment,part.text.slice(segment.start,segment.end),part.style,bound,'monospace',{rtl:false},part.role==='body'?syntax:undefined)).join('')));
     children.push(tag('g',{...traceAttrs(options,part.path),...(options.trace?{'data-opf-code-role':part.role,'data-opf-generated':part.generated?'true':undefined,
       'data-opf-box-x':part.box.x,'data-opf-box-y':part.box.y,'data-opf-box-width':part.box.width,'data-opf-box-height':part.box.height}:{}),
       ...(part.fit.overflow?{'data-opf-overflow':'true'}:{})},lines.join('\n')));
@@ -1140,6 +1145,9 @@ function renderMetric(item, box, bound, options) {
   const layout=item.metricLayout;
   if (!layout) throw new OPFRenderError('missing-metric-layout','Metric rendering requires coordinated core metric geometry.',{path:item.path});
   const children=[];
+  // RR-07: a trend draws an arrow beside its word and colours the trend and delta text, from core's accepted geometry.
+  const trendMark=metricTrendMark(layout,bound,options);
+  const partFill=part=>trendMark&&(part.role==='trend'||part.role==='delta')?trendMark.color:part.role==='value'?bound.design.colors.primary:bound.design.colors.text;
   for (const part of layout.parts) {
     const invalid=/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uD800-\uDFFF\uFFFE\uFFFF]/u.exec(part.text);
     if (invalid) throw new OPFRenderError('invalid-metric-text',`Metric text contains U+${invalid[0].codePointAt(0).toString(16).toUpperCase().padStart(4,'0')} at UTF-16 offset ${invalid.index}, which XML cannot represent; edit that character before rendering.`,{path:part.path});
@@ -1155,7 +1163,7 @@ function renderMetric(item, box, bound, options) {
       if(factor&&!line.segments.some(segment=>segment.kind==='tab'))return tag('text',{x:stableNumber(origin.x+line.width*factor),y:stableNumber(origin.baseline),'text-anchor':factor===1?'end':'middle',
         'font-family':fontStack(part.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(part.fit.fontSize),
         'font-weight':part.style.fontWeight,'font-style':part.style.italic?'italic':undefined,
-        'xml:space':'preserve',style:'white-space:pre','text-rendering':'geometricPrecision',fill:part.role==='value'?bound.design.colors.primary:bound.design.colors.text,
+        'xml:space':'preserve',style:'white-space:pre','text-rendering':'geometricPrecision',fill:partFill(part),
         ...traceAttrs(options,part.path),...(options.trace?{'data-opf-metric-role':part.role,'data-opf-text-start':line.start,
           'data-opf-text-end':line.end,'data-opf-text-next-start':line.nextStart,'data-opf-line-boundary':line.boundary}:{}),
       },line.segments.map(segment=>segmentSpan({
@@ -1164,7 +1172,7 @@ function renderMetric(item, box, bound, options) {
       return tag('text',{x:stableNumber(origin.x),y:stableNumber(origin.baseline),'text-anchor':'start',
         'font-family':fontStack(part.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(part.fit.fontSize),
         'font-weight':part.style.fontWeight,'font-style':part.style.italic?'italic':undefined,
-        'xml:space':'preserve',style:'white-space:pre','text-rendering':'geometricPrecision',fill:part.role==='value'?bound.design.colors.primary:bound.design.colors.text,
+        'xml:space':'preserve',style:'white-space:pre','text-rendering':'geometricPrecision',fill:partFill(part),
         ...traceAttrs(options,part.path),...(options.trace?{'data-opf-metric-role':part.role,'data-opf-text-start':line.start,
           'data-opf-text-end':line.end,'data-opf-text-next-start':line.nextStart,'data-opf-line-boundary':line.boundary}:{}),
       },line.segments.map(segment=>segmentSpan({x:stableNumber(origin.x+segment.x),
@@ -1176,7 +1184,18 @@ function renderMetric(item, box, bound, options) {
       'data-opf-box-x':part.box.x,'data-opf-box-y':part.box.y,'data-opf-box-width':part.box.width,'data-opf-box-height':part.box.height}:{}),
       ...(part.fit.overflow?{'data-opf-overflow':'true'}:{})},lines.join('\n')));
   }
+  if (trendMark) children.push(tag('g',{role:'img','aria-label':trendMark.ariaLabel},tag('polygon',{points:trendMark.points.map(([x,y])=>`${stableNumber(x)},${stableNumber(y)}`).join(' '),fill:trendMark.color})));
   return tag('g',{...traceAttrs(options,item.path),...(options.trace?{'data-opf-metric-container':'true'}:{})},children.join('\n'));
+}
+
+// The trend arrow and colour for a laid-out metric (core metricTrendMark); undefined without a trend or without core support.
+function metricTrendMark(layout,bound,options) {
+  if (typeof opfCore.metricTrendMark!=='function') {
+    const trend=layout.parts.find(part=>part.role==='trend'&&part.visible);
+    if (trend) reportDiagnostic({code:'metric-trend-unavailable',path:trend.path,message:'The installed @openpresentation/opf has no metricTrendMark (RR-07), so the preview draws the trend word without an arrow or colour. Use a core release with metric trend marks.'},options);
+    return undefined;
+  }
+  return opfCore.metricTrendMark(layout,{background:bound.design.backgroundColor??bound.design.colors.background});
 }
 
 function renderQuote(item, box, bound, options) {
@@ -1499,9 +1518,34 @@ function scriptLine(text, style, bound, type, { rtl = false, placement, trace } 
 }
 
 /** One positioned code/metric segment tspan; its script runs flow inside it (no textLength). */
-function segmentSpan(attrs, segment, text, style, bound, type, options) {
+function segmentSpan(attrs, segment, text, style, bound, type, options, syntax) {
   const scripted = segment.kind === "tab" ? { content: escapeText(text) } : scriptLine(text, style, bound, type, options);
+  // Syntax highlighting (RR-07): coloured runs nest inside the segment's own tspan, so segment
+  // count, positions and trace attributes stay those of the accepted layout.
+  const runs = syntax && segment.kind !== "tab" ? opfCore.codeLineRuns(syntax.tokens, segment.start, segment.end) : undefined;
+  if (runs?.some(run => run.kind)) {
+    const content = runs.map(run => {
+      const piece = scriptLine(text.slice(run.start - segment.start, run.end - segment.start), style, bound, type, options);
+      return run.kind || piece.family ? tag("tspan", { fill: run.kind ? syntax.palette[run.kind] : undefined, "font-family": piece.family }, piece.content) : piece.content;
+    }).join("");
+    return tag("tspan", { ...attrs, "font-family": scripted.family }, content);
+  }
   return tag("tspan", { ...attrs, "font-family": scripted.family }, scripted.content);
+}
+
+// Token ranges of the code body and the palette to paint them with; undefined for plain code (an unknown language,
+// no language, or a core without the shared highlighter). The preview and the PPTX export read the same tables.
+function codeSyntax(item, layout, bound, options) {
+  const body = layout.parts.find(part => part.role === "body");
+  const language = typeof item.value?.language === "string" ? item.value.language : layout.parts.find(part => part.role === "language")?.text;
+  if (!body || !language) return undefined;
+  if (typeof opfCore.tokenizeCode !== "function") {
+    reportDiagnostic({ code: "code-highlight-unavailable", path: body.path.replace(/\.source$/, ".language"), message: "The installed @openpresentation/opf has no tokenizeCode (RR-07), so the preview draws code without syntax colours. Use a core release with code highlighting." }, options);
+    return undefined;
+  }
+  const tokens = opfCore.tokenizeCode(body.text, language);
+  if (!tokens.length) return undefined;
+  return { tokens, palette: opfCore.codeSyntaxPaletteForScheme(bound.design.colorScheme) };
 }
 
 // Faces flagged embed:"used" (the vendored open, Intos and script-pack faces) are embedded only when the slide's own markup draws

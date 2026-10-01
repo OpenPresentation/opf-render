@@ -36,7 +36,9 @@ for (const dimensions of [{width:1280,height:720},{width:540,height:960}]) {
       assert.equal(Number(attribute('data-opf-text-next-start')),line.nextStart);assert.equal(attribute('data-opf-line-boundary'),line.boundary);
       assert.ok(Math.abs(Number(attribute('x'))-part.box.x)<.002);assert.ok(Math.abs(Number(attribute('y'))-(part.box.y+part.fit.fontSize+lineIndex*part.fit.lineHeight))<.002);
       assert.equal(content.replace(/<\/?tspan\b[^>]*>/g,''),escape(part.text.slice(line.start,line.end)));
-      const segments=[...content.matchAll(/<tspan\b([^>]*)>([\s\S]*?)<\/tspan>/g)];assert.equal(segments.length,line.segments.length);
+      // Syntax-coloured runs (RR-07) nest inside a segment tspan; the segments themselves are the accepted layout's.
+      const flat=content.replace(/<tspan fill="#[0-9A-F]{6}"(?: font-family="[^"]*")?>([^<]*)<\/tspan>/g,'$1');
+      const segments=[...flat.matchAll(/<tspan\b([^>]*)>([\s\S]*?)<\/tspan>/g)];assert.equal(segments.length,line.segments.length);
       segments.forEach(([,attrs,text],i)=>{
         const expected=line.segments[i],attribute=name=>new RegExp(`(?:^|\\s)${name}="([^"]*)"`).exec(attrs)?.[1];
         assert.equal(text,escape(part.text.slice(expected.start,expected.end)));assert.equal(attribute('data-opf-segment'),expected.kind);
