@@ -1520,15 +1520,18 @@ function scriptLine(text, style, bound, type, { rtl = false, placement, trace } 
 /** One positioned code/metric segment tspan; its script runs flow inside it (no textLength). */
 function segmentSpan(attrs, segment, text, style, bound, type, options, syntax) {
   const scripted = segment.kind === "tab" ? { content: escapeText(text) } : scriptLine(text, style, bound, type, options);
-  // Syntax highlighting (RR-07): coloured runs nest inside the segment's own tspan, so segment
-  // count, positions and trace attributes stay those of the accepted layout.
+  // Syntax highlighting (RR-07): a coloured text segment becomes consecutive sibling tspans, one per run, each a
+  // traced segment of its own source range holding one text node (the editor's caret mapping reads that), the first
+  // keeping the accepted x and the rest flowing after it. Plain code keeps one tspan per accepted segment.
   const runs = syntax && segment.kind !== "tab" ? opfCore.codeLineRuns(syntax.tokens, segment.start, segment.end) : undefined;
   if (runs?.some(run => run.kind)) {
-    const content = runs.map(run => {
+    return runs.map((run, index) => {
       const piece = scriptLine(text.slice(run.start - segment.start, run.end - segment.start), style, bound, type, options);
-      return run.kind || piece.family ? tag("tspan", { fill: run.kind ? syntax.palette[run.kind] : undefined, "font-family": piece.family }, piece.content) : piece.content;
+      const own = { ...attrs };
+      if (index > 0) delete own.x;
+      if (own["data-opf-text-start"] !== undefined) { own["data-opf-text-start"] = run.start; own["data-opf-text-end"] = run.end; }
+      return tag("tspan", { ...own, fill: run.kind ? syntax.palette[run.kind] : undefined, "font-family": piece.family }, piece.content);
     }).join("");
-    return tag("tspan", { ...attrs, "font-family": scripted.family }, content);
   }
   return tag("tspan", { ...attrs, "font-family": scripted.family }, scripted.content);
 }
@@ -1545,8 +1548,7 @@ function codeSyntax(item, layout, bound, options) {
   }
   const tokens = opfCore.tokenizeCode(body.text, language);
   if (!tokens.length) return undefined;
-  const { primary, secondary, accent } = bound.design.colors;
-  return { tokens, palette: opfCore.codeSyntaxPalette({ primary, secondary, accent }) };
+  return { tokens, palette: opfCore.codeSyntaxPaletteForScheme(bound.design.colorScheme) };
 }
 
 // Faces flagged embed:"used" (the vendored open, Intos and script-pack faces) are embedded only when the slide's own markup draws

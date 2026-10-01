@@ -13,16 +13,8 @@ const SOURCE = 'def greet(name):\n    # say hi\n    return "Hello, " + name + st
 const codeDeck = (code, design = {}) => ({design: {fontScheme: 'roboto', ...design}, slides: [{code}]});
 const bodyLines = svg => [...svg.matchAll(/<text\b([^>]*data-opf-code-role="body"[^>]*)>([\s\S]*?)<\/text>/g)].map(([, , content]) => content);
 // A line's runs: [text, fill] pairs for its coloured spans and its plain text, in order.
-const runsOf = content => {
-  const inner = content.replace(/^<tspan\b[^>]*>/, '').replace(/<\/tspan>$/, '');
-  const runs = [];
-  for (const part of inner.split(/(<tspan\b[^>]*>[^<]*<\/tspan>)/)) {
-    const span = /^<tspan\b[^>]*\bfill="(#[0-9A-F]{6})"[^>]*>([^<]*)<\/tspan>$/.exec(part);
-    if (span) runs.push([decode(span[2]), span[1]]);
-    else if (part !== '') runs.push([decode(part), undefined]);
-  }
-  return runs;
-};
+const runsOf = content => [...content.matchAll(/<tspan\b([^>]*)>([^<]*)<\/tspan>/g)]
+  .map(([, attrs, text]) => [decode(text), /\bfill="(#[0-9A-F]{6})"/.exec(attrs)?.[1]]);
 const lineText = content => decode(content.replace(/<\/?tspan\b[^>]*>/g, ''));
 
 {
@@ -35,7 +27,14 @@ const lineText = content => decode(content.replace(/<\/?tspan\b[^>]*>/g, ''));
   assert.notEqual(colours.get('def'), colours.get('# say hi'));
   assert.notEqual(colours.get('"Hello, "'), colours.get('42'));
   // The plain text keeps the panel foreground: only token spans carry a fill.
-  assert.ok(lines.every(content => /^<tspan[^>]*>/.test(content)), 'segment tspans stay the outer element');
+  // A coloured run is its own traced segment: it holds one text node and carries its source range, as the editor's caret mapping expects.
+  const traced = [...svg.matchAll(/<tspan\b([^>]*\bfill="#[0-9A-F]{6}"[^>]*)>([^<]*)<\/tspan>/g)];
+  assert.ok(traced.length >= 6);
+  for (const [, attrs, text] of traced) {
+    const start = Number(/data-opf-text-start="(\d+)"/.exec(attrs)[1]), end = Number(/data-opf-text-end="(\d+)"/.exec(attrs)[1]);
+    assert.equal(decode(text), SOURCE.slice(start, end), 'the run text is its source range');
+    assert.match(attrs, /data-opf-segment="text"/);
+  }
 }
 
 // Unknown or missing languages are plain: no fill on any tspan, and the same markup as a deck without a language label.
