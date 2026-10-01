@@ -21,7 +21,7 @@ const TARGETS = [
   ['MS Mincho', 'Jpan', {400: 'msmincho.ttc'}],
   ['Microsoft YaHei', 'Hans', {400: 'msyh.ttc', 700: 'msyhbd.ttc'}], ['SimSun', 'Hans', {400: 'simsun.ttc'}], ['SimHei', 'Hans', {400: 'simhei.ttf'}], ['FangSong', 'Hans', {400: 'simfang.ttf'}],
   ['Microsoft JhengHei', 'Hant', {400: 'msjh.ttc', 700: 'msjhbd.ttc'}], ['MingLiU', 'Hant', {400: 'mingliu.ttc'}], ['PMingLiU', 'Hant', {400: 'mingliu.ttc'}],
-  ['Malgun Gothic', 'Kore', {400: 'malgun.ttf', 700: 'malgunbd.ttf'}], ['Batang', 'Kore', {400: 'batang.ttc'}], ['Gungsuh', 'Kore', {400: 'batang.ttc'}],
+  ['Malgun Gothic', 'Kore', {400: 'malgun.ttf', 700: 'malgunbd.ttf'}], ['Batang', 'Kore', {400: 'batang.ttc'}], ['BatangChe', 'Kore', {400: 'batangche.ttc'}], ['Gungsuh', 'Kore', {400: 'gungsuh.ttc'}], ['GungsuhChe', 'Kore', {400: 'gungsuhche.ttc'}],
   ['Arabic Typesetting', 'Arab', {400: 'arabtype.ttf'}], ['Traditional Arabic', 'Arab', {400: 'trado.ttf', 700: 'tradbdo.ttf'}], ['Sakkal Majalla', 'Arab', {400: 'majalla.ttf', 700: 'majallab.ttf'}],
   ['Simplified Arabic', 'Arab', {400: 'simpo.ttf', 700: 'simpbdo.ttf'}], ['Andalus', 'Arab', {400: 'andlso.ttf'}], ['Urdu Typesetting', 'Arab', {400: 'UrdType.ttf', 700: 'UrdTypeb.ttf'}], ['Aldhabi', 'Arab', {400: 'aldhabi.ttf'}],
   ['David', 'Hebr', {400: 'david.ttf', 700: 'davidbd.ttf'}], ['Miriam', 'Hebr', {400: 'mriam.ttf'}], ['Gisha', 'Hebr', {400: 'gisha.ttf', 700: 'gishabd.ttf'}],
