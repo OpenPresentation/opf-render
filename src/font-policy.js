@@ -23,7 +23,7 @@ const SNAPSHOT=freeze({
  },
  "source": {
   "path": "spec/reference/font-policy.json",
-  "sha256": "2616392b58bcaaffef5182c612ad7b562f9187cd099f919ca3abee225a5411a3"
+  "sha256": "6744f2b7b058cba9264cd670b2f0566e64add073eb8e0ec8d3e31b6541d01fe3"
  },
  "families": [
   {
@@ -135,7 +135,14 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Cousine",
     "compatibility": "visual",
-    "measured": null
+    "measured": {
+     "replacement": "Cousine",
+     "meanAbsWidthDelta": 0,
+     "meanWidthDelta": 0,
+     "maxAbsWidthDelta": 0,
+     "styles": 4,
+     "reference": "Aptos Mono 2.01;O365"
+    }
    },
    "alternates": [
     "Roboto Mono"
@@ -1219,7 +1226,19 @@ const SNAPSHOT=freeze({
    "license": "OFL-1.1",
    "availability": [],
    "embeddableByOpf": true,
-   "replacement": null
+   "replacement": {
+    "family": "Cousine",
+    "compatibility": "metric",
+    "measured": {
+     "replacement": "Cousine",
+     "meanAbsWidthDelta": 0,
+     "meanWidthDelta": 0,
+     "maxAbsWidthDelta": 0,
+     "styles": 4,
+     "reference": "Liberation Mono 2.1.5"
+    },
+    "source": "https://github.com/liberationfonts/liberation-fonts/blob/2.1.5/README.md"
+   }
   },
   {
    "family": "Liberation Sans",
@@ -1227,7 +1246,19 @@ const SNAPSHOT=freeze({
    "license": "OFL-1.1",
    "availability": [],
    "embeddableByOpf": true,
-   "replacement": null
+   "replacement": {
+    "family": "Arimo",
+    "compatibility": "metric",
+    "measured": {
+     "replacement": "Arimo",
+     "meanAbsWidthDelta": 0,
+     "meanWidthDelta": 0,
+     "maxAbsWidthDelta": 0,
+     "styles": 4,
+     "reference": "Liberation Sans 2.1.5"
+    },
+    "source": "https://github.com/liberationfonts/liberation-fonts/blob/2.1.5/README.md"
+   }
   },
   {
    "family": "Liberation Serif",
@@ -1235,7 +1266,19 @@ const SNAPSHOT=freeze({
    "license": "OFL-1.1",
    "availability": [],
    "embeddableByOpf": true,
-   "replacement": null
+   "replacement": {
+    "family": "Tinos",
+    "compatibility": "metric",
+    "measured": {
+     "replacement": "Tinos",
+     "meanAbsWidthDelta": 0,
+     "meanWidthDelta": 0,
+     "maxAbsWidthDelta": 0,
+     "styles": 4,
+     "reference": "Liberation Serif 2.1.5"
+    },
+    "source": "https://github.com/liberationfonts/liberation-fonts/blob/2.1.5/README.md"
+   }
   },
   {
    "family": "Libre Caslon Text",
@@ -2210,7 +2253,14 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Source Sans 3",
     "compatibility": "visual",
-    "measured": null
+    "measured": {
+     "replacement": "Source Sans 3",
+     "meanAbsWidthDelta": 0.0003,
+     "meanWidthDelta": -0.0003,
+     "maxAbsWidthDelta": 0.0041,
+     "styles": 4,
+     "reference": "Source Sans Pro 2.045"
+    }
    }
   },
   {
@@ -2289,7 +2339,14 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Figtree",
     "compatibility": "visual",
-    "measured": null
+    "measured": {
+     "replacement": "Figtree",
+     "meanAbsWidthDelta": 0.042,
+     "meanWidthDelta": 0.042,
+     "maxAbsWidthDelta": 0.0836,
+     "styles": 1,
+     "reference": "Tenorite 1.04;O365"
+    }
    },
    "alternates": [
     "Roboto"
@@ -2306,7 +2363,14 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Figtree",
     "compatibility": "visual",
-    "measured": null
+    "measured": {
+     "replacement": "Figtree",
+     "meanAbsWidthDelta": 0.1476,
+     "meanWidthDelta": 0.1476,
+     "maxAbsWidthDelta": 0.1975,
+     "styles": 2,
+     "reference": "Tenorite Display 1.04;O365"
+    }
    },
    "alternates": [
     "Roboto"
