@@ -106,6 +106,8 @@ const pdf = await svgToPdf(svgs, rasterOptions);
 
 `svgToPng` returns PNG bytes for one SVG. `svgToPdf` accepts one SVG or an array of SVGs and returns PDF bytes with one slide per page. The SVG page `width`/`height` or `viewBox` determines the PDF page size; `scale` controls raster density only.
 
+Complex scripts in raster output: resvg draws a HarfBuzz cluster with the advance of its widest glyph, so Indic, Thai, Lao, Khmer and Myanmar text lost the advance of vowel signs and ran together, and it ignores the SVG `lang` (Korean spacing). The raster path therefore rewrites its private copy of such text cluster by cluster at fontkit's positions (`src/raster-text.js`): Devanagari, Gujarati, Oriya, Tamil, Kannada and Sinhala as fontkit glyph outlines, the other scripts and Korean as single clusters resvg shapes in isolation. The emitted SVG is unchanged, text in other scripts is rasterized exactly as before, and `test/script-corpora-raster.mjs` holds every script to a HarfBuzz outline reference (the fixture's `rasterLimits` records what still differs: the KOR punctuation forms).
+
 ## Browser preview and fonts
 
 Use `@openpresentation/opf-render/svg` for browser rendering without Node dependencies. Browser-aware bundlers also select this shared SVG implementation for the root import; Node's root import retains PNG/PDF conversion.
