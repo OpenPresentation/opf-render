@@ -23,7 +23,7 @@ const SNAPSHOT=freeze({
  },
  "source": {
   "path": "spec/reference/font-policy.json",
-  "sha256": "6744f2b7b058cba9264cd670b2f0566e64add073eb8e0ec8d3e31b6541d01fe3"
+  "sha256": "e5b6437091d897448a002814e17160e0026b1f28c3c089d712c073e1bf9a00d6"
  },
  "families": [
   {
@@ -1617,6 +1617,14 @@ const SNAPSHOT=freeze({
    "replacement": null
   },
   {
+   "family": "Noto Sans Arabic",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
    "family": "Noto Sans Armenian",
    "licenseClass": "open",
    "license": "OFL-1.1",
@@ -1715,6 +1723,14 @@ const SNAPSHOT=freeze({
    "replacement": null
   },
   {
+   "family": "Noto Sans Lao",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
    "family": "Noto Sans Malayalam",
    "licenseClass": "open",
    "license": "OFL-1.1",
@@ -1724,6 +1740,14 @@ const SNAPSHOT=freeze({
   },
   {
    "family": "Noto Sans Mongolian",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
+   "family": "Noto Sans Myanmar",
    "licenseClass": "open",
    "license": "OFL-1.1",
    "availability": [],
@@ -1742,6 +1766,22 @@ const SNAPSHOT=freeze({
   },
   {
    "family": "Noto Sans SC",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
+   "family": "Noto Sans Sinhala",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
+   "family": "Noto Sans Syriac",
    "licenseClass": "open",
    "license": "OFL-1.1",
    "availability": [],
@@ -1773,6 +1813,14 @@ const SNAPSHOT=freeze({
    "replacement": null
   },
   {
+   "family": "Noto Sans Thaana",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
    "family": "Noto Sans Thai",
    "licenseClass": "open",
    "license": "OFL-1.1",
@@ -1782,6 +1830,14 @@ const SNAPSHOT=freeze({
   },
   {
    "family": "Noto Serif Hebrew",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
+   "family": "Noto Serif Tibetan",
    "licenseClass": "open",
    "license": "OFL-1.1",
    "availability": [],
