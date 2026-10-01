@@ -441,6 +441,15 @@ for (const { name, deck, expect } of roundTrips) {
     const long = await collect(svgOf(`<text x="0" y="50" font-family="Roboto" font-size="1">${"ab ".repeat(60000)}</text>`));
     assert.ok(long.pdf.length > 1000, "a 180,000-character text does not overflow the stack");
   }
+  // A picture that is itself an SVG is rasterized for that element (reported), and drawn where the preview draws it.
+  {
+    const picture = encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><rect width='20' height='20' fill='#ff0000'/></svg>");
+    const svg = svgOf(`<rect width="200" height="100" fill="#ffffff"/><image data-opf-path="slides.0.logo" x="10" y="10" width="60" height="60" href="data:image/svg+xml;charset=utf-8,${picture}"/>`);
+    const { pdf, diagnostics } = await collect(svg);
+    assert.ok(diagnostics.some((d) => d.code === "pdf-raster-fallback" && d.path === "slides.0.logo"), "an SVG picture is reported as a raster fallback");
+    const { mae } = await compareImages((await renderPdfPage(await openPdf(pdf), 1, 2)).png, await svgToPng(svg, { scale: 2 }), { factor: 1 });
+    assert.ok(mae < 2, `the SVG picture is drawn as the preview draws it (mean error ${mae.toFixed(2)})`);
+  }
   // A file reference inside a rasterized fragment is never read.
   {
     const directory = await mkdtemp(path.join(os.tmpdir(), "opf-pdf-img-"));
