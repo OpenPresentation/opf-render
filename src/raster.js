@@ -1,7 +1,6 @@
 import {prepareRasterImages} from './raster-images.js';
 import {OPFRenderError,packageName} from './svg.js';
 import {separateLigatures} from './font-compatibility.js';
-import {monochromeColorFonts,rasterFontFiles} from './color-fonts.js';
 const DEFAULT_DIMENSIONS = { width: 1280, height: 720 };
 const DEFAULT_RASTER_SCALE = 1;
 const DEFAULT_RASTER_BACKGROUND = "#FFFFFF";
@@ -42,14 +41,11 @@ export async function svgToPdf(svgs, options = {}) {
 
 async function rasterizeSvg(svgInput, options) {
   const { Resvg } = await loadResvg();
-  // FF-31: resvg ignores the SVG's ligature properties, so separate the letters a Gelasio ligature would join.
-  // FF-45: resvg draws no COLRv1 or OT-SVG colour glyphs, so colour families (Noto Color Emoji) are drawn with their monochrome stand-in.
-  const svg = separateLigatures(monochromeColorFonts(await prepareRasterImages(normalizeSvgInput(svgInput))));
   const scale = positiveNumber(options.scale, "scale", DEFAULT_RASTER_SCALE);
-  const fontFiles = rasterFontFiles([
+  const fontFiles = [
     ...(options.useBundledFonts === false ? [] : await bundledFontFiles()),
     ...stringArray(options.fontFiles)
-  ]);
+  ];
   const renderOptions = {
     fitTo: { mode: "zoom", value: scale },
     background: options.background ?? DEFAULT_RASTER_BACKGROUND,
@@ -65,6 +61,15 @@ async function rasterizeSvg(svgInput, options) {
   };
 
   if (options.dpi !== undefined) renderOptions.dpi = positiveNumber(options.dpi, "dpi", 96);
+
+  // An SVG used as an image draws its text with these fonts: resvg gives the nested document none.
+  const nestedSvg = async text => {
+    const probe = new Resvg(text, { font: renderOptions.font, logLevel: "off" });
+    const zoom = Math.min(4, Math.max(1, 2048 / Math.max(probe.width, probe.height)));
+    return new Resvg(text, { ...renderOptions, fitTo: { mode: "zoom", value: zoom }, background: "rgba(0, 0, 0, 0)" }).render().asPng();
+  };
+  // FF-31: resvg ignores the SVG's ligature properties, so separate the letters a Gelasio ligature would join.
+  const svg = separateLigatures(await prepareRasterImages(normalizeSvgInput(svgInput), { nestedSvg }));
 
   try {
     const image = new Resvg(svg, renderOptions).render();
