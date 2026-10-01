@@ -4,7 +4,7 @@
 //     reference the Node qualification (test/script-corpora.mjs) holds fontkit to; and
 //   - with the renderer's accepted (fontkit) advance, which must agree within 0.1 px except the recorded fontkit limits in the fixture
 //     (Myanmar, one Syriac word, Nastaliq vowel marks), whose deviation is bounded.
-// The span carries `text-spacing-trim: space-all`, as the renderer's SVG does for slides that draw fullwidth punctuation (src/svg.js); the
+// The span carries `text-rendering: geometricPrecision` (the renderer's SVG sets it; without it Chromium on Linux rounds advances to whole pixels) and `text-spacing-trim: space-all`, as the renderer's SVG does for slides that draw fullwidth punctuation (src/svg.js); the
 // SVG block at the end proves that on real renderSvg output. Right-to-left samples must display right to left (the first character is painted right of the last). Nothing else may load.
 // Usage: node test/script-corpora-browser.mjs [report.json]
 import assert from 'node:assert/strict';
@@ -55,7 +55,7 @@ try {
     return list.map(item => {
       host.innerHTML = '';
       const span = document.createElement('span');
-      span.style.cssText = `font:${item.italic ? 'italic ' : ''}${item.weight} 100px/1 QF${item.face};white-space:pre;direction:${item.rtl ? 'rtl' : 'ltr'};unicode-bidi:isolate;text-spacing-trim:space-all;position:absolute;left:0;top:0`;
+      span.style.cssText = `font:${item.italic ? 'italic ' : ''}${item.weight} 100px/1 QF${item.face};white-space:pre;direction:${item.rtl ? 'rtl' : 'ltr'};unicode-bidi:isolate;text-spacing-trim:space-all;text-rendering:geometricPrecision;position:absolute;left:0;top:0`;
       span.lang = item.lang;
       span.textContent = item.text;
       host.append(span);
