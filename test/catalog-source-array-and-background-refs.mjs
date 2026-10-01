@@ -95,4 +95,8 @@ assert.equal(darkText, renderSvg(withBackground({type: 'solid', color: '#000000'
 const patternWith = color => renderSvg(withBackground({type: 'pattern', pattern: {preset: 'pct5', foregroundColor: '#FFFFFF', backgroundColor: color}}, {variables: {night: '#0F172A'}}));
 assert.equal(patternWith('var:night'), patternWith('#0F172A'), 'dark pattern background via var: matches the literal');
 assert.ok(patternWith('var:night').includes(`fill="${scheme.light1.toUpperCase()}"`), 'dark pattern background gets light text');
+// A pattern background naming the text role paints the same colour that decided the default text (resolved once), not the final text colour.
+const textRole = renderSvg(withBackground({type: 'pattern', pattern: {preset: 'pct5', foregroundColor: '#FFFFFF', backgroundColor: 'text'}}));
+assert.equal(firstRect(textRole), scheme.dark1.toUpperCase(), 'pattern background text role resolves to its scheme slot');
+assert.ok(textRole.includes(`<text`) && !new RegExp(`<text[^>]*fill="${scheme.dark1.toUpperCase()}"`).test(textRole), 'text is not painted in the pattern background colour');
 console.log('Catalog source arrays and ColorRef backgrounds passed.');
