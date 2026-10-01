@@ -223,7 +223,7 @@ for (const { name, deck, expect } of roundTrips) {
 // ---- Pages, metadata, language, links, tagging ------------------------------------------------------------------------
 {
   const wide = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450" lang="fr-CA"><rect width="800" height="450" fill="#eef"/><a href="https://example.com/path?q=1&amp;r=%C3%A9"><text x="40" y="100" font-family="Roboto" font-size="30" fill="#06c" text-decoration="underline" xml:space="preserve">Lien de test</text></a><a href="javascript:alert(1)"><text x="40" y="160" font-family="Roboto" font-size="30" xml:space="preserve">Not a link</text></a></svg>`;
-  const portrait = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="700" viewBox="0 0 400 700"><rect width="400" height="700" fill="#fee"/><image width="64" height="64" x="20" y="20" aria-label="Pixel" href="${TINY_PNG}"/><text x="20" y="130" font-family="Roboto" font-size="20">Portrait page</text></svg>`;
+  const portrait = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="700" viewBox="0 0 400 700" lang="de"><rect width="400" height="700" fill="#fee"/><image width="64" height="64" x="20" y="20" aria-label="Pixel" href="${TINY_PNG}"/><text x="20" y="130" font-family="Roboto" font-size="20">Portrait page</text></svg>`;
   const diagnostics = [];
   const pdf = await svgToPdf([wide, portrait], {
     metadata: { title: "Deck title", author: "Ada Lovelace", subject: "Test", keywords: ["a", "b"], language: "fr-CA", creationDate: "2026-05-06T07:08:09Z" },
@@ -249,6 +249,8 @@ for (const { name, deck, expect } of roundTrips) {
   assert.ok(rect[0] >= 35 && rect[2] > rect[0] + 100 && rect[1] > 300 && rect[3] < 450, `link rectangle sits on its text (${rect})`);
   const roles = objects.filter(([, object]) => object instanceof PDFDict && object.get(PDFName.of("Type"))?.toString() === "/StructElem").map(([, object]) => object.get(PDFName.of("S")).toString());
   for (const role of ["/Document", "/Sect", "/P", "/Link", "/Figure"]) assert.ok(roles.includes(role), `structure has ${role}`);
+  const sectionLanguages = objects.filter(([, object]) => object instanceof PDFDict && object.get(PDFName.of("S"))?.toString() === "/Sect").map(([, object]) => object.get(PDFName.of("Lang"))?.decodeText());
+  assert.deepEqual(sectionLanguages.sort(), ["de", undefined], "a slide in another language than the document says so on its section");
   const untagged = await svgToPdf([wide], { tagged: false });
   assert.ok(!(await lowLevel(untagged)).document.catalog.get(PDFName.of("StructTreeRoot")), "tagging can be switched off");
   assert.match(await pageText(await openPdf(pdf), 1), /Lien de test/);

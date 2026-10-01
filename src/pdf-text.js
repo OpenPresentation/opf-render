@@ -88,7 +88,8 @@ export function layoutText(textNode, env, parentStyle, link) {
 
   const styleIds = new Map();
   const faceCache = new Map();
-  const runsByChunk = chunks.map((chunk) => buildRuns(chunk, env, styleIds, faceCache));
+  const linkIds = new Map();
+  const runsByChunk = chunks.map((chunk) => buildRuns(chunk, env, styleIds, faceCache, linkIds));
 
   // textLength: the renderer gives lines and tabs an exact width; reproduce it per scope over all its runs.
   const scopeWidth = new Map();
@@ -154,7 +155,7 @@ function collapseWhitespace(chars) {
   for (const char of kept) chars.push(char);
 }
 
-function buildRuns(chunk, env, styleIds, faceCache) {
+function buildRuns(chunk, env, styleIds, faceCache, linkIds) {
   const text = chunk.chars.map((char) => char.ch).join("");
   const baseDirection = chunk.chars[0].style.direction === "rtl" ? "rtl" : "ltr";
   // Levels per UTF-16 unit; characters take the level of their first unit.
@@ -173,7 +174,7 @@ function buildRuns(chunk, env, styleIds, faceCache) {
     if (IGNORED.test(char.ch)) return;
     const level = levels[index];
     const resolved = pickFace(char, env, styleIds, faceCache);
-    const key = `${resolved.styleId}|${resolved.face.id}|${level}|${char.scope?.id ?? 0}|${char.link ? char.link.node?.__id ?? (char.link.node.__id = ++linkCounter) : 0}|${[...char.decoration].sort().join(",")}`;
+    const key = `${resolved.styleId}|${resolved.face.id}|${level}|${char.scope?.id ?? 0}|${linkId(linkIds, char.link)}|${[...char.decoration].sort().join(",")}`;
     if (!current || current.key !== key) {
       current = { chunk: chunkInfo, key, face: resolved.face, style: char.style, level, scope: char.scope, link: char.link, decoration: char.decoration, chars: [], text: "", logical: "", weight: resolved.weight, italic: resolved.italic };
       runs.push(current);
@@ -186,7 +187,13 @@ function buildRuns(chunk, env, styleIds, faceCache) {
   return runs;
 }
 
-let linkCounter = 0;
+// A number per link within one layout call, so runs of different links never merge; nothing is written on the nodes.
+function linkId(linkIds, link) {
+  if (!link) return 0;
+  let id = linkIds.get(link.node);
+  if (id === undefined) { id = linkIds.size + 1; linkIds.set(link.node, id); }
+  return id;
+}
 
 function pickFace(char, env, styleIds, faceCache) {
   const style = char.style;

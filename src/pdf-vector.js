@@ -967,7 +967,7 @@ class Converter {
     const pagesObject = file.reserve();
     const pageObjects = [];
     const tagged = this.tagged;
-    const structure = tagged ? this.buildStructure(pagesObject) : null;
+    const structure = tagged ? this.buildStructure(pagesObject, language) : null;
 
     for (const page of this.pages) {
       const contents = file.addStream("", page.content.text());
@@ -1009,7 +1009,7 @@ class Converter {
   }
 
   /** The logical structure tree: Document > one Sect per slide > H1/P/Figure (> Link) in source order. */
-  buildStructure(pagesObject) {
+  buildStructure(pagesObject, documentLanguage) {
     const file = this.file;
     const root = file.reserve();
     const documentElement = file.reserve();
@@ -1037,7 +1037,8 @@ class Converter {
       });
       for (const annotation of element.annots ?? []) kids.push(`<</Type/OBJR/Obj ${ref(annotation.object)}/Pg ${ref(element.page.object)}>>`);
       const alt = element.alt ? `/Alt${textString(element.alt)}` : "";
-      const lang = element.role === "Sect" ? "" : "";
+      // A slide whose SVG declares another language than the document says so on its section.
+      const lang = element.role === "Sect" && element.page.language && element.page.language !== documentLanguage ? `/Lang${asciiString(element.page.language)}` : "";
       file.set(object, `/Type/StructElem/S${name(element.role)}/P ${ref(parentObject)}/Pg ${ref(element.page.object)}${alt}${lang}/K[${kids.join(" ")}]`);
     };
     for (const section of sections) emit(section, documentElement);
