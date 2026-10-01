@@ -1190,11 +1190,7 @@ function renderMetric(item, box, bound, options) {
 
 // The trend arrow and colour for a laid-out metric (core metricTrendMark); undefined without a trend or without core support.
 function metricTrendMark(layout,bound,options) {
-  if (typeof opfCore.metricTrendMark!=='function') {
-    const trend=layout.parts.find(part=>part.role==='trend'&&part.visible);
-    if (trend) reportDiagnostic({code:'metric-trend-unavailable',path:trend.path,message:'The installed @openpresentation/opf has no metricTrendMark (RR-07), so the preview draws the trend word without an arrow or colour. Use a core release with metric trend marks.'},options);
-    return undefined;
-  }
+  if (typeof opfCore.metricTrendMark!=='function') return undefined;
   return opfCore.metricTrendMark(layout,{background:bound.design.backgroundColor??bound.design.colors.background});
 }
 
@@ -1542,10 +1538,7 @@ function codeSyntax(item, layout, bound, options) {
   const body = layout.parts.find(part => part.role === "body");
   const language = typeof item.value?.language === "string" ? item.value.language : layout.parts.find(part => part.role === "language")?.text;
   if (!body || !language) return undefined;
-  if (typeof opfCore.tokenizeCode !== "function") {
-    reportDiagnostic({ code: "code-highlight-unavailable", path: body.path.replace(/\.source$/, ".language"), message: "The installed @openpresentation/opf has no tokenizeCode (RR-07), so the preview draws code without syntax colours. Use a core release with code highlighting." }, options);
-    return undefined;
-  }
+  if (typeof opfCore.tokenizeCode !== "function") return undefined;
   const tokens = opfCore.tokenizeCode(body.text, language);
   if (!tokens.length) return undefined;
   return { tokens, palette: opfCore.codeSyntaxPaletteForScheme(bound.design.colorScheme) };
