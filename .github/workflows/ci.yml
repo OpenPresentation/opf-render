@@ -154,6 +154,7 @@ jobs:
             opf-render/artifacts/variable-font-gate/**
             opf-render/artifacts/script-fonts-browser.json
             opf-render/artifacts/script-corpora-browser.json
+            opf-render/artifacts/script-corpora-slides-browser.json
             opf-render/artifacts/script-fonts-auto/**
             opf/artifacts/plain-whitespace-workflow/**
             opf/artifacts/readability-browser/**
