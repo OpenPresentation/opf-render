@@ -33,7 +33,7 @@ assert.ok(lines.length > 1, 'tag wraps');
 assert.equal(one(lines).toUpperCase(), '#2874A6');
 // FF-61: when the primary is under 4.5:1 (WCAG 2.x) against the slide background the tag draws in the slide text
 // colour; otherwise it keeps the primary. The same colour pairs, background-first, are pinned in opf-pptx
-// test/tag-colour.mjs: the ten corpus tags that were under 4.5:1 (core example corpus, FF-59) and four that pass.
+// test/tag-colour.mjs: the eight distinct pairs of the ten corpus tags that were under 4.5:1 (core example corpus, FF-59; 9E9E9E on white occurs three times) and four that pass.
 const wcag = hex => {
   const channels = [1, 3, 5].map(offset => {
     const value = parseInt(hex.slice(offset, offset + 2), 16) / 255;
