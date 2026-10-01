@@ -10,7 +10,7 @@ import { PDFArray, PDFDict, PDFDocument, PDFName, PDFNumber, PDFRawStream, PDFRe
 import { renderSvgDeck, svgToPdf, svgToPng } from "../dist/index.js";
 import { loadBundledFontRegistry, loadOfficeFontRegistry } from "../dist/fonts-node.js";
 import sharp from "sharp";
-import { compareImages, mupdfText, openPdf, pageItems, pageText, pdfiumText, popplerText, qpdfCheck, renderPdfPage } from "./pdf-helpers.mjs";
+import { compareImages, openPdf, pageItems, pageText, pdfiumText, popplerText, qpdfCheck, renderPdfPage } from "./pdf-helpers.mjs";
 
 const TINY_PNG = "data:image/png;base64," + (await sharp({ create: { width: 4, height: 4, channels: 3, background: "#e03030" } }).png().toBuffer()).toString("base64");
 const SCHEMA = "https://openpresentation.org/schema/opf/v1";
@@ -123,8 +123,8 @@ for (const { name, deck, expect } of roundTrips) {
   for (const wanted of expect) assert.ok(compact(text).includes(compact(wanted)), `${name}: extracted text keeps "${wanted}"; got "${text}"`);
 }
 
-// ---- Ordered logical text in four independent readers --------------------------------------------------------------------
-// Each case is one line of one script. pdf.js, PDFium (Chrome, Edge), MuPDF and, when it is installed, poppler must return
+// ---- Ordered logical text in independent readers --------------------------------------------------------------------
+// Each case is one line of one script. pdf.js, PDFium (Chrome, Edge) and, when it is installed, poppler must return
 // the authored text in logical order, compared as ordered text (no re-sorting of runs). Right-to-left runs are drawn in visual
 // order inside /ReversedChars with per-glyph /ActualText where the glyph map cannot give the text, as Chromium writes them;
 // reordered Indic and Khmer clusters carry /ActualText per cluster. The readers named in `skip` do not read that script
@@ -152,7 +152,7 @@ for (const { name, deck, expect } of roundTrips) {
     ["thai", "Noto Sans Thai", "ภาษาไทย ที่ปรึกษา น้ำ", "ภาษาไทย ที่ปรึกษา น้ำ", ["pdfium", "poppler"]],
     ["burmese", "Noto Sans Myanmar", "မြန်မာဘာသာ ကျွန်ုပ်", "မြန်မာဘာသာ ကျွန်ုပ်", ["pdfium", "poppler"]],
   ];
-  const readers = { pdfjs: async (pdf) => pageText(await openPdf(pdf), 1), pdfium: pdfiumText, mupdf: mupdfText, poppler: popplerText };
+  const readers = { pdfjs: async (pdf) => pageText(await openPdf(pdf), 1), pdfium: pdfiumText, poppler: popplerText };
   let popplerSeen = false;
   for (const [name, family, text, expected, skip] of cases) {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="140"><text x="40" y="90" font-family="${family}" font-size="32" xml:space="preserve">${text}</text></svg>`;

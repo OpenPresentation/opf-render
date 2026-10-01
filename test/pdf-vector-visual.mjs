@@ -10,7 +10,7 @@ import { examples } from "@openpresentation/opf/examples";
 import { renderSvgDeck, svgToPdf, svgToPng } from "../dist/index.js";
 import { loadOfficeFontRegistry } from "../dist/fonts-node.js";
 import { parseXml, textContent } from "../dist/pdf-xml.js";
-import { compareImages, mupdfText, openPdf, pageText, pdfiumText, percentile, renderPdfPage } from "./pdf-helpers.mjs";
+import { compareImages, openPdf, pageText, pdfiumText, percentile, renderPdfPage } from "./pdf-helpers.mjs";
 
 const all = process.argv.includes("--all");
 const reportIndex = process.argv.indexOf("--report");
@@ -37,7 +37,7 @@ for (const { file, deck } of [...examples].sort((a, b) => (a.file < b.file ? -1 
     const rendered = await renderPdfPage(doc, 1);
     // Every character the SVG draws is in the PDF text (order and spacing are the extractor's business; compare as multisets).
     const drawn = characters(drawnText(svg));
-    const readers = { pdfjs: await pageText(doc, 1), pdfium: await pdfiumText(pdf), mupdf: await mupdfText(pdf) };
+    const readers = { pdfjs: await pageText(doc, 1), pdfium: await pdfiumText(pdf) };
     const textMatches = Object.fromEntries(Object.entries(readers).map(([name, text]) => [name, characters(text) === drawn]));
     for (const [name, matches] of Object.entries(textMatches)) if (!matches) notes.push(`text-mismatch-${name}`);
     const preview = await svgToPng(svg, options);
@@ -49,7 +49,7 @@ for (const { file, deck } of [...examples].sort((a, b) => (a.file < b.file ? -1 
 }
 
 const textMismatches = {};
-for (const reader of ["pdfjs", "pdfium", "mupdf"]) textMismatches[reader] = rows.filter((row) => !row.textMatches[reader]).map((row) => row.key);
+for (const reader of ["pdfjs", "pdfium"]) textMismatches[reader] = rows.filter((row) => !row.textMatches[reader]).map((row) => row.key);
 const maes = rows.map((row) => row.mae).sort((a, b) => a - b);
 const larges = rows.map((row) => row.largePercent).sort((a, b) => a - b);
 const summary = {
@@ -68,9 +68,8 @@ if (report) {
 }
 console.log(JSON.stringify(summary));
 const worst = [...rows].sort((a, b) => b.mae - a.mae).slice(0, 3).map((row) => `${row.key} mae=${row.mae.toFixed(2)} large=${row.largePercent.toFixed(2)}%`);
-// pdf.js and MuPDF must return every drawn character; PDFium too, except where Chromium's own PDFs fail the same way (Thai and Burmese marks).
-for (const reader of ["pdfjs", "mupdf"]) assert.deepEqual(textMismatches[reader], [], `${reader}: extracted PDF text holds every drawn character`);
-console.log(`PDFium: ${rows.length - textMismatches.pdfium.length} of ${rows.length} slides return every drawn character`);
+// pdf.js and PDFium must each return every drawn character of every slide.
+for (const reader of ["pdfjs", "pdfium"]) assert.deepEqual(textMismatches[reader], [], `${reader}: extracted PDF text holds every drawn character`);
 assert.ok(maes.at(-1) <= MAX_MAE, `mean error above ${MAX_MAE}: ${worst.join("; ")}`);
 assert.ok(larges.at(-1) <= MAX_LARGE_PERCENT, `large-difference pixels above ${MAX_LARGE_PERCENT}%: ${worst.join("; ")}`);
 console.log(`pdf-vector-visual: ${rows.length} of ${corpusSlides} slides within tolerance (median MAE ${summary.mae.p50.toFixed(3)}, worst ${summary.mae.max.toFixed(3)}).`);

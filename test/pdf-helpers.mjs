@@ -62,7 +62,7 @@ export function percentile(sortedValues, fraction) {
   return sortedValues[Math.min(sortedValues.length - 1, Math.floor(fraction * (sortedValues.length - 1) + 0.5))];
 }
 
-// ---- Other engines (PDFium, MuPDF, poppler) and a structural check (qpdf) ------------------------------------------------
+// ---- Other engines (PDFium, poppler) and a structural check (qpdf) ------------------------------------------------
 
 let pdfiumLibrary = null;
 async function pdfium() {
@@ -77,13 +77,6 @@ async function pdfium() {
 export async function pdfiumText(bytes) {
   const document = await (await pdfium()).loadDocument(new Uint8Array(bytes));
   try { return document.getPage(0).getText().replace(/\s+/g, " ").trim(); } finally { document.destroy(); }
-}
-
-/** The text of page 1 as MuPDF extracts it. */
-export async function mupdfText(bytes) {
-  const mupdf = await import("mupdf");
-  const document = mupdf.Document.openDocument(new Uint8Array(bytes), "application/pdf");
-  return document.loadPage(0).toStructuredText().asText().replace(/\s+/g, " ").trim();
 }
 
 /** poppler's pdftotext when it is installed, else null. */

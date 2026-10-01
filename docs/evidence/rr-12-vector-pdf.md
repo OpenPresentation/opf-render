@@ -16,11 +16,11 @@ Font subsetting is the package's own TrueType subsetter (`src/pdf-subset.js`): t
 
 ## How text is encoded, and why (review finding 1)
 
-The first encoding was tuned to pdf.js, whose text extraction reorders right-to-left runs itself; PDFium (Chrome, Edge), MuPDF and poppler read the same files reversed. The encoding now follows what Chromium writes for the same strings (measured against a Chromium `page.pdf()` control, with PDFium, MuPDF, poppler and pdf.js reading both):
+The first encoding was tuned to pdf.js, whose text extraction reorders right-to-left runs itself; PDFium (Chrome, Edge) and poppler read the same files reversed. The encoding now follows what Chromium writes for the same strings (measured against a Chromium `page.pdf()` control, with PDFium, poppler and pdf.js reading both):
 
 - Runs are drawn in visual order. Right-to-left runs sit in `/ReversedChars BMC ... EMC` inside their text object.
 - A glyph the glyph-to-Unicode map cannot give gets `/ActualText`, one span per glyph: a ligature of several characters in a right-to-left run (lam-alef) and a mirrored bracket.
-- A left-to-right run whose characters the glyph order does not give (reordered Indic or Khmer syllables, a no-break space) is split into the shortest glyph clusters that hold exactly the next characters of the text (matched as written, then in canonical decomposition, which is how a Bengali two-part vowel appears in a font) and each cluster gets one `/ActualText` span, as Chromium writes them. One span across several text objects made MuPDF duplicate cluster tails and poppler scramble them.
+- A left-to-right run whose characters the glyph order does not give (reordered Indic or Khmer syllables, a no-break space) is split into the shortest glyph clusters that hold exactly the next characters of the text (matched as written, then in canonical decomposition, which is how a Bengali two-part vowel appears in a font) and each cluster gets one `/ActualText` span, as Chromium writes them. One span across several text objects made poppler scramble cluster tails (and other readers duplicate them).
 - A glyph that stands for no character of its own (the dots and marks a font splits off an Arabic letter) is drawn as a filled outline, not as text: extractors then never see an extra character (the previous zero-width-space mapping showed up as stray spaces in PDFium and pdf.js).
 - Glyphs the font displaces by a visible amount are shown alone with their own `Td` and a leading adjustment inside the object (marks under 2.5 % of the font size horizontally or 3 % vertically are not displaced), and kerning numbers are whole thousandths with the remainder carried, so there are no tiny `TJ` numbers; PDFium duplicates an `/ActualText` span whose text objects are not adjacent, and splits words at tiny adjustments.
 
@@ -35,13 +35,13 @@ Each slide is exported to a vector PDF, rasterized independently with pdf.js (`p
 | Mean absolute channel error (0-255) | 0.177 | 0.449 | 0.647 | 0.955 |
 | Pixels differing by more than 48 in any channel | 0.0043 % | 0.0148 % | 0.0208 % | 0.0551 % |
 
-Declared tolerances (checked in `test/pdf-vector-visual.mjs`): mean error 1.5, large-difference pixels 0.5 %. All 805 slides are within them; none used a raster fallback or raised an error. (An independent review rendered 155 slides in PDFium and MuPDF as well and found the geometry sound.)
+Declared tolerances (checked in `test/pdf-vector-visual.mjs`): mean error 1.5, large-difference pixels 0.5 %. All 805 slides are within them; none used a raster fallback or raised an error. (An independent review rendered 155 slides in PDFium as well and found the geometry sound.)
 
-### Text, in four readers
+### Text, in independent readers
 
-- All 805 example slides: the text pdf.js, PDFium and MuPDF extract contains exactly the characters the SVG draws (character multisets after NFKC, ignoring whitespace and bidirectional controls).
-- `test/pdf-vector.mjs` compares ordered logical text (no re-sorting) of single-script lines in pdf.js, PDFium, MuPDF and, when `pdftotext` is installed, poppler. All four read Latin (ligatures, accents, decomposed marks), Japanese, Chinese, Korean, Hebrew, Arabic (including the lam-alef ligature) and Syriac exactly. PDFium, MuPDF and poppler read Devanagari, Bengali, Tamil and Khmer exactly (poppler: not Gujarati). pdf.js, which ignores `/ActualText`, reports reordered Indic and Khmer clusters in drawing order.
-- Known reader limits, identical for Chromium's own PDFs of the same strings: PDFium splits and duplicates Thai and Burmese marks (MuPDF and pdf.js read them exactly); in a mixed-direction line, PDFium, MuPDF and pdf.js return each run in logical order but may swap the order of two right-to-left runs, and PDFium may put the percent sign of a number in a right-to-left sentence before the digits; PDFium misgroups a page when large serif Hebrew titles and body lines overlap in its line heuristics (reproduced with Chromium's PDF of the same fonts and geometry).
+- All 805 example slides: the text pdf.js and PDFium extract contains exactly the characters the SVG draws (character multisets after NFKC, ignoring whitespace and bidirectional controls).
+- `test/pdf-vector.mjs` compares ordered logical text (no re-sorting) of single-script lines in pdf.js, PDFium and, when `pdftotext` is installed, poppler. All of them read Latin (ligatures, accents, decomposed marks), Japanese, Chinese, Korean, Hebrew, Arabic (including the lam-alef ligature) and Syriac exactly. PDFium and poppler read Devanagari, Bengali, Tamil and Khmer exactly (poppler: not Gujarati). pdf.js, which ignores `/ActualText`, reports reordered Indic and Khmer clusters in drawing order.
+- Known reader limits, identical for Chromium's own PDFs of the same strings: PDFium splits and duplicates Thai and Burmese marks (pdf.js reads them exactly); in a mixed-direction line, PDFium and pdf.js return each run in logical order but may swap the order of two right-to-left runs, and PDFium may put the percent sign of a number in a right-to-left sentence before the digits; PDFium misgroups a page when large serif Hebrew titles and body lines overlap in its line heuristics (reproduced with Chromium's PDF of the same fonts and geometry).
 
 ### Structure
 
@@ -53,7 +53,7 @@ One slide per PDF, including its font subsets: vector mean 25.6 KB against raste
 
 ## Independent readers used
 
-pdf.js 6.3.289, `@hyzyla/pdfium` 2.1.13 (PDFium, MIT wrapper around Apache-2.0 PDFium), `mupdf` 1.28.1 (WebAssembly; **AGPL-3.0, a test-only devDependency that is never published or linked into the package**), `@jspawn/qpdf-wasm` 0.0.2 (Apache-2.0) and, optionally, poppler `pdftotext`. Not run: Acrobat, macOS Preview.
+pdf.js 6.3.289, `@hyzyla/pdfium` 2.1.13 (PDFium, MIT wrapper around Apache-2.0 PDFium), `@jspawn/qpdf-wasm` 0.0.2 (Apache-2.0) and, optionally, poppler `pdftotext`. During development MuPDF (AGPL, so not a dependency of this repository and not used by its tests) and a Chromium `page.pdf()` control were also read for comparison. Not run in the tests: MuPDF, Acrobat, macOS Preview.
 
 ## Decisions (vetoable)
 
