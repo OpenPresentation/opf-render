@@ -96,11 +96,14 @@ try {
     const title = [...host.querySelectorAll('text')].find(text => text.getAttribute('font-size') === '54');
     const accepted = Number(title.getAttribute('textLength'));
     title.removeAttribute('textLength');
-    return {style: host.querySelector('svg').getAttribute('style'), accepted, natural: title.getComputedTextLength()};
+    const natural = title.getComputedTextLength(), size = parseFloat(getComputedStyle(title).fontSize);
+    // Diagnostics for a failure: the characters whose painted advance is not one em (fullwidth punctuation and ideographs are exactly one em).
+    const odd = [...title.textContent].map((character, index) => [character, title.getSubStringLength(index, 1)]).filter(([character, width]) => !/[　-ヿ一-鿿＀-￯…]/.test(character) ? false : Math.abs(width - size) > 0.01);
+    return {style: host.querySelector('svg').getAttribute('style'), accepted, natural, size, family: getComputedStyle(title).fontFamily, odd};
   }), slides);
   for (const [index, value] of trimmed.entries()) {
     assert.equal(value.style, 'text-spacing-trim:space-all', `${punctuation[index].id}: the slide carries text-spacing-trim`);
-    assert.ok(Math.abs(value.natural - value.accepted) < 0.1, `${punctuation[index].id}: the browser draws ${value.natural}, the accepted advance is ${value.accepted}`);
+    assert.ok(Math.abs(value.natural - value.accepted) < 0.1, `${punctuation[index].id}: the browser draws ${value.natural}, the accepted advance is ${value.accepted} (font ${value.family} at ${value.size}; characters not one em wide: ${JSON.stringify(value.odd)})`);
   }
   const output = path.resolve(process.argv[2] ?? 'artifacts/script-corpora-browser.json');
   await mkdir(path.dirname(output), {recursive: true});
