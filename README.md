@@ -239,6 +239,10 @@ renderSvgDeck(template, { variables: { client: 'Globex', revenue: 1250000 } });
 
 A template previews with each unfilled variable's `example` and reports `variable-example-used` through `onDiagnostic`; a variable with no example keeps its `{{id}}` text. A normal deck with an unfilled required variable throws `OPFRenderError` with code `unfilled-variables`, and a value of the wrong kind throws `invalid-variables`. `resolvePresentation(...).presentation` is the concrete deck. `variables: false` draws the document as authored, with tokens and `var:` references visible (the editor canvas's view of a template, so inline edits never overwrite a token). Decks without content variables are untouched. Needs the core release that ships `resolveVariables`; with an older core the option is ignored. See [templates and variables](https://github.com/OpenPresentation/opf/blob/main/docs/templates-and-variables.md).
 
+## Numbered lists (RR-33)
+
+An `items` or `bullets` payload with a `numbering` field draws numbers instead of bullets: `{ "items": ["Define", "Build", "Ship"], "numbering": "roman-lower" }` previews as `i.`, `ii.`, `iii.`. The number is core's composed marker (`ListEntryLayout.marker.text`), drawn at core's marker position, baseline and size with the weight and slant core measured it at (a native PowerPoint auto-number takes the first run's bold and italic), at the wider hanging indent core composes for wide markers (`viii.`, `10.`). Bullet lists, picture bullets and every deck without `numbering` draw exactly as before. Needs a core release that composes `numbering`; an older core ignores the field and draws bullets. See core's [numbered lists](https://github.com/OpenPresentation/opf/blob/main/docs/numbered-lists.md).
+
 ## Runtime Policy
 
 The package runtime must stay local and deterministic:
