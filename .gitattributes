@@ -6,3 +6,9 @@ fonts/**/PROVENANCE.json text eol=lf
 
 # The frozen vector-PDF fixture is hashed through its exported PDF: keep its bytes the same on every checkout.
 test/fixtures/pdf/*.svg text eol=lf
+
+# dist is the published package and src, scripts its source: a Windows checkout (core.autocrlf=true) must not write CRLF, because the packed bin
+# file would start with a CRLF shebang that npm rewrites at install, and every file would differ from the published bytes (core RR-37).
+/dist/** text eol=lf
+/src/** text eol=lf
+/scripts/** text eol=lf
