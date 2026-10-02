@@ -1,3 +1,9 @@
+# Every text file is LF in the working tree, as in the index (core uses the same rule). A Windows checkout (core.autocrlf=true) would otherwise write CRLF
+# into dist: the packed bin file dist/preview-fonts-cli.js starts with a shebang that npm rewrites to LF at install, which broke core's installed-candidate
+# check (core RR-37). Binary files keep their bytes, and files already committed with CRLF keep them (text=auto leaves those alone); the rules below
+# override this for the vendored fonts and fixtures that are hashed byte for byte.
+* text=auto eol=lf
+
 # Vendored upstream font files are hashed byte for byte (src/font-manifest.js): never convert line endings.
 fonts/**/*.ttf binary
 fonts/**/*.txt -text
@@ -7,8 +13,5 @@ fonts/**/PROVENANCE.json text eol=lf
 # The frozen vector-PDF fixture is hashed through its exported PDF: keep its bytes the same on every checkout.
 test/fixtures/pdf/*.svg text eol=lf
 
-# dist is the published package and src, scripts its source: a Windows checkout (core.autocrlf=true) must not write CRLF, because the packed bin
-# file would start with a CRLF shebang that npm rewrites at install, and every file would differ from the published bytes (core RR-37).
-/dist/** text eol=lf
-/src/** text eol=lf
-/scripts/** text eol=lf
+# Native PowerPoint evidence captured with CRLF: keep the recorded bytes.
+docs/evidence/font-variants-before/native.xml -text
