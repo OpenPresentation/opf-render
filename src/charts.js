@@ -1261,9 +1261,10 @@ function renderTreemapChart(c) {
   rects.forEach((rect, i) => {
     if (!rect || !(rect.width > 0) || !(rect.height > 0)) return;
     c.mark("rect", { x: rect.x, y: rect.y, width: rect.width, height: rect.height, fill: c.colors[i % c.colors.length], stroke: "#FFFFFF", "stroke-width": c.pt }, `${c.path}.data.rows.${i}.${column}`);
-    // RR-35: the treemap labels its tiles with category names by default; dataLabels picks the content, false removes them.
+    // RR-35: the treemap labels its tiles with category names by default; dataLabels picks the content, false removes them. PowerPoint
+    // draws the label at the bottom left of its tile whatever the position attribute says (native check 2026-10-01), so the preview does.
     if (!c.dataLabelsOff && rect.width >= fontPx * 2 && rect.height >= c.lineHeight) {
-      c.text(c.dataLabels ? labelString(c, { category: categories[i], value: values[i] }) : categories[i], { x: rect.x + fontPx * 0.25, y: rect.y, width: rect.width - fontPx * 0.5, height: rect.height }, `${c.path}.data.rows.${i}.0`);
+      c.text(c.dataLabels ? labelString(c, { category: categories[i], value: values[i] }) : categories[i], { x: rect.x + fontPx * 0.25, y: rect.y + rect.height - c.lineHeight - fontPx * 0.2, width: rect.width - fontPx * 0.5, height: c.lineHeight }, `${c.path}.data.rows.${i}.0`, "left");
     }
   });
 }
