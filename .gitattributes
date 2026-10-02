@@ -9,3 +9,4 @@ test/fixtures/pdf/*.svg text eol=lf
 
 # npm rewrites the line endings of a bin script on install, so its checkout must already be LF for the installed and staged bytes to match (Windows ecosystem CI).
 dist/preview-fonts-cli.js text eol=lf
+src/preview-fonts-cli.js text eol=lf
