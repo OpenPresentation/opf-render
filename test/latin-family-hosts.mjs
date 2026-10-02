@@ -65,7 +65,7 @@ for (const entry of families) {
   for (const match of svg.matchAll(/<text\b([^>]*)>([^<]*)<\/text>/g)) {
     const [, attributes, content] = match;
     const attribute = name => new RegExp(`\\s${name}="([^"]*)"`).exec(attributes)?.[1];
-    runs.set(content, {family: attribute('font-family')?.split(',')[0].trim(), weight: Number(attribute('font-weight') ?? 400), italic: attribute('font-style') === 'italic', length: Number(attribute('textLength')), size: Number(attribute('font-size'))});
+    runs.set(content, {family: attribute('font-family')?.split(',')[0].trim().replace(/^'|'$/g, ''), weight: Number(attribute('font-weight') ?? 400), italic: attribute('font-style') === 'italic', length: Number(attribute('textLength')), size: Number(attribute('font-size'))});
   }
   for (const [text, style] of RUNS) {
     const run = runs.get(text);

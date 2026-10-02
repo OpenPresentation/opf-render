@@ -23,7 +23,7 @@ const SNAPSHOT=freeze({
  },
  "source": {
   "path": "spec/reference/font-policy.json",
-  "sha256": "6744f2b7b058cba9264cd670b2f0566e64add073eb8e0ec8d3e31b6541d01fe3"
+  "sha256": "25edd9ee7f9fd874b5f8750d0f205c0dcdf7a64b74a85bcfda5a0771a402c361"
  },
  "families": [
   {
@@ -553,7 +553,16 @@ const SNAPSHOT=freeze({
     "office-cloud"
    ],
    "embeddableByOpf": false,
-   "replacement": null
+   "replacement": {
+    "family": "STIX Two Math",
+    "compatibility": "visual",
+    "measured": null,
+    "source": "https://github.com/stipub/stixfonts"
+   },
+   "alternates": [
+    "Noto Sans Math",
+    "Caladea"
+   ]
   },
   {
    "family": "Candara",
@@ -1049,7 +1058,14 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Barlow",
     "compatibility": "visual",
-    "measured": null
+    "measured": {
+     "replacement": "Barlow",
+     "meanAbsWidthDelta": 0.0467,
+     "meanWidthDelta": -0.0467,
+     "maxAbsWidthDelta": 0.0976,
+     "styles": 4,
+     "reference": "Grandview 1.04;O365"
+    }
    },
    "alternates": [
     "Roboto"
@@ -1066,7 +1082,14 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Barlow",
     "compatibility": "visual",
-    "measured": null
+    "measured": {
+     "replacement": "Barlow",
+     "meanAbsWidthDelta": 0.0249,
+     "meanWidthDelta": -0.0242,
+     "maxAbsWidthDelta": 0.0599,
+     "styles": 2,
+     "reference": "Grandview Display 0.90;O365"
+    }
    },
    "alternates": [
     "Roboto"
@@ -1591,6 +1614,22 @@ const SNAPSHOT=freeze({
    }
   },
   {
+   "family": "Noto Color Emoji",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
+   "family": "Noto Emoji",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
    "family": "Noto Naskh Arabic",
    "licenseClass": "open",
    "license": "OFL-1.1",
@@ -1610,6 +1649,14 @@ const SNAPSHOT=freeze({
   },
   {
    "family": "Noto Sans",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
+   "family": "Noto Sans Arabic",
    "licenseClass": "open",
    "license": "OFL-1.1",
    "availability": [],
@@ -1715,6 +1762,14 @@ const SNAPSHOT=freeze({
    "replacement": null
   },
   {
+   "family": "Noto Sans Lao",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
    "family": "Noto Sans Malayalam",
    "licenseClass": "open",
    "license": "OFL-1.1",
@@ -1723,7 +1778,23 @@ const SNAPSHOT=freeze({
    "replacement": null
   },
   {
+   "family": "Noto Sans Math",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
    "family": "Noto Sans Mongolian",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
+   "family": "Noto Sans Myanmar",
    "licenseClass": "open",
    "license": "OFL-1.1",
    "availability": [],
@@ -1742,6 +1813,22 @@ const SNAPSHOT=freeze({
   },
   {
    "family": "Noto Sans SC",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
+   "family": "Noto Sans Sinhala",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
+   "family": "Noto Sans Syriac",
    "licenseClass": "open",
    "license": "OFL-1.1",
    "availability": [],
@@ -1773,6 +1860,14 @@ const SNAPSHOT=freeze({
    "replacement": null
   },
   {
+   "family": "Noto Sans Thaana",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
    "family": "Noto Sans Thai",
    "licenseClass": "open",
    "license": "OFL-1.1",
@@ -1782,6 +1877,14 @@ const SNAPSHOT=freeze({
   },
   {
    "family": "Noto Serif Hebrew",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
+   "family": "Noto Serif Tibetan",
    "licenseClass": "open",
    "license": "OFL-1.1",
    "availability": [],
@@ -1990,7 +2093,14 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Source Sans 3",
     "compatibility": "visual",
-    "measured": null
+    "measured": {
+     "replacement": "Source Sans 3",
+     "meanAbsWidthDelta": 0.0483,
+     "meanWidthDelta": -0.0483,
+     "maxAbsWidthDelta": 0.0965,
+     "styles": 4,
+     "reference": "Seaford 1.04;O365"
+    }
    },
    "alternates": [
     "Carlito"
@@ -2007,7 +2117,14 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Source Sans 3",
     "compatibility": "visual",
-    "measured": null
+    "measured": {
+     "replacement": "Source Sans 3",
+     "meanAbsWidthDelta": 0.0389,
+     "meanWidthDelta": 0.0388,
+     "maxAbsWidthDelta": 0.0667,
+     "styles": 2,
+     "reference": "Seaford Display 1.04;O365"
+    }
    },
    "alternates": [
     "Carlito"
@@ -2049,7 +2166,15 @@ const SNAPSHOT=freeze({
     "office-cloud"
    ],
    "embeddableByOpf": false,
-   "replacement": null
+   "replacement": {
+    "family": "Noto Color Emoji",
+    "compatibility": "visual",
+    "measured": null,
+    "source": "https://github.com/googlefonts/noto-emoji"
+   },
+   "alternates": [
+    "Noto Emoji"
+   ]
   },
   {
    "family": "Segoe UI Light",
@@ -2209,7 +2334,14 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Open Sans",
     "compatibility": "visual",
-    "measured": null
+    "measured": {
+     "replacement": "Open Sans",
+     "meanAbsWidthDelta": 0.0926,
+     "meanWidthDelta": 0.0926,
+     "maxAbsWidthDelta": 0.1593,
+     "styles": 4,
+     "reference": "Skeena 1.04;O365"
+    }
    },
    "alternates": [
     "Carlito"
@@ -2226,7 +2358,14 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Open Sans",
     "compatibility": "visual",
-    "measured": null
+    "measured": {
+     "replacement": "Open Sans",
+     "meanAbsWidthDelta": 0.1306,
+     "meanWidthDelta": 0.1306,
+     "maxAbsWidthDelta": 0.2001,
+     "styles": 4,
+     "reference": "Skeena Display 1.04;O365"
+    }
    },
    "alternates": [
     "Carlito"
@@ -2262,6 +2401,14 @@ const SNAPSHOT=freeze({
      "reference": "Source Sans Pro 2.045"
     }
    }
+  },
+  {
+   "family": "STIX Two Math",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
   },
   {
    "family": "Sylfaen",

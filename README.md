@@ -16,7 +16,7 @@ Version 0.8.0 adds optional font-registry vector outlines and shared heading/sca
 
 Version 0.8.0 requires core 0.10.0 and renders accepted quote and code geometry without fitting it again. Code filename/language/body parts preserve source whitespace, literal tabs and metadata case and expose trace targets for editing. The [43 reviewed code raster changes](docs/evidence/shared-code/raster-review.json) retain the other 762 corpus hashes. Coordinated releases PPTX 0.8.0 and editor 0.7.0 add native source recovery and editing. Glyph containment and separation do not establish native pixel equivalence.
 
-Deterministic local renderer for Open Presentation Format documents. The shared SVG core implements validation, catalog resolution, placeholder binding and text layout. Node APIs additionally convert SVG to PNG and raster-backed PDF.
+Deterministic local renderer for Open Presentation Format documents. The shared SVG core implements validation, catalog resolution, placeholder binding and text layout. Node APIs additionally convert SVG to PNG and to PDF (vector with selectable text by default, or raster-backed).
 
 In version 0.8.0, `design.contentBox` uses core's shared padded geometry. The card renders at `item.frameBox`; its payload uses `item.box` and accepted internals. Card padding participates in composition scoring, strict overflow and pagination. This requires core 0.10.0.
 
@@ -55,6 +55,7 @@ Code strings that [XML 1.0 cannot represent](https://www.w3.org/TR/xml/#charsets
 - License: MIT
 - Compatibility target: `@openpresentation/opf`
 - Public API: `renderSvg(opf, opts)`, `renderSvgDeck(opf, opts)`, `resolvePresentation(opf, opts)`, `svgToPng(svg, opts)`, and `svgToPdf(svgs, opts)`
+- Player and embedding (RR-28): `<opf-deck>` and a slideshow with a speaker view, see [Player and `<opf-deck>`](#player-and-opf-deck-rr-28)
 
 `renderSvg` renders a single slide selected by `opts.slideIndex` (default `0`). `renderSvgDeck` returns one SVG string per slide. Both validate OPF at the boundary via `@openpresentation/opf`, resolve inline and bundled catalogs locally, and emit byte-stable SVG for the same input. A catalog `source` may be one string or an ordered array (first match wins, the bundled default is appended); the renderer never fetches, so non-bundled sources resolve only from `catalogSources`. Slide background colours (solid, gradient stops, pattern colours) accept the same colour references as text and table colours: a hex value, a `var:` variable, or a colour scheme slot or role such as `accent2` or `primary`.
 
@@ -104,7 +105,45 @@ const png = await svgToPng(svgs[0], rasterOptions);
 const pdf = await svgToPdf(svgs, rasterOptions);
 ```
 
-`svgToPng` returns PNG bytes for one SVG. `svgToPdf` accepts one SVG or an array of SVGs and returns PDF bytes with one slide per page. The SVG page `width`/`height` or `viewBox` determines the PDF page size; `scale` controls raster density only.
+`svgToPng` returns PNG bytes for one SVG. `svgToPdf` accepts one SVG or an array of SVGs and returns PDF bytes with one slide per page. The SVG page `width`/`height` or `viewBox` determines the PDF page size. **Units: one SVG pixel is one PDF point (1/72 inch), in both modes**, so a 1280 x 720 slide is a 1280 x 720 pt page (17.8 x 10 in, not the 13.33 x 7.5 in PowerPoint prints); a viewer or printer scales it to the paper; `scale` controls raster density only. `svgToPdf` has two modes: `"vector"` (the default, see below) and `"raster"` (each slide an image, the output of earlier releases): pass `{ mode: "raster" }` for the image-only compatibility output.
+
+### Vector PDF with selectable text
+
+`svgToPdf(svgs, { mode: "vector" })` converts the same SVG the preview draws, without a second layout pass: every line, position and width comes from the SVG.
+
+- Shapes, lines, polylines, paths and rounded rectangles are PDF paths; linear and radial gradients are PDF shadings and hatch/tile `<pattern>`s are tiling patterns; `clip-path`, stroke dashes, group `opacity` (a transparency-group form) and per-element opacity are native. Pictures are image XObjects (PNG with alpha as an SMask, unoriented JPEG passed through, WebP and oriented JPEG decoded as in raster mode; identical pictures are stored once).
+- Text is real text: TrueType subsets (the font program, a `ToUnicode` map and a `CIDToGIDMap`) of the same font files the PNG preview draws with, positioned glyph by glyph (kerning, ligatures, combining marks and mixed scripts as fontkit shapes them), with the SVG's `textLength` and `text-anchor`, underline and strike-through. The Unicode bidirectional algorithm orders right-to-left and mixed-direction lines. Text is selectable, searchable and copies as the authored text. The encoding is the one Chromium writes, so PDFium (Chrome, Edge), poppler and pdf.js read it back the way they read a Chrome-printed page: runs are drawn in visual order, right-to-left runs are marked `/ReversedChars`, and a glyph or cluster the glyph map cannot give (an Arabic ligature or mirrored bracket, a reordered Indic or Khmer syllable, a no-break space) carries its logical text as `/ActualText`, one span per glyph or cluster. A mark the font split off a letter (Arabic dots) is drawn as a filled outline, so no extractor sees an extra character. There is no hidden text layer and no outline-only text. Known reader limits, shared with Chrome's own PDFs: PDFium duplicates some Thai and Burmese marks, PDFium reorders the runs of a mixed-direction line, and pdf.js ignores `/ActualText` (it reports reordered Indic and Khmer clusters in drawing order).
+- Fonts: only the bundled pack (unless `useBundledFonts: false`), `fontFiles`, `fontDirs` and the SVG's own `@font-face` data are used; `loadSystemFonts: true` is rejected in vector mode because system fonts could be proprietary. A face whose OS/2 `fsType` forbids embedding is never embedded (a diagnostic says so); one that forbids subsetting is embedded whole. A requested family that has no face is drawn with the family the PNG preview draws (`defaultFontFamily`, `sansSerifFamily`, `monospaceFamily`, `serifFamily`) and reported.
+- Document metadata: `metadata: { title, author, subject, keywords, language, creator, creationDate }`. The language defaults to the first SVG's `lang`. No date is written unless you supply one, there is no random data, and the file identifier is a hash of the content, so identical input gives identical bytes on every machine.
+- Accessibility basics (not a conformance claim): the catalog carries `/Lang`, `/MarkInfo`, `/DisplayDocTitle` (with a title) and XMP metadata; with `tagged` (default) the structure tree lists, per slide in source order, headings (the `.title` placeholder), paragraphs, figures with their `aria-label` as `/Alt` and link elements bound to their link annotations, and decoration (backgrounds, rules, bullets) is marked as an artifact. Not done: PDF/UA or PDF/A claims, list and table structure, per-span languages; text inside a translucent group is not in the structure tree.
+- Links: `<a href>` with an http, https, mailto or tel target becomes a link annotation on each run of its text (other schemes are refused with a diagnostic).
+- Arbitrary SVG is accepted, not only the renderer's: CSS named colours, `hsl()`, `rgb()`, `style=` attributes, `<style>` rules with type, class and id selectors, percentage geometry, `<symbol>` through `<use>`, nested `<svg>`, `<switch>`, gradient and pattern fills on text, `clip-rule` are drawn; features that are not drawn (`rotate`, `dominant-baseline`, `baseline-shift`, `text-transform`, `font-variant`, `paint-order`, `mix-blend-mode`, `writing-mode`, markers, `spreadMethod` reflect/repeat, `textPath`, CSS combinators) are reported as `pdf-unsupported-feature`, `pdf-unsupported-paint` or `pdf-unsupported-css`, and a character no supplied font has is reported as `pdf-glyph-missing`; with `strict: true` each of these throws. Input is bounded: at most 50,000 elements per page (a `<use>` expansion counts every copy; `pdf-expansion-limit`), group nesting of 256, XML nesting of 1,000, and 40 megapixels per picture.
+- Effects with no PDF form (SVG `filter`, `mask`, nested SVG pictures) rasterize that one element, at `rasterFallbackScale` (default 2), and say so through `onDiagnostic` (`pdf-raster-fallback`, with the `data-opf-path` of the element). With `strict: true` the export throws instead. A vector export never turns a whole slide into an image silently.
+
+`onDiagnostic` also reports each embedded face (`pdf-font-embedded`: family, weight, glyph count, size, subset or full, `fsType`, license text), font substitution and per-character fallback. Output is byte-identical across runs and operating systems for the same SVG, font files and options.
+
+```js
+const pdf = await svgToPdf(svgs, {
+  fontFiles: fonts.fontFiles, useBundledFonts: false,
+  metadata: { title: "Quarterly review", author: "Finance", language: "en-GB" },
+  onDiagnostic: (d) => d.code === "pdf-raster-fallback" && console.warn(d.path, d.reason),
+});
+```
+
+The default changed from raster to vector in the release that added this section; callers that need the previous output pass `mode: "raster"`. Vector mode ignores `scale` and `dpi`. The page is painted white by default, as raster mode composites on white; `background: "none"` leaves it unpainted and any other colour paints that.
+
+## PNG and PDF in a browser
+
+`@openpresentation/opf-render/export-browser` exports `svgToPdf(svgs, options)` and `svgToPng(svg, options)` for a page. They take the SVG the preview draws and need no Node module, no network and no system font (a bundle of this entry contains no sharp, resvg, fs or crypto, and the vector converter's SHA-256 is plain JavaScript).
+
+- **Vector PDF** (default) is the same converter the Node export uses (selectable real text in embedded font subsets, paths, gradients, patterns, clips, opacity, links, tagged structure, byte-identical output for the same SVG). Fonts come from the SVG's own `@font-face` data (pass `embeddedFonts` to `renderSvg`, for example `registry.selectEmbeddedFonts(() => true)` marked `embed: "used"` so each slide embeds only the faces it draws) or from `fontData: [{ data, family? }]`; `useBundledFonts`, `fontFiles` and `fontDirs` do not exist here and `loadSystemFonts: true` is rejected. A face the registry never loaded is never embedded.
+- **Pictures** are decoded by the browser (PNG, JPEG, WebP, GIF through `createImageBitmap`, EXIF orientation applied); an upright JPEG is passed through compressed, as in Node. An effect with no PDF form (filter, mask, a nested SVG picture) rasterizes only that element on a canvas and reports `pdf-raster-fallback`.
+- **Raster PDF** (`mode: "raster"`, `scale` default 2) draws each slide on a canvas as an image.
+- **PNG** is drawn by the browser's SVG renderer on a canvas (`scale`, `background`, up to 40 megapixels). With the fonts embedded in the SVG it agrees with the Node (resvg) PNG to anti-aliasing (mean channel error 0.43 of 255 on a text slide).
+- `signal` (an `AbortSignal`, checked between pages) and `onProgress({ page, pages })` serve large decks; the same two options also work in the Node `svgToPdf`. The browser export yields to the page between slides.
+
+Verified in Chromium by `test/export-browser.mjs` (`npm run test:export-browser`), which also checks the text pdf.js extracts, the eight JPEG orientations, offline operation and determinism. Safari and Firefox are not exercised by this repository's CI.
+Complex scripts in raster output: resvg draws a HarfBuzz cluster with the advance of its widest glyph, so Indic, Thai, Lao, Khmer and Myanmar text lost the advance of vowel signs and ran together, and it ignores the SVG `lang` (Korean spacing). The raster path therefore rewrites its private copy of such text cluster by cluster at fontkit's positions (`src/raster-text.js`): Devanagari, Gujarati, Oriya, Tamil, Kannada and Sinhala as fontkit glyph outlines, the other scripts and Korean as single clusters resvg shapes in isolation. The emitted SVG is unchanged, text in other scripts is rasterized exactly as before, and `test/script-corpora-raster.mjs` holds every script to a HarfBuzz outline reference (the fixture's `rasterLimits` records what still differs: the KOR punctuation forms).
 
 ## Browser preview and fonts
 
@@ -122,6 +161,68 @@ container.innerHTML = renderSvg(presentation, {
 ```
 
 Each entry contains `url` or `data: Uint8Array`, with optional `family`, `weight`, `italic` and `license`. The loader registers browser FontFaces using the same bytes used for measurement. It fetches only URLs supplied by the host, supports an AbortSignal and custom fetch, and awaits font loading. Use pinned static faces and retain their licenses. For standalone SVG export also pass `embeddedFonts: fonts.embeddedFonts`; embedding is unnecessary for each live draft after browser fonts are loaded.
+
+## Player and `<opf-deck>` (RR-28)
+
+A slideshow player and an embeddable web component, both built on `renderSvg`: the slide a page shows is the slide the preview, the editor and the PDF show, with no second layout engine. They are plain ES modules, typed, framework-free and tree-shakeable, and importing them touches no DOM, so they are safe in Next.js and other server renderers.
+
+```html
+<script type="module">
+  import '@openpresentation/opf-render/element/define';   // registers <opf-deck>
+</script>
+<opf-deck src="/deck.opf.json" fonts="/opf-fonts/" thumbnails present></opf-deck>
+```
+
+```js
+// A framework page: register on the client, when you choose.
+import { defineOpfDeck } from '@openpresentation/opf-render/element';
+useEffect(() => { defineOpfDeck(); }, []);
+// ...and render <opf-deck src="/deck.opf.json" fonts="/opf-fonts/" />.
+```
+
+Entry points (package `exports`): `/element` (`defineOpfDeck`, `getOpfDeckElement`, `renderDeckHtml`, `loadPreviewFonts`), `/element/define` (importing it registers the tag; the only file with a side effect), `/player` (`present`), `/preview-fonts` (the font root layout and `loadPreviewFonts`) and `/preview-fonts-node` (`copyPreviewFonts`, also the `opf-preview-fonts` command). The element loads the player on first use, so a page that only embeds decks does not carry slideshow code.
+
+### Fonts: one self-hosted directory
+
+Layout is estimated and text uses the visitor's system sans-serif until you give the element a font root, a directory you serve from your own origin. Nothing is ever requested from a font CDN, and the only requests an `<opf-deck>` makes are its `src` and the font files below.
+
+```sh
+npx opf-preview-fonts public/opf-fonts                  # base and vendored faces (about 34 MiB), every SHA-256 verified
+npx opf-preview-fonts public/opf-fonts --scripts Jpan,Arab   # plus Noto script faces (large; `all` for every script)
+```
+
+```
+<root>/base/<package>/<file>       the eager Office and base faces (Roboto Regular loads at startup, the rest on demand)
+<root>/lazy/fonts/<family>/<file>  the vendored faces (Intos for the default Aptos scheme, the open families)
+<root>/scripts/<package>/<file>    the Noto script faces
+<root>/LICENSES.txt                every license notice
+```
+
+It is the layout the editor playground and the OpenPresentation sites serve, and `fonts="/opf-fonts/"` (or `fontRegistry`, a registry the page already has) loads faces on demand like the renderer's browser host: face level (a plain Aptos deck fetches Roboto Regular, Intos Display Bold and Intos Regular, about 1.5 MB), hash-verified, and one registry per root on a page. If the font root cannot be read the deck still draws, with estimated layout, and the element fires a non-fatal `error` event. A face that is not in the root (a script you did not copy) falls back to a system font.
+
+### `<opf-deck>`
+
+Attributes: `src` (OPF JSON; the other request the element makes), `slide` (1-based; counts the slides that play), `fonts`, `thumbnails` (a strip of slide thumbnails), `controls="none"`, `present` (a Present button), `include-hidden`, `label`, `keyboard="off"`. Instead of `src` set the `document` property (an object or JSON text), or put the document in a child `<script type="application/opf+json">`. Properties and methods: `document`, `slide`, `total`, `fontRegistry`, `renderOptions` (extra `renderSvg` options such as `catalogs` and `imageResolver`), `currentSlide` (`{ slide, total, index, id, title, notes, section }`; `notes` is plain text), `ready`, `next()`, `previous()`, `first()`, `last()`, `goto(n)`, `reload()` and `present(options)`.
+
+Events: `ready`, `slidechange` (the same detail as `currentSlide`; bubbles and is composed), `error` (`{ code, message, fatal }`, not bubbling), `presentstart` and `presentend`. Style it with custom properties (`--opf-deck-fg`, `--opf-deck-border`, `--opf-deck-radius`, `--opf-deck-focus`, `--opf-deck-accent`, `--opf-deck-stage`) and the parts `deck`, `viewport`, `slide`, `bar`, `button`, `previous`, `next`, `present`, `counter`, `thumbnails` and `thumbnail`.
+
+Hidden slides (`hidden: true`) are skipped everywhere, so the counter, the `slide` attribute and the player's number-then-Enter all count the sequence that plays; `include-hidden` plays them all. Navigation: the buttons, ArrowLeft, ArrowRight, Page Up, Page Down, Home and End while the slide has focus (Up, Down and Space are left to the page), a horizontal swipe on touch, and the thumbnails. A deck whose `language` is right to left (and a page that sets `dir` or CSS `direction`) turns the controls and the Left and Right keys around.
+
+Accessibility: the element is a labelled region (the deck name) holding a focusable group named `Slide 3 of 8: Revenue grew`; slide text is live SVG text in the order the renderer paints it (title, then content, then furniture), not an image, so a screen reader reads it; slide changes made by keyboard or thumbnail are announced through a polite live region; thumbnails are a list of buttons (one tab stop, arrow keys inside, `aria-current`) whose drawings are hidden from assistive technology; the buttons keep their focus ring and `forced-colors` support; and animation is limited to a hover colour that `prefers-reduced-motion: reduce` removes. The test suite runs axe-core (WCAG 2.0 to 2.2 A and AA plus best practice) over the element, the player and the speaker view with no violations. There are no transitions or builds (deferred, opf#250).
+
+### Server markup
+
+`renderDeckHtml(deck, options)` returns the tag with the deck's slides as inline SVG inside it. A visitor without JavaScript, a crawler or a reader sees the slides; when the element upgrades its shadow DOM replaces them. `slides: 'first'` (default: the first slide and a list of titles), `'all'` or slide numbers; `embed: true` adds the document as an `application/opf+json` child so the upgrade needs no request (it includes hidden slides and notes, as the `src` file does); `renderOptions` takes a `textMeasurement` for exact widths. In Next.js, render the string from a server component with `dangerouslySetInnerHTML` and call `defineOpfDeck()` from a client component. A strict `style-src` Content-Security-Policy needs `style-src-attr 'unsafe-inline'` for the renderer's `style="white-space:pre"` attributes; the element's own styles use constructable stylesheets.
+
+### The slideshow
+
+`present(source, options)` takes an OPF document, its URL or an `<opf-deck>` element and covers the page with a full-screen player (call it from a click or key handler; full screen and the speaker view need a user gesture). It resolves with a `PlayerSession` (`slide`, `total`, `next()`, `previous()`, `first()`, `last()`, `goto(n)`, `blank('black' | 'white' | 'none')`, `openPresenterView()`, `close()`; events `slidechange`, `blank`, `presenterview`, `close`). One show per document: a second call returns the running one.
+
+Keys: Right, Down, Page Down, Space, Enter and `N` are next; Left, Up, Page Up, Backspace, Shift+Space and `P` are previous; Home and End; a slide number then Enter (Escape clears it); `B` and `W` toggle a black or white screen (any navigation key brings the slide back first); `S` opens the speaker view; `F` toggles full screen; Escape leaves (leaving full screen any other way ends the show too). Click or tap advances (the left third goes back) and a horizontal swipe navigates. The player is a modal dialog: the rest of the page is inert, focus stays inside it and returns to where it was when the show ends, and an element that started it follows the show and fires `slidechange`.
+
+The speaker view opens in a second window (`S`, the button, or `presenterView: true`): the current and next slide (the last slide says so), the speaker notes, the section, a timer (against the deck's `duration` in minutes, with pause and reset) and the clock, previous, next and blank buttons, the same keys, and a notes size control. Notes are the OPF `notes` string and are shown as plain text only (rich notes are deferred, opf#251). The windows follow each other over a `BroadcastChannel` named from the deck, so any number of windows of one deck on one origin stay in step (a logical clock settles two changes that cross), and `present(deck, { role: 'presenter' })` makes a second tab or window the speaker view. Pass `channel` to name the channel yourself or `false` for none. The audience window and the popup are driven by this page, so closing or navigating the page ends both.
+
+Not in v1: transitions and builds, links between slides, rich notes, translated interface strings (the controls are English) and a Window Management (multi-screen) placement of the two windows.
 
 ## Open font-scheme families (FF-31)
 
@@ -162,7 +263,7 @@ Embedding: open faces are flagged `embed: "used"`. `registry.embeddedFonts` stay
 
 Previews itemize text by Unicode script. Each run uses the OOXML script slot its script belongs to (`latin`, `eastAsian` or `complexScript`), as resolved by core `resolveScriptFonts` from the document's language and font scheme. Latin, Greek and Cyrillic text stays in the design font. The text's role picks the major (heading) or minor (body) slots: title, subtitle and tag text is heading, as in the exporter's heading shapes, and all other text is body. Licensed script fonts are never bundled. With a measured registry, a proprietary family (for example Meiryo, Microsoft YaHei, Malgun Gothic, Arabic Typesetting, David, Mangal or Angsana New) is previewed with its designated open replacement from `SCRIPT_FONT_REPLACEMENTS`, and each replacement is recorded in `registry.substitutions` as `visual`. The PPTX keeps the chosen family. If the slot's face has no glyph for a run, the run falls back by coverage to the designated OFL Noto family for its script.
 
-The replacement faces are an optional, hash-pinned font pack: 63 static regular and bold faces from 31 `@expo-google-fonts/noto-*` packages (SIL OFL 1.1). The pinned faces total 66.9 MiB, of which 55.9 MiB is CJK. Installing all 31 packages takes about 325.8 MiB, because they also ship weights the manifest does not pin. Thirty of the 31 are exact optional peer dependencies, so the renderer install does not grow. The exception is `@expo-google-fonts/noto-sans` (Latin, Cyrillic and Greek; regular, bold, italic and bold italic, about 14 MiB installed), which is a pinned runtime dependency because it is the default glyph-fallback face: `loadOfficeFontRegistry` and `prepareNodeFonts({pack: 'office'})` always load it, marked fallback-only (it serves glyph fallback and requests for Noto Sans, never stands in for another family, and is embedded in a standalone SVG only when its text draws it, like the open families (embed "used"); raster output reads it from `fontFiles`). Install only the other scripts you need, then load them:
+The replacement faces are an optional, hash-pinned font pack: 67 static regular and bold faces from 34 `@expo-google-fonts/noto-*` packages (SIL OFL 1.1): the 31 script packages (63 faces; the pinned faces total 66.9 MiB, of which 55.9 MiB is CJK; installing all 31 takes about 325.8 MiB, because they also ship weights the manifest does not pin) plus the three symbol packages under `Zsym` (4 faces, 2.6 MiB; FF-45, see below). Thirty-three of the 34 are exact optional peer dependencies, so the renderer install does not grow. The exception is `@expo-google-fonts/noto-sans` (Latin, Cyrillic and Greek; regular, bold, italic and bold italic, about 14 MiB installed), which is a pinned runtime dependency because it is the default glyph-fallback face: `loadOfficeFontRegistry` and `prepareNodeFonts({pack: 'office'})` always load it, marked fallback-only (it serves glyph fallback and requests for Noto Sans, never stands in for another family, and is embedded in a standalone SVG only when its text draws it, like the open families (embed "used"); raster output reads it from `fontFiles`). Install only the other scripts you need, then load them:
 
 ```js
 import { prepareNodeFonts } from '@openpresentation/opf-render/fonts-node';
@@ -239,6 +340,10 @@ renderSvgDeck(template, { variables: { client: 'Globex', revenue: 1250000 } });
 
 A template previews with each unfilled variable's `example` and reports `variable-example-used` through `onDiagnostic`; a variable with no example keeps its `{{id}}` text. A normal deck with an unfilled required variable throws `OPFRenderError` with code `unfilled-variables`, and a value of the wrong kind throws `invalid-variables`. `resolvePresentation(...).presentation` is the concrete deck. `variables: false` draws the document as authored, with tokens and `var:` references visible (the editor canvas's view of a template, so inline edits never overwrite a token). Decks without content variables are untouched. Needs the core release that ships `resolveVariables`; with an older core the option is ignored. See [templates and variables](https://github.com/OpenPresentation/opf/blob/main/docs/templates-and-variables.md).
 
+### Symbol-encoded families: Symbol, Wingdings, Webdings (FF-45)
+
+Symbol, Wingdings, Wingdings 2, Wingdings 3 and Webdings keep their glyphs at the 224 codes 0x20..0xFF of a Microsoft Symbol cmap, not at Unicode code points, and none of them may be bundled. A run or design font in one of them no longer fails with `font-encoding-required`: each character is normalised to its code (the private-use character U+F0xx that Office writes for Insert > Symbol and `a:sym` runs, or the Windows-1252 character of the code, so "l" and U+F06C are the same Wingdings bullet) and mapped through core's reversible, version-specific tables (`@openpresentation/opf` `spec/reference/symbol-font-encodings.json`, snapshot `src/symbol-encodings.js`; `mapSymbolText('Wingdings', 'l')` gives U+26AB) to the Unicode equivalent, which the first loaded face of the family's chain draws: `SYMBOL_PREVIEW_FACES` is Noto Sans Symbols 2, Noto Sans Symbols, Noto Sans Math, Noto Sans for the dingbat fonts and Noto Sans (Greek letters, digits, punctuation) first for Symbol. The three symbol packages are optional peers of the script pack under the key `Zsym` (`scripts: ['Zsym']`; `scripts: 'auto'` selects it when a run, `design.fonts` or a font scheme names one of the families; `registry.ensureScripts(presentation)` in a browser): `@expo-google-fonts/noto-sans-symbols-2`, `noto-sans-symbols` and `noto-sans-math`, OFL-1.1, together about 1.2 MiB. Every code the tables map (1059 of 1120: Symbol 189, Wingdings 222, Wingdings 2 217, Wingdings 3 208, Webdings 223) draws a real glyph when the pack is loaded; the 61 codes without a Unicode equivalent (the Wingdings 0xFF Windows logo, unassigned codes) draw the placeholder U+25A1. Each glyph is one positioned tspan at the advance of the verified Windows font (Wingdings 5.01, Wingdings 2 and 3 1.55, Webdings 5.01, Symbol 5.01), in measurement and drawing alike, so line breaks and bullet gaps follow PowerPoint; the open glyph keeps its shape and is compressed to its code's advance only when wider, never stretched. Characters that are not codes (a CJK letter in a Wingdings run) draw as themselves. Without the pack, Symbol's Greek letters, digits and punctuation draw with the office pack's Noto Sans, the other codes draw U+FFFD, and the `font-glyph-fallback` diagnostic (`codes`, `placeholder`) names the pack; a registry with no chain face and no `fallbackFamily` throws `font-encoding-required`, naming it too. `resolveFont` and `resolveStyle` report `symbolEncoding` with the substitute face, so exporters keep writing the chosen family and the original characters, and the PPTX names Wingdings with its codes. The symbol faces also end the glyph fallback chain. Appearance is the open face's, not Microsoft's; native PowerPoint verification of the exported runs is separate (FF-46).
+
 ## Runtime Policy
 
 The package runtime must stay local and deterministic:
@@ -254,11 +359,12 @@ Dependency policy:
 
 - `@openpresentation/opf` is the compatibility source for schemas, validation, and bundled catalogs.
 - `@resvg/resvg-js` is used only for local SVG rasterization in Node; it makes no network calls and does not require a browser.
-- `pdf-lib` assembles PDF bytes locally. Metadata timestamps are disabled so repeated PDF output is byte-stable for the same SVG input and options.
+- `pdf-lib` assembles raster-mode PDF bytes locally. Metadata timestamps are disabled so repeated PDF output is byte-stable for the same SVG input and options.
+- Vector PDF output is written by a small deterministic PDF writer in this package, with `pako` for Flate compression (pure JavaScript, so independent of the platform zlib build), `fontkit` for shaping and font metrics and `bidi-js` for the Unicode bidirectional algorithm. No hosted service, network call or system font is involved.
 - Bundled OFL Roboto and Roboto Mono TTF files provide the default deterministic font fallback.
-- `svgToPng` and `svgToPdf` disable system-font loading by default. Hosts that require branded fonts should pass explicit `fontFiles` or `fontDirs`; `loadSystemFonts: true` is an opt-in escape hatch and can make output environment-dependent.
+- `svgToPng` and `svgToPdf` disable system-font loading by default. Hosts that require branded fonts should pass explicit `fontFiles` or `fontDirs`; `loadSystemFonts: true` is an opt-in escape hatch for PNG and raster-mode PDF output and can make it environment-dependent. Vector-mode PDF rejects it (`pdf-system-fonts-unsupported`): it embeds only fonts you supply, so a system font can never be embedded by accident.
 
-Browser support boundary: `renderSvg`, `renderSvgDeck`, and `resolvePresentation` are browser-importable pure JavaScript APIs. `svgToPng` and `svgToPdf` are Node APIs in this package version because they depend on the Node build of resvg.
+Browser support boundary: `renderSvg`, `renderSvgDeck`, and `resolvePresentation` are browser-importable pure JavaScript APIs. The root `svgToPng` and `svgToPdf` are Node APIs because they depend on the Node builds of resvg and sharp. For a page, `@openpresentation/opf-render/export-browser` has the same two names (see below).
 
 Chartex chart previews (FF-22b) draw the constructs opf-pptx exports as Office 2016 chartex parts: `treemap` (squarified tiles of the first series, one colour per tile, category labels), `histogram` (a lone value column binned like PowerPoint with Scott's rule count and right-closed bins, or one column per category), `pareto` (columns sorted descending with the cumulative-percentage line on a 0-100% axis), `box-and-whisker` (rows grouped by category, one box per series, exclusive quartiles, whiskers within 1.5 IQR, mean markers, outlier points), `waterfall` (floating bars from the running total, increases and decreases in the first two palette colours, connector lines) and `funnel` (centred bars with value labels). `world` is an honest non-geographic preview: one tile per region shaded by value with its name and value. No geography data is shipped; PowerPoint draws the real map from Bing geodata it fetches itself, so the preview and the native map agree on labels, values and the series colour, not on shapes. Each chartex kind also accepts a lone value column (row numbers as categories; histogram and pareto bin the values). Every mark and label keeps a `data-opf-path` (bins and boxes trace to their value column).
 
