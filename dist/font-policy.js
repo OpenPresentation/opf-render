@@ -23,7 +23,7 @@ const SNAPSHOT=freeze({
  },
  "source": {
   "path": "spec/reference/font-policy.json",
-  "sha256": "e5b6437091d897448a002814e17160e0026b1f28c3c089d712c073e1bf9a00d6"
+  "sha256": "24a93401a168be4cb236b4b1afc06e6fd610a28f445381056682e56fb8d952a0"
  },
  "families": [
   {
