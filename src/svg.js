@@ -1009,18 +1009,25 @@ function renderTextPayload(item, box, bound, options) {
 
 function renderList(item, box, bound, options) {
   const scale=Math.min(bound.design.dimensions.width,bound.design.dimensions.height)/720;
-  const fit=item.text?.listEntries?item.text:fitList(item.value,box,25*scale,((bound.composition??bound.geometry.composition).minFontSize??16)*scale,{style:{fontFamily:bound.design.fonts.body,fontWeight:400,path:item.path},textMeasurement:options.textMeasurement});
+  const fit=item.text?.listEntries?item.text:fitList(item.value,box,25*scale,((bound.composition??bound.geometry.composition).minFontSize??16)*scale,{style:{fontFamily:bound.design.fonts.body,fontWeight:400,path:item.path},textMeasurement:options.textMeasurement,...(item.payload?.numbering!==undefined?{numbering:item.payload.numbering}:{})});
   const children=[];
   // design.listBullet=image: core attaches the icon logo as item.bulletImage and its box (entry.bulletBox: 0.65 em, as PowerPoint draws a:buBlip). An icon that cannot be drawn keeps the glyph marker.
   const bullet=item.bulletImage?resolveBulletImage(item.bulletImage,bound,options):undefined;
   for(const entry of fit.listEntries){
     if(bullet){const box=entry.bulletBox??{x:entry.marker.x,y:entry.marker.y-entry.marker.fontSize*.65,width:entry.marker.fontSize*.65,height:entry.marker.fontSize*.65};children.push(tag('image',{x:stableNumber(box.x),y:stableNumber(box.y),width:stableNumber(box.width),height:stableNumber(box.height),href:bullet,preserveAspectRatio:'xMidYMid meet','aria-hidden':'true',...(options.trace?{'data-opf-generated':'true'}:{})}));}
-    else children.push(tag('text',{x:stableNumber(entry.marker.x),y:stableNumber(entry.marker.y),'font-family':fontStack(entry.marker.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(entry.marker.fontSize),fill:bound.design.colors.text,'aria-hidden':'true',...(entry.marker.anchor==='end'?{'text-anchor':'end'}:{})},escapeText(entry.marker.text)));
+    else children.push(tag('text',{x:stableNumber(entry.marker.x),y:stableNumber(entry.marker.y),'font-family':fontStack(entry.marker.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(entry.marker.fontSize),...numberMarkerStyle(entry.marker),fill:bound.design.colors.text,'aria-hidden':'true',...(entry.marker.anchor==='end'?{'text-anchor':'end'}:{})},escapeText(entry.marker.text)));
     const config={path:entry.textPath,align:'left',fill:bound.design.colors.text,rich:Array.isArray(entry.value),options};
     children.push(renderRichLines(typeof entry.value==='string'?[entry.value]:entry.value,entry.text,entry.textBox,bound,config));
     if(entry.description)children.push(renderRichLines(typeof entry.descriptionValue==='string'?[entry.descriptionValue]:entry.descriptionValue,entry.description,entry.descriptionBox,bound,{...config,path:entry.descriptionPath,rich:Array.isArray(entry.descriptionValue),fill:bound.design.colors.mutedText}));
   }
   return tag('g',{...traceAttrs(options,item.path),...(fit.overflow?{'data-opf-overflow':'true'}:{})},children.join('\n'));
+}
+
+// A numbered list's marker (numbering) draws the number with the weight and slant core measured it at: PowerPoint draws an
+// auto-number in the first run's character formatting. Bullet markers carry no such attributes.
+function numberMarkerStyle(marker) {
+  if (!marker.number) return {};
+  return {'font-weight':marker.style.fontWeight===400?undefined:marker.style.fontWeight,'font-style':marker.style.italic?'italic':undefined};
 }
 
 // Follows asset: references and the host imageResolver to the drawable source of an image value.
@@ -1046,9 +1053,12 @@ function resolveImageSource(item, bound, options) {
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
-// The base64 data URI of a drawable SVG, else null. Drawable: a data URI whose type is image/svg+xml, whose root is an
-// <svg> in the SVG namespace with an intrinsic size (width and height, or a viewBox) - the same sizes core reads for
-// furniture images - so the export (opf-pptx writes it as a native SVG picture over a PNG fallback) and the preview agree.
+// The base64 data URI of a drawable SVG, else null. Drawable: a data URI whose type is image/svg+xml, whose text is
+// well-formed XML (and safe: no external or markup entity) with an <svg> root in the SVG namespace and an intrinsic size
+// (width and height, or a viewBox) - the same checks opf-pptx makes before it writes a native SVG picture over a PNG
+// fallback - so a document the export refuses (malformed, unsafe, no size) is the placeholder in the preview too, and the
+// two agree. The scripts, foreign objects and external references a valid document may carry are never run or loaded: an
+// SVG used as an image reaches nothing outside itself.
 function svgImageSource(uri) {
   const header = /^data:([^;,]*)((?:;[^;,]*)*),/i.exec(uri);
   if (!header || !/^image\/svg\+xml$/i.test(header[1])) return null;
@@ -1057,19 +1067,123 @@ function svgImageSource(uri) {
     const payload = uri.slice(header[0].length);
     bytes = /;base64/i.test(header[2]) ? Uint8Array.from(atob(payload.replace(/\s+/g, "")), char => char.charCodeAt(0)) : new TextEncoder().encode(decodeURIComponent(payload));
   } catch { return null; }
+  if (bytes.length > SVG_IMAGE_MAX_BYTES) return null;
   let text;
-  try { text = new TextDecoder("utf-8", { fatal: true }).decode(bytes.subarray(bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf ? 3 : 0)); } catch { return null; }
-  const root = /<svg\b((?:[^>"']|"[^"]*"|'[^']*')*)>/.exec(text.replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>|<!DOCTYPE[^>[]*(?:\[[\s\S]*?\])?\s*>/gi, ""));
-  if (!root) return null;
-  const attribute = name => new RegExp(`\\s${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`).exec(root[1])?.slice(1).find(value => value !== undefined);
-  if (attribute("xmlns") !== SVG_NAMESPACE) return null;
-  const length = value => { const match = value && /^\s*([0-9]*\.?[0-9]+)\s*(px|pt|pc|mm|cm|in|q)?\s*$/i.exec(value); return match ? Number(match[1]) : undefined; };
-  const box = attribute("viewBox")?.trim().split(/[\s,]+/).map(Number);
-  const view = box && box.length === 4 && box.every(Number.isFinite) && box[2] > 0 && box[3] > 0;
-  if (!((length(attribute("width")) && length(attribute("height"))) || view)) return null;
+  try { text = decodeSvgText(bytes); } catch { return null; }
+  const root = svgRootAttributes(text);
+  if (!root || !svgHasIntrinsicSize(root)) return null;
   let binary = "";
   for (let index = 0; index < bytes.length; index += 0x8000) binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
   return `data:image/svg+xml;base64,${btoa(binary)}`;
+}
+
+const SVG_IMAGE_MAX_BYTES = 8 * 1024 * 1024;
+
+// UTF-8 (with or without a BOM), UTF-16 with a BOM, or the encoding the XML declaration names; throws on bytes the encoding cannot decode.
+function decodeSvgText(bytes) {
+  let start = 0, label = "utf-8";
+  if (bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) start = 3;
+  else if (bytes[0] === 0xff && bytes[1] === 0xfe) { label = "utf-16le"; start = 2; }
+  else if (bytes[0] === 0xfe && bytes[1] === 0xff) { label = "utf-16be"; start = 2; }
+  else {
+    const declared = /^\s*<\?xml\b[^>]*\bencoding\s*=\s*["']([A-Za-z0-9._-]+)["']/.exec(String.fromCharCode(...bytes.subarray(0, 200)))?.[1];
+    if (declared && !/^utf-?8$/i.test(declared)) label = declared;
+  }
+  return new TextDecoder(label, { fatal: true }).decode(bytes.subarray(start));
+}
+
+const SVG_START_TAG = /<([A-Za-z_][\w.-]*(?::[A-Za-z_][\w.-]*)?)((?:\s+[^\s=\/>"'<]+\s*=\s*(?:"[^"<]*"|'[^'<]*'))*)\s*(\/?)>/y;
+const SVG_ATTRIBUTE = /\s+([^\s=\/>"'<]+)\s*=\s*(?:"([^"<]*)"|'([^'<]*)')/y;
+const SVG_END_TAG = /<\/([A-Za-z_][\w.-]*(?::[A-Za-z_][\w.-]*)?)\s*>/y;
+
+// The root element's attributes (references expanded) of a well-formed, safe SVG document in the SVG namespace, else null.
+// A small XML check, not a parser: tags nest and close, attributes are quoted and unique, the one root is <svg>, text sits
+// inside it, and every reference is one of the five predefined entities, a numeric reference or a plain-text entity the
+// DOCTYPE declares. An entity that is external or contains markup, or expansions beyond the size limit, refuse the document.
+function svgRootAttributes(text) {
+  const stack = [], entities = new Map();
+  let index = 0, rootDone = false, rootAttributes = null, expansion = 0;
+  const references = value => value.replace(/&([^;\s&<]*);?/g, (all, name) => {
+    if (!all.endsWith(";")) throw new Error("reference");
+    if (/^(?:amp|lt|gt|quot|apos|#\d{1,7}|#x[0-9a-fA-F]{1,6})$/.test(name)) return all;
+    if (!entities.has(name)) throw new Error("undeclared entity");
+    const expanded = entities.get(name);
+    if ((expansion += expanded.length) > SVG_IMAGE_MAX_BYTES) throw new Error("entity expansion");
+    return expanded;
+  });
+  try {
+    while (index < text.length) {
+      if (text[index] !== "<") {
+        const end = text.indexOf("<", index), chunk = text.slice(index, end < 0 ? text.length : end);
+        index += chunk.length;
+        if (!stack.length) { if (chunk.trim()) return null; }
+        else { if (chunk.includes("]]>")) return null; references(chunk); }
+        continue;
+      }
+      if (text.startsWith("<!--", index)) {
+        const end = text.indexOf("-->", index + 4);
+        if (end < 0) return null;
+        index = end + 3;
+      } else if (text.startsWith("<![CDATA[", index)) {
+        const end = text.indexOf("]]>", index + 9);
+        if (end < 0 || !stack.length) return null;
+        index = end + 3;
+      } else if (text.startsWith("<?", index)) {
+        const end = text.indexOf("?>", index + 2);
+        if (end < 0) return null;
+        index = end + 2;
+      } else if (text.startsWith("<!DOCTYPE", index)) {
+        if (rootDone || stack.length || rootAttributes) return null;
+        const match = /^<!DOCTYPE\s+[^\[>]*(?:\[([\s\S]*?)\]\s*)?>/.exec(text.slice(index));
+        if (!match) return null;
+        for (const declaration of (match[1] ?? "").matchAll(/<!ENTITY\b[^>]*>/g)) {
+          const entity = /^<!ENTITY\s+([A-Za-z_][\w.-]*)\s+(?:"([^"]*)"|'([^']*)')\s*>$/.exec(declaration[0]);
+          const value = entity?.[2] ?? entity?.[3];
+          if (!entity || value.includes("&") || value.includes("<")) return null;
+          entities.set(entity[1], value);
+        }
+        index += match[0].length;
+      } else if (text.startsWith("</", index)) {
+        SVG_END_TAG.lastIndex = index;
+        const match = SVG_END_TAG.exec(text);
+        if (!match || stack.pop() !== match[1]) return null;
+        index = SVG_END_TAG.lastIndex;
+        if (!stack.length) rootDone = true;
+      } else {
+        SVG_START_TAG.lastIndex = index;
+        const match = SVG_START_TAG.exec(text);
+        if (!match) return null;
+        index = SVG_START_TAG.lastIndex;
+        const [, qualified, source, selfClosing] = match;
+        const attributes = [], names = new Set();
+        SVG_ATTRIBUTE.lastIndex = 0;
+        for (let attribute; source && (attribute = SVG_ATTRIBUTE.exec(source));) {
+          if (names.has(attribute[1])) return null;
+          names.add(attribute[1]);
+          attributes.push([attribute[1], references(attribute[2] ?? attribute[3])]);
+        }
+        if (!stack.length) {
+          if (rootDone || rootAttributes) return null;
+          const colon = qualified.indexOf(":");
+          if (qualified.slice(colon + 1) !== "svg") return null;
+          const namespace = colon < 0 ? "xmlns" : `xmlns:${qualified.slice(0, colon)}`;
+          if (!attributes.some(([key, value]) => key === namespace && value === SVG_NAMESPACE)) return null;
+          rootAttributes = Object.fromEntries(attributes);
+        }
+        if (selfClosing) { if (!stack.length) rootDone = true; }
+        else stack.push(qualified);
+      }
+    }
+  } catch { return null; }
+  return stack.length || !rootAttributes ? null : rootAttributes;
+}
+
+// The root has an intrinsic size: width and height lengths, or a viewBox (the same rule core and opf-pptx use).
+function svgHasIntrinsicSize(attributes) {
+  const length = value => { const match = value && /^\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*(px|pt|pc|mm|cm|in|q)?\s*$/i.exec(value); return match && Number(match[1]) > 0 ? Number(match[1]) : undefined; };
+  const box = (attributes.viewBox ?? "").trim().split(/[\s,]+/).map(Number);
+  const view = box.length === 4 && box.every(Number.isFinite) && box[2] > 0 && box[3] > 0;
+  return Boolean((length(attributes.width) && length(attributes.height)) || view);
 }
 
 // The drawable data URI of a picture bullet, or undefined (after reporting unresolved-asset once) so the glyph marker stays.
