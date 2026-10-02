@@ -1,9 +1,12 @@
 import {prepareRasterImages} from './raster-images.js';
 import {OPFRenderError,packageName} from './svg.js';
 import {separateLigatures} from './font-compatibility.js';
+import {pinScriptClusters} from './raster-text.js';
 const DEFAULT_DIMENSIONS = { width: 1280, height: 720 };
 const DEFAULT_RASTER_SCALE = 1;
 const DEFAULT_RASTER_BACKGROUND = "#FFFFFF";
+// RR-12: PDF output is vector (selectable text, vector drawing) unless a caller asks for the raster-backed compatibility mode.
+const DEFAULT_PDF_MODE = "vector";
 let bundledFontFilesCache=null;
 
 export async function svgToPng(svg, options = {}) {
@@ -16,6 +19,11 @@ export async function svgToPdf(svgs, options = {}) {
   if (!pdfInputs.length) {
     throw new OPFRenderError("empty-pdf", "svgToPdf requires at least one SVG slide.");
   }
+  const mode = options.mode ?? DEFAULT_PDF_MODE;
+  if (mode !== "vector" && mode !== "raster") {
+    throw new OPFRenderError("invalid-conversion-option", 'mode must be "vector" or "raster".', { option: "mode", value: mode });
+  }
+  if (mode === "vector") return vectorPdf(pdfInputs, options);
 
   const { PDFDocument } = await loadPdfLib();
   const pdf = await PDFDocument.create({ updateMetadata: false });
@@ -39,6 +47,38 @@ export async function svgToPdf(svgs, options = {}) {
   return pdf.save({ addDefaultPage: false, useObjectStreams: false });
 }
 
+async function vectorPdf(inputs, options) {
+  if (options.loadSystemFonts === true) {
+    throw new OPFRenderError("pdf-system-fonts-unsupported", 'Vector PDF output embeds only the font files you supply: loadSystemFonts is not supported with mode "vector". Pass fontFiles/fontDirs, or use mode "raster".', { option: "loadSystemFonts" });
+  }
+  const scale = positiveNumber(options.rasterFallbackScale, "rasterFallbackScale", 2);
+  const fontFiles = [
+    ...(options.useBundledFonts === false ? [] : await bundledFontFiles()),
+    ...stringArray(options.fontFiles)
+  ];
+  const svgs = [];
+  for (const input of inputs) svgs.push(await prepareRasterImages(normalizeSvgInput(input)));
+  const {svgsToVectorPdf} = await import("./pdf-vector.js");
+  return svgsToVectorPdf(svgs, {
+    fontFiles,
+    fontDirs: stringArray(options.fontDirs),
+    defaultFontFamily: options.defaultFontFamily ?? "Roboto",
+    sansSerifFamily: options.sansSerifFamily ?? options.defaultFontFamily ?? "Roboto",
+    monospaceFamily: options.monospaceFamily ?? "Roboto Mono",
+    serifFamily: options.serifFamily,
+    background: options.background,
+    metadata: options.metadata,
+    tagged: options.tagged,
+    compress: options.compress,
+    strict: options.strict === true,
+    rasterFallbackScale: scale,
+    onDiagnostic: typeof options.onDiagnostic === "function" ? options.onDiagnostic : undefined,
+    producer: packageName,
+    ErrorClass: OPFRenderError,
+    rasterize: (svg, factor) => rasterizeSvg(svg, { ...options, scale: factor, background: "rgba(0, 0, 0, 0)" })
+  });
+}
+
 async function rasterizeSvg(svgInput, options) {
   const { Resvg } = await loadResvg();
   const scale = positiveNumber(options.scale, "scale", DEFAULT_RASTER_SCALE);
@@ -46,17 +86,18 @@ async function rasterizeSvg(svgInput, options) {
     ...(options.useBundledFonts === false ? [] : await bundledFontFiles()),
     ...stringArray(options.fontFiles)
   ];
+  const font = {
+    loadSystemFonts: options.loadSystemFonts === true,
+    fontFiles,
+    fontDirs: stringArray(options.fontDirs),
+    defaultFontFamily: options.defaultFontFamily ?? "Roboto",
+    sansSerifFamily: options.sansSerifFamily ?? options.defaultFontFamily ?? "Roboto",
+    monospaceFamily: options.monospaceFamily ?? "Roboto Mono"
+  };
   const renderOptions = {
     fitTo: { mode: "zoom", value: scale },
     background: options.background ?? DEFAULT_RASTER_BACKGROUND,
-    font: {
-      loadSystemFonts: options.loadSystemFonts === true,
-      fontFiles,
-      fontDirs: stringArray(options.fontDirs),
-      defaultFontFamily: options.defaultFontFamily ?? "Roboto",
-      sansSerifFamily: options.sansSerifFamily ?? options.defaultFontFamily ?? "Roboto",
-      monospaceFamily: options.monospaceFamily ?? "Roboto Mono"
-    },
+    font,
     logLevel: "off"
   };
 
@@ -64,12 +105,14 @@ async function rasterizeSvg(svgInput, options) {
 
   // An SVG used as an image draws its text with these fonts: resvg gives the nested document none.
   const nestedSvg = async text => {
-    const probe = new Resvg(text, { font: renderOptions.font, logLevel: "off" });
+    const pinned = await pinScriptClusters(text, font);
+    const probe = new Resvg(pinned, { font, logLevel: "off" });
     const zoom = Math.min(4, Math.max(1, 2048 / Math.max(probe.width, probe.height)));
-    return new Resvg(text, { ...renderOptions, fitTo: { mode: "zoom", value: zoom }, background: "rgba(0, 0, 0, 0)" }).render().asPng();
+    return new Resvg(pinned, { ...renderOptions, fitTo: { mode: "zoom", value: zoom }, background: "rgba(0, 0, 0, 0)" }).render().asPng();
   };
   // FF-31: resvg ignores the SVG's ligature properties, so separate the letters a Gelasio ligature would join.
-  const svg = separateLigatures(await prepareRasterImages(normalizeSvgInput(svgInput), { nestedSvg }));
+  // FF-44: resvg loses the advance of a vowel sign or space inside a complex-script cluster, so pin each cluster (raster-text.js).
+  const svg = await pinScriptClusters(separateLigatures(await prepareRasterImages(normalizeSvgInput(svgInput), { nestedSvg })), font);
 
   try {
     const image = new Resvg(svg, renderOptions).render();
