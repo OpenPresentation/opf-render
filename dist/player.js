@@ -488,7 +488,15 @@ export class PlayerSession extends EventTarget {
     this.enteredFullscreen = false;
     this.primary = undefined;
     this.audienceHost = undefined;
-    this.onFullscreen = () => { if (this.enteredFullscreen && !this.doc.fullscreenElement) this.close(); };
+    // Leaving full screen without a key of ours (Escape: the browser keeps that key to itself) ends the show. A window of our own
+    // taking focus, the speaker view, also leaves full screen in some browsers; that must not end it.
+    this.keepUntil = 0;
+    this.onFullscreen = () => {
+      if (!this.enteredFullscreen || this.doc.fullscreenElement) return;
+      this.enteredFullscreen = false;
+      if (this.win.performance.now() < this.keepUntil) return;
+      this.close();
+    };
     // Escape while the deck is still loading ends the show; once it plays the surface handles every key.
     this.onEarlyKey = (event) => { if (event.key === "Escape" && !this.primary) this.close(); };
     /** Settles when the first slide is drawn (or the start failed). */
@@ -550,6 +558,7 @@ export class PlayerSession extends EventTarget {
   openPresenterView() {
     if (this.closed || !this.primary) return null;
     if (this.presenterViewOpen) { this.presenter.win.focus(); return this.presenter.win; }
+    this.keepUntil = this.win.performance.now() + 3000;
     const win = this.win.open("", `opf-deck-speaker-${this.channelName || "show"}`, "popup,width=1180,height=760");
     if (!win) return null;
     const doc = win.document;

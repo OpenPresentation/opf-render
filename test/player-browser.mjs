@@ -460,6 +460,8 @@ try {
   await player.locator('.player').waitFor();
   const [popup2] = await Promise.all([page.waitForEvent('popup'), overlay('button[aria-label^="Open speaker view"]').click()]);
   await popup2.locator('.pv').waitFor();
+  await page.waitForTimeout(1200);
+  assert.equal(await player.locator('.player').count(), 1, 'opening the speaker view does not end the show, even if the browser leaves full screen for it');
   await overlay('button[aria-label^="Exit slideshow"]').click();
   await player.waitFor({state: 'detached'});
   await popup2.waitForEvent('close').catch(() => {});
