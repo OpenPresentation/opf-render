@@ -107,8 +107,8 @@ assert.equal(strict.registry.resolveFont({fontFamily: 'Calibri', fontWeight: 700
 assert.equal(strict.registry.resolveFont({fontFamily: 'Cambria', fontWeight: 400}).compatibility, 'visual');
 assert.equal(strict.registry.resolveFont({fontFamily: 'Georgia', fontWeight: 400}).compatibility, 'metric');
 assert.throws(() => strict.registry.resolveFont({fontFamily: 'Georgia', fontWeight: 500}), {code: 'font-unavailable'});
-// An open family that no pack ships yet (Liberation Sans: not bundled) says so; one the office pack ships (Montserrat, FF-31; Raleway and Playfair Display, FF-43) points at that pack when only the base pack is loaded.
-assert.throws(() => strict.registry.resolveFont({fontFamily: 'Liberation Sans', fontWeight: 400}), error => error.details.licenseClass === 'open' && /no pinned renderer pack ships it yet/.test(error.message));
+// An open family that no pack ships yet (Noto Emoji: not bundled; Liberation Sans now resolves to Arimo through the measured row of core #255/#261) says so; one the office pack ships (Montserrat, FF-31; Raleway and Playfair Display, FF-43) points at that pack when only the base pack is loaded.
+assert.throws(() => strict.registry.resolveFont({fontFamily: 'Noto Emoji', fontWeight: 400}), error => error.details.licenseClass === 'open' && /no pinned renderer pack ships it yet/.test(error.message));
 assert.equal(strict.registry.resolveFont({fontFamily: 'Montserrat', fontWeight: 400}).compatibility, 'exact');
 for (const family of ['Raleway', 'Playfair Display']) assert.equal(strict.registry.resolveFont({fontFamily: family, fontWeight: 700, italic: true}).compatibility, 'exact', family);
 const baseOnly = await prepareNodeFonts({pack: 'base'});
