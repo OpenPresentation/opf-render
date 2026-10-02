@@ -31,12 +31,12 @@
       "bytes": 7121
     },
     "gallery/business-functions/compliance-readiness-review.opf.json#5": {
-      "sha256": "cb66a2badec7bba49a195097c90e56750cd93235a97c11f8a35edae0128786a1",
+      "sha256": "3711aa20ad63a89740eaacad2aeccc7eb5d543d02b4142c84592f37ee6b15bd1",
       "bytes": 15181
     },
     "gallery/business-functions/compliance-readiness-review.opf.json#6": {
-      "sha256": "a76d2ce11494e8a844e3f44973d25a44559d70bc39fd7e6fdaf11b3db37c291f",
-      "bytes": 9994
+      "sha256": "ed01acb50138ae9abbdcde6c434f8afe4eed111271718233656c5ca3a3f7c647",
+      "bytes": 9990
     },
     "gallery/business-functions/compliance-readiness-review.opf.json#7": {
       "sha256": "f1ec833834adb95bda47b4ad9638595770e781765d850490fc2cd8651b22cf71",
@@ -47,8 +47,8 @@
       "bytes": 5451
     },
     "gallery/business-functions/compliance-readiness-review.opf.json#9": {
-      "sha256": "bad64bfe1bfbeb6e69ac1e87740d813ed5b4ef60307a4315ee53812f28630349",
-      "bytes": 10035
+      "sha256": "b14761f9c11bb25b80ebd01a7846c9b61a92c978ed55b46d5e3131a46ff44115",
+      "bytes": 10057
     },
     "gallery/business-functions/contract-cycle-time-brief.opf.json#0": {
       "sha256": "3dcafacdab05c9affe10fbc34a2cdd8b6caf9e68c8a9f45f9e0389affe1271f6",
@@ -75,12 +75,12 @@
       "bytes": 6152
     },
     "gallery/business-functions/data-platform-migration-plan.opf.json#0": {
-      "sha256": "77fdabad1209815fb8b3a05a1a649027b5a3febf3f07d12fd45a2289c30addd6",
-      "bytes": 5984
+      "sha256": "f66da7cc1aa79e22ca3bdf528804cc210143f2c94deef021016884f5d290383b",
+      "bytes": 5992
     },
     "gallery/business-functions/data-platform-migration-plan.opf.json#1": {
-      "sha256": "e46326891e0525ffa67deceb3a30de6afe66c51d40acada6e0b4e394c9f8476d",
-      "bytes": 6577
+      "sha256": "1f6114b42d7f83d3dfa9f43d1aed0d5bae2f120bc2b298ec0655daee7de39fc2",
+      "bytes": 6573
     },
     "gallery/business-functions/data-platform-migration-plan.opf.json#2": {
       "sha256": "881bec1c97b0f28781c67e3511e0b01f2a43d0f82d1774935bfbf3730bcbb866",
@@ -95,12 +95,12 @@
       "bytes": 6489
     },
     "gallery/business-functions/data-platform-migration-plan.opf.json#5": {
-      "sha256": "db16bfc5358df20a3a93771cf00a06501f7db460924f2d004ddad9b79ad7c687",
-      "bytes": 12758
+      "sha256": "cb2476f95900eb62323a5abd8c6c605813fdb88789bc83a09383fe9d9579fd05",
+      "bytes": 12737
     },
     "gallery/business-functions/data-platform-migration-plan.opf.json#6": {
-      "sha256": "2f4530c632eec57852bd6fd3f5695c15b5df6200423b9c0564b1f301ae8d5d86",
-      "bytes": 9181
+      "sha256": "a254244afbb478d08bb81b1f6bf238647c47149719c5d32eef91b68f6aef14e5",
+      "bytes": 9171
     },
     "gallery/business-functions/data-platform-migration-plan.opf.json#7": {
       "sha256": "29c9d0678a220ef020fb91cbf290be9eb1239c1fbe452a43b56b4eb094a92dcb",
@@ -111,8 +111,8 @@
       "bytes": 5067
     },
     "gallery/business-functions/data-platform-migration-plan.opf.json#9": {
-      "sha256": "72680e252a913716eddc97576a727d43eb19298b85cda2b655ac037551255ee4",
-      "bytes": 8365
+      "sha256": "e03f4bd1da97bcb8ebc24cee316b73f127e07b073fe16135fc654307724b8c08",
+      "bytes": 8316
     },
     "gallery/business-functions/defect-escape-reduction-review.opf.json#0": {
       "sha256": "c9532360277a9d37cc940645e783b36cbde7def907c65a3332c3723f1da66346",
@@ -159,12 +159,12 @@
       "bytes": 7662
     },
     "gallery/business-functions/demand-generation-campaign-brief.opf.json#5": {
-      "sha256": "a7da809ef0b3aee28278f91dc47a425658ea443b726a171407eb0d7b8419ff4f",
-      "bytes": 14468
+      "sha256": "a0e97e930a294539816771e19607115ba2547b05fe2731076b6c7d9450b55a65",
+      "bytes": 14472
     },
     "gallery/business-functions/demand-generation-campaign-brief.opf.json#6": {
-      "sha256": "df2f73beb6557a8e10470168c13227fdf5323da5eee9c98aa55e559273c79812",
-      "bytes": 11861
+      "sha256": "1a7f6e3dfc6f7f3268e3d3f565fd03a4ce2933c76650b6127ed7a0c22c973da6",
+      "bytes": 11862
     },
     "gallery/business-functions/demand-generation-campaign-brief.opf.json#7": {
       "sha256": "c301e7daafffa22e6478105ba40d66fa78c356eb7f911abee0f6c7fada3f0ffc",
@@ -175,8 +175,8 @@
       "bytes": 5317
     },
     "gallery/business-functions/demand-generation-campaign-brief.opf.json#9": {
-      "sha256": "46b304d315bddf80f1eb335ee044736f722e444c6b2b5518e0a39cc32ee2be83",
-      "bytes": 9274
+      "sha256": "c5a11a9d1c82a82099d9cb3656204df9ccad33b5ff9a31b7cc9b2a01a3625ca1",
+      "bytes": 9332
     },
     "gallery/business-functions/employee-town-hall-run-of-show.opf.json#0": {
       "sha256": "45bd1aa2c3a560d7b45198b87b4ba29d6a1d8fcd68756943b0dc04cfa55f2b2a",
@@ -215,12 +215,12 @@
       "bytes": 8703
     },
     "gallery/business-functions/engineering-capacity-planning.opf.json#5": {
-      "sha256": "e342a072050da3999883ca1a8df80c52c75279abbe4bf116cc83a4fed02a88da",
-      "bytes": 16424
+      "sha256": "1065c28ffa2ed09d3155e47c35320c6d0bc5801240dd0d5c094caf7522a0fa0d",
+      "bytes": 16427
     },
     "gallery/business-functions/engineering-capacity-planning.opf.json#6": {
-      "sha256": "c34de0c696dbc1af07a40f906bcbda9ab19ef2d9273575efcf73aa2a8d311c3e",
-      "bytes": 10737
+      "sha256": "8d77faaa62f04c26270ed0c25b9bade1a40d22aea82e3c2b4f1e48c80f90b1d9",
+      "bytes": 10730
     },
     "gallery/business-functions/engineering-capacity-planning.opf.json#7": {
       "sha256": "ad1bb8dc08884fbef899b47c964751af9589054e3aba46cba70fecddd7179354",
@@ -231,8 +231,8 @@
       "bytes": 6229
     },
     "gallery/business-functions/engineering-capacity-planning.opf.json#9": {
-      "sha256": "2345d112ff826c89183e955ab3be54cf99d9bf6621f84c9f9f334a372439fcc5",
-      "bytes": 11859
+      "sha256": "b554d0c98dd5cf408cecb3ae7d366295aefe432975d98951e92ce258087c9be0",
+      "bytes": 11835
     },
     "gallery/business-functions/enterprise-account-expansion-plan.opf.json#0": {
       "sha256": "afb215a485ef076f520f8417fa61658e616f21a01a4985412896d4d6313939a7",
@@ -259,28 +259,28 @@
       "bytes": 6521
     },
     "gallery/business-functions/field-enablement-certification.opf.json#0": {
-      "sha256": "17d04bec09a6b5bf411fec985aee4a56352c7028b320c9067cde9972fa326067",
-      "bytes": 21669
+      "sha256": "24a99b365dac028391241b627a1b2b579217e2f52a136705be080ba45f449b32",
+      "bytes": 21705
     },
     "gallery/business-functions/field-enablement-certification.opf.json#1": {
-      "sha256": "baf5bfba6eca997ddc9ea5f7c67c8c512a08ac9c6d72126a49d5668c34939ce9",
-      "bytes": 14215
+      "sha256": "becb53c44e1b3b1929c1e700d8892d730f3f835be90ddda6ed4d68d8a530be26",
+      "bytes": 14216
     },
     "gallery/business-functions/field-enablement-certification.opf.json#2": {
-      "sha256": "db8691675d988361cc26e9e051f647293cb2ca45e3050fd08296c2cb1b20053e",
-      "bytes": 12360
+      "sha256": "75d0a4654ef67caf768248788f5075c2e285471144399f6d7957f6a034d0d0f0",
+      "bytes": 12384
     },
     "gallery/business-functions/field-enablement-certification.opf.json#3": {
-      "sha256": "3593fa74a57d4e2bb2a7035b46b4507cf66bae3dcf3d3b7f43e0e7930a92e3fa",
-      "bytes": 13189
+      "sha256": "e3058415edeca068eb5e23fcd954b5651c5d372e162de2dddca7aec7c483ee7d",
+      "bytes": 13187
     },
     "gallery/business-functions/field-enablement-certification.opf.json#4": {
-      "sha256": "3cde92c0957b20229a496d396a1c67d50d72bedc0d085a4d8f177a4065847b5f",
-      "bytes": 14149
+      "sha256": "e445e65879ce2eaea2cb1a9b60ed9cab51365db0da95c7d13ae137861efccfb6",
+      "bytes": 14163
     },
     "gallery/business-functions/field-enablement-certification.opf.json#5": {
-      "sha256": "732bdac1e659679ca413187e8284804bf9da6b28287c27af99e9c107630efb0b",
-      "bytes": 20912
+      "sha256": "32d5273a1dc898b6c36f067b48b6db658fb49d681d60266b2bd051f3fd6c8213",
+      "bytes": 20951
     },
     "gallery/business-functions/fy27-budget-tradeoff-deck.opf.json#0": {
       "sha256": "752afebdd08b034ef191ce0d34fe50a662e50b95c5c90797ee8d21ce66e122de",
@@ -299,12 +299,12 @@
       "bytes": 3991
     },
     "gallery/business-functions/identity-incident-executive-brief.opf.json#0": {
-      "sha256": "04eb2e3a9559ef1055135b064df26df1ca3f808d8dd9787c565a6ef7a3942fac",
-      "bytes": 4432
+      "sha256": "4997c2d09e76a059c0656876ede8f5d8205f60807dac6a36b6366b0fd3010d71",
+      "bytes": 4420
     },
     "gallery/business-functions/identity-incident-executive-brief.opf.json#1": {
-      "sha256": "533611862dc290b02c64887a1bb91280010ee80488514bf07cc6154339c133fd",
-      "bytes": 5608
+      "sha256": "4250d5ab4202aa7702f9247d8ab69ef7c56cfa3f85fa3e22dd8f0346886bdd9c",
+      "bytes": 5584
     },
     "gallery/business-functions/identity-incident-executive-brief.opf.json#2": {
       "sha256": "6c2c793b6e0051976b40767d393b3715bc4d476d5ee0239c15e602cecba5801d",
@@ -319,8 +319,8 @@
       "bytes": 5513
     },
     "gallery/business-functions/identity-incident-executive-brief.opf.json#5": {
-      "sha256": "601a06ce6ceadb9351084ee164117d0bbe9c24addc857d67cb93f107fc2f6246",
-      "bytes": 5697
+      "sha256": "54a2c391f9987fecae7a06db3b15fb9eb05b592251e776e63680f8289b8d3c78",
+      "bytes": 5677
     },
     "gallery/business-functions/investor-relations-update.opf.json#0": {
       "sha256": "101444175a0817ab88060c2e35b14bc2ffb54f794228357fb8ca6b90a5b4b302",
@@ -343,12 +343,12 @@
       "bytes": 7310
     },
     "gallery/business-functions/investor-relations-update.opf.json#5": {
-      "sha256": "7aca50d4ff07de52141b46682b28efcb775f2c6591e026d5d8661d52f3034916",
-      "bytes": 14310
+      "sha256": "48ffd5307d85c7dd24340df3825cc8ac2fcd3afa704775d50bf98e5042ea900f",
+      "bytes": 14314
     },
     "gallery/business-functions/investor-relations-update.opf.json#6": {
-      "sha256": "6026e685425120a00047f81d2ec335928d5f36913f0d565586e0922a0a5c5e27",
-      "bytes": 10027
+      "sha256": "1579ba958270d11030f742f8b64eac6e96b5f6ee10f1748577ca8288b137211a",
+      "bytes": 10028
     },
     "gallery/business-functions/investor-relations-update.opf.json#7": {
       "sha256": "c5f7b34173e08d8f1fdbfcc309449757bb66a9ddf51a63666bde3f04e0840b4d",
@@ -359,8 +359,8 @@
       "bytes": 5101
     },
     "gallery/business-functions/investor-relations-update.opf.json#9": {
-      "sha256": "e2fd19e9aba46828fb699e48d45adb3a9f0076024ddc8ba5f1e82cab704e702c",
-      "bytes": 9838
+      "sha256": "d47ebe0589cac20891d7f30ae89acb5fb2024c4a087ed702fb6247bdf98218f2",
+      "bytes": 9857
     },
     "gallery/business-functions/model-governance-review.opf.json#0": {
       "sha256": "9a486ab8c1cbb36580cb27f9e7b692baca42f7510bbf9c26e384ef8d4d6766fe",
@@ -383,12 +383,12 @@
       "bytes": 11661
     },
     "gallery/business-functions/model-governance-review.opf.json#5": {
-      "sha256": "6679f7cc16f9eb26d97438dfecb8cab5e054797d76c9c65bd03709c0b8dc2f17",
-      "bytes": 17801
+      "sha256": "ab2171a5c378f3834d9495a0e164aeba6b1b29fb829c1c4f7d17f383f4b55f9a",
+      "bytes": 17796
     },
     "gallery/business-functions/model-governance-review.opf.json#6": {
-      "sha256": "71d7522190fd831a5dd5df18e394c54b290f2db8c1e0e193d6d2f22253670f06",
-      "bytes": 11493
+      "sha256": "1f0cb9cf3b467e6dfc0fae568e310e9575503eab613bcdbe478fb610e05a8b8a",
+      "bytes": 11497
     },
     "gallery/business-functions/model-governance-review.opf.json#7": {
       "sha256": "531ac5de36a6692dad720eb48c86204fc7785e825a65b687b7761ba6ef8baf91",
@@ -399,8 +399,8 @@
       "bytes": 6613
     },
     "gallery/business-functions/model-governance-review.opf.json#9": {
-      "sha256": "50ad635d143ab02526e4ed8a466c5466393888797ad34746dc41e4fc9f580aa8",
-      "bytes": 13570
+      "sha256": "340a69dd0c5b31f89db7508ef9a5e9745c43c29fcc5942626ef8a2c03f189fcd",
+      "bytes": 13615
     },
     "gallery/business-functions/onboarding-experience-redesign.opf.json#0": {
       "sha256": "a4779bd2fa1bb1f42c97b0b193557108d0f020e57f08d17b92b6e6a0492d57a0",
@@ -419,124 +419,124 @@
       "bytes": 4190
     },
     "gallery/business-functions/partner-ecosystem-launch-kit.opf.json#0": {
-      "sha256": "a8b205b39fbeae80197d763edf9b55137df337af1a9b3aa1adcf7b2910a08cf2",
-      "bytes": 4457
+      "sha256": "6cbcebac7ab5efb459a7e904d1e1995d7ef793288d7a1c20d72d5113aa1f18c9",
+      "bytes": 4488
     },
     "gallery/business-functions/partner-ecosystem-launch-kit.opf.json#1": {
-      "sha256": "f80faa5785186c01aa27f3a2c5a6634170a09925f0274ea990b0abe8b1fbb702",
-      "bytes": 7350
+      "sha256": "c773bc9d850b13e88a519ec25f784ea75c801d8a8be8b02f0085434b211a14a2",
+      "bytes": 7365
     },
     "gallery/business-functions/partner-ecosystem-launch-kit.opf.json#2": {
-      "sha256": "70e6b2f5fac1d66baec7aeefa649cb38bc7f597945a8e7bef67976f1ecd6cdb2",
-      "bytes": 4957
+      "sha256": "c25298b97713b6dbb799a3dc8b4712dbc2040bd1148be399c269835cc1e38921",
+      "bytes": 4974
     },
     "gallery/business-functions/partner-ecosystem-launch-kit.opf.json#3": {
-      "sha256": "1bca32453f76483ca1ba788012f38fc85bbcaae609b5ad9dac9b99640582e422",
-      "bytes": 4912
+      "sha256": "ae4f65ebe564bc8d7b84216b2e59049be5fb3936e76c0c59457bc14f1df590b0",
+      "bytes": 4861
     },
     "gallery/business-functions/pricing-and-packaging-decision.opf.json#0": {
-      "sha256": "571ebedc54c1e9340fd0c0d1432e3e48ed19378922e87e08b919a6d3aff5a4b8",
-      "bytes": 8255
+      "sha256": "7cafb1df139f87c6a4aaece3d0b6dddc6456c6618bc878bafbf12e073fe3628c",
+      "bytes": 8280
     },
     "gallery/business-functions/pricing-and-packaging-decision.opf.json#1": {
-      "sha256": "16bbb4f6d293768f09b797bb29bc748b75161dc5fd2fcd9452c45cf5369efe85",
-      "bytes": 11043
+      "sha256": "e70dca5a553fded691e397d0640b4d4a555ea5d060202d9a146c24d3bc88fe1c",
+      "bytes": 10906
     },
     "gallery/business-functions/pricing-and-packaging-decision.opf.json#2": {
-      "sha256": "51b8f7f9b013667af13e291229fd5fcfa4c6c5073f08e4fb62b3e1b8ed3a9f3d",
-      "bytes": 7804
+      "sha256": "3c2088c85575e595351efe9a3c41607d1d826465ffdc7531d1b41e6cc57a81f3",
+      "bytes": 7827
     },
     "gallery/business-functions/pricing-and-packaging-decision.opf.json#3": {
-      "sha256": "a1b9854305668ca6d57e4600ef4f8d1549d9d4a8ce9becb1f6fc7c8315c8942e",
-      "bytes": 8765
+      "sha256": "836ad5613a4247c899090679fed969328b23b6b6182f4486e800b9022382cc5a",
+      "bytes": 8788
     },
     "gallery/business-functions/pricing-and-packaging-decision.opf.json#4": {
-      "sha256": "77c6283a67d170ff7a5157cfca7a84a3c812083af761104678814f29a3a0aa07",
-      "bytes": 11073
+      "sha256": "4ac982ba41405cc9c80485c003b05bcc0ce0d1e20a37c8cb4c478cfd2a89fe51",
+      "bytes": 11111
     },
     "gallery/business-functions/pricing-and-packaging-decision.opf.json#5": {
-      "sha256": "ac23de19f929a3f988fce518173cb88e4519b1f8eeeadfa89f97e55b7baeddea",
-      "bytes": 20880
+      "sha256": "ca1a5442a079ae8bf1492b8c88a56143b9166192ccb1e833308d19f12bdd4679",
+      "bytes": 20956
     },
     "gallery/business-functions/pricing-and-packaging-decision.opf.json#6": {
-      "sha256": "bf0ec3ec65a1741748a973a298a54491a6b6c424c348040b2091ab42d6d4d1f5",
-      "bytes": 15065
+      "sha256": "0283dc9cb7bd0c875911aec0cea9209ec113fae8af718f1aeb1daf7bb0b1a7a0",
+      "bytes": 15097
     },
     "gallery/business-functions/pricing-and-packaging-decision.opf.json#7": {
-      "sha256": "67508a28b9200431197a39cf738f71be75de8982ddf828945ad916770e1aed7b",
-      "bytes": 5317
+      "sha256": "bef08c95d29bd59345a8a8bd3d5fbd0c6e305c40d8de6c98702f35ec7007f7c2",
+      "bytes": 5302
     },
     "gallery/business-functions/pricing-and-packaging-decision.opf.json#8": {
-      "sha256": "b184fe11527de1ff79eb7af4216d982c25e559a4fc8bfeb8b0fb99a5edd6451a",
-      "bytes": 7448
+      "sha256": "ce725bb92f03f51188d8d185dfc2a98d6e70def754b07f566e6af33d69f4b654",
+      "bytes": 7491
     },
     "gallery/business-functions/pricing-and-packaging-decision.opf.json#9": {
-      "sha256": "74e2b6720a673bdbca29350592562e7be7ac07e35acad73c762a5a8a7d99b9df",
-      "bytes": 14897
+      "sha256": "262e4afc5691e3552dfa6a37f3bfa1eac61d922aed5938da7998d28c697febdf",
+      "bytes": 14887
     },
     "gallery/business-functions/product-roadmap-decision-review.opf.json#0": {
-      "sha256": "d43d5dbe8aa3bcdab467e6e9d11316d71683df9fdf8a31847c996c900a98e9d2",
-      "bytes": 6441
+      "sha256": "b2137a6662bb74032e4c41ede80d1f345f4d07da152dd5d739cf1cd55180d500",
+      "bytes": 6473
     },
     "gallery/business-functions/product-roadmap-decision-review.opf.json#1": {
-      "sha256": "dd1281d6377dfb7b7186f7fc317caae6b14133bf5aae6e8ba4ae437cfa23998c",
-      "bytes": 8408
+      "sha256": "64181a82f46868a8e48c72a60ee7f02b3e2a2dece529618652478f4679d1636c",
+      "bytes": 8403
     },
     "gallery/business-functions/product-roadmap-decision-review.opf.json#2": {
-      "sha256": "43f68f7e250e2d5ce8da1a2963337d73fd3b649d5a02df7c4ecf1ecd6dd110d9",
-      "bytes": 6702
+      "sha256": "87cf3d0ebcb7876ef8c0fc2463af121c8655987e2b73560d2a18d626938dabe5",
+      "bytes": 6727
     },
     "gallery/business-functions/product-roadmap-decision-review.opf.json#3": {
-      "sha256": "b7492e10a45e682e0e07d185a2d2fe74ca1a81910364bdca840a1bd87869596d",
-      "bytes": 7040
+      "sha256": "fc5e1f8e3f06bb3645038da441a6f1505a026cf75d3f9427ede8cf6962988c5a",
+      "bytes": 7089
     },
     "gallery/business-functions/product-roadmap-decision-review.opf.json#4": {
-      "sha256": "154382982e3a9cecb3f1fccb6cc2e0175170db0b6f66515ce08636405acabd83",
-      "bytes": 8142
+      "sha256": "099a84dead84da74917edd6bf7f9c5c0565dbb0a666dd9274d6c35cec00abe3a",
+      "bytes": 8119
     },
     "gallery/business-functions/product-roadmap-decision-review.opf.json#5": {
-      "sha256": "71e07749e4badf1fe8b0564699255321fa558033292371450988fdbfac5cd8a7",
-      "bytes": 17426
+      "sha256": "28887079df9ab2d0bf0aabdf89e4e16f569e914597b31146bf7110914fc04271",
+      "bytes": 17403
     },
     "gallery/business-functions/product-roadmap-decision-review.opf.json#6": {
-      "sha256": "286796c92a49e2c89b2b3b7887da4b7b6f13621dd5e6249559eecd4591dea384",
-      "bytes": 10946
+      "sha256": "0f1e2157c023c104e55072cf3f8a19cd8944efa70876a7feb5167237b6f72007",
+      "bytes": 10956
     },
     "gallery/business-functions/product-roadmap-decision-review.opf.json#7": {
-      "sha256": "ba8e3e2dbae1ab621c0ad86907dfcc975801ea3c30e67b4f7384ea0896902a08",
-      "bytes": 4348
+      "sha256": "b5b9d3077eb7656c8f5e27156ab766c08db0624ae5ca61407289e4a6472564c4",
+      "bytes": 4362
     },
     "gallery/business-functions/product-roadmap-decision-review.opf.json#8": {
-      "sha256": "c55a6a5e160433039983ba8c4e8b2138e11d1437023494c0195bfb61a59aae55",
-      "bytes": 6422
+      "sha256": "1a1b272f0d619e4e0990d508542b0619d6572a64cdffda15caae34eb4d087949",
+      "bytes": 6450
     },
     "gallery/business-functions/product-roadmap-decision-review.opf.json#9": {
-      "sha256": "7c2e5076896083d3e9eae52b65cff83db150868744e3e8b7bc580e1d736cb2cd",
-      "bytes": 10970
+      "sha256": "782f512335d16891e395ff4847746a3eab8ca9d8520fee84d7d6f23e65051eed",
+      "bytes": 11013
     },
     "gallery/business-functions/renewal-save-plan.opf.json#0": {
-      "sha256": "b0a01d2a245ee09f81da75d98b024a67edf98d3bd0d0f1073bead9b3bb3d59a4",
-      "bytes": 5161
+      "sha256": "7c4b9d0841ac63c6a6a5e05a5bd84fd1e8e4727eb65af0e5f49787ee390dd1d8",
+      "bytes": 5151
     },
     "gallery/business-functions/renewal-save-plan.opf.json#1": {
-      "sha256": "2cb5b42de0e231b3bdd52ad2668d8ab1cc8cf020eb30b2def4f99042e90014af",
-      "bytes": 8092
+      "sha256": "9a950ad7fea2ac4718e93966ce2dc475b81dd7ea4a228be89954a063c82da768",
+      "bytes": 8102
     },
     "gallery/business-functions/renewal-save-plan.opf.json#2": {
-      "sha256": "81ba5df1ce8aec52e06ad0f24f6f145315fec8bf0e76db58030f16be658f2e86",
-      "bytes": 6737
+      "sha256": "96a927e2828757ddac80504d6af8335bf1004070de39c77e905a006259f16495",
+      "bytes": 6748
     },
     "gallery/business-functions/renewal-save-plan.opf.json#3": {
-      "sha256": "5c85d227dfd24838bd1c6f7e6b7ada78807b154b6be86aadbbe14a4ec5de03b9",
-      "bytes": 6954
+      "sha256": "d978985555218ad165064bd0c33c8375ede3845da5fe4d4ea69ad415b227e53e",
+      "bytes": 6992
     },
     "gallery/business-functions/renewal-save-plan.opf.json#4": {
-      "sha256": "c8dec59d14a6024b2c128aba2065170743b2ac7fce9ae21e21eb2af106d7631d",
-      "bytes": 8340
+      "sha256": "90fcc48174afef7625711eb3fbd4e68e163a452426deff0d7b6077b8ecfeb890",
+      "bytes": 8405
     },
     "gallery/business-functions/renewal-save-plan.opf.json#5": {
-      "sha256": "34fe9c4cb37b0c5dcd76d41f0edcd0af8807436f772dde17bad049d01ba40a11",
-      "bytes": 7657
+      "sha256": "063ede156aa5a27504fd067992b029ec21b96d1fc0a74aa5c96cf6228147c177",
+      "bytes": 7635
     },
     "gallery/business-functions/revenue-forecast-inspection.opf.json#0": {
       "sha256": "f247596dc865210e3fadce8b83fce23f44472b946ff98493ac3ec7abf135cea1",
@@ -563,8 +563,8 @@
       "bytes": 22014
     },
     "gallery/business-functions/revenue-forecast-inspection.opf.json#6": {
-      "sha256": "e1a958b92e3968f3eb69c95530efd4c5ae5134bee7506103ee2d5fe409824559",
-      "bytes": 14955
+      "sha256": "b57d562e8c17050f09e3b47e866797b89d1287e7c98615ba327c4f0d96644eba",
+      "bytes": 14957
     },
     "gallery/business-functions/revenue-forecast-inspection.opf.json#7": {
       "sha256": "9e3c10c61772f274b52514239ffaf349ce2f94c3d1a7d33d3a2032ec8e2e501d",
@@ -575,48 +575,48 @@
       "bytes": 7863
     },
     "gallery/business-functions/revenue-forecast-inspection.opf.json#9": {
-      "sha256": "ffd22ebddcc6a0fb542c88907d9cc02788bdff4d3adf63700db691d80fdaa52e",
-      "bytes": 17502
+      "sha256": "63658620c28aefacdb4dfd0e31ccedf8642b4049487da09acd7e0adaba075c68",
+      "bytes": 17475
     },
     "gallery/business-functions/s-and-op-exception-review.opf.json#0": {
-      "sha256": "2851d41f968fa93be015bef7252653603a7bbeea1dfc5de2fe8208f9d9bed5db",
-      "bytes": 18845
+      "sha256": "76e666a907cda5c43d90dd861641e3527bdcd142f4275bf80400f995bfd3ac78",
+      "bytes": 18887
     },
     "gallery/business-functions/s-and-op-exception-review.opf.json#1": {
-      "sha256": "a82b77faabccc0033dcd5ff23dd83b521ee87ec50d4afe8557641c43a610a9cb",
-      "bytes": 22263
+      "sha256": "d78c6e79f8e6334bcb9076a226becab74aed9e55b7510f581d8a320b6c8e6c38",
+      "bytes": 22135
     },
     "gallery/business-functions/s-and-op-exception-review.opf.json#2": {
-      "sha256": "73cfa824ca764e5701c295b6a0a9a4d90d144aa07836eb02b8be2f524b607ac4",
+      "sha256": "bbfe57060e00ee7f6bbeeeae836889f17a21c299ca442a95a76f424ed7e88ee9",
       "bytes": 15565
     },
     "gallery/business-functions/s-and-op-exception-review.opf.json#3": {
-      "sha256": "a5d386f953c987ee2921f4cb1e4ced2aa2d4494ac6c6331a7d7a29c8883cae23",
-      "bytes": 17034
+      "sha256": "9c1b62eae9b0a0185f3f715b3e48e99d4465508e032ea806da556abd7f40034c",
+      "bytes": 17047
     },
     "gallery/business-functions/s-and-op-exception-review.opf.json#4": {
-      "sha256": "282b3b61346089b910602c4d332a2ca900f44d17149453bad478e92f38f213c9",
-      "bytes": 21354
+      "sha256": "d41afde0d63c83bba6a4ef0ee55ca8474dd6b8a6cc0ecbc19b2063db9740bc8f",
+      "bytes": 21302
     },
     "gallery/business-functions/s-and-op-exception-review.opf.json#5": {
-      "sha256": "22e105b73691b70e6b3041f64c6caac0c53b6b2619a34c22f83cf3dd90a59e2c",
-      "bytes": 28468
+      "sha256": "b4165a164fa8cfe3e8363b1db335c8a891ab085cc4e96de5190531d3ea825ce7",
+      "bytes": 28460
     },
     "gallery/business-functions/s-and-op-exception-review.opf.json#6": {
-      "sha256": "2245ee0df2bd03316fb7761d67be9ce5fd3eabfb76aa22156382bb7fcf21b8cc",
-      "bytes": 18064
+      "sha256": "703fc334d3564a4461502e759427944c9cc0e339ddbfe1d1e40c12e558c869fe",
+      "bytes": 17901
     },
     "gallery/business-functions/s-and-op-exception-review.opf.json#7": {
-      "sha256": "7b9b02ec449fba2361195e06511a261a32ea7803464aa17e90aab955635d5ba2",
-      "bytes": 9072
+      "sha256": "3f1ad224979fc48f21350df5470360d9d4dc1bc9ae57c52c081a54aafb3f6c38",
+      "bytes": 9049
     },
     "gallery/business-functions/s-and-op-exception-review.opf.json#8": {
-      "sha256": "0f10387c1507352e899404cd9fca97b548a0cc7d04f98b02ec2b954681d08c66",
-      "bytes": 11084
+      "sha256": "586f2010f7ccfa5c80ffb8f7d1d62b955c394519c444533ed1542d09fdc0f5d7",
+      "bytes": 11110
     },
     "gallery/business-functions/s-and-op-exception-review.opf.json#9": {
-      "sha256": "5697c1028ae61748c794539f60d5bd03ae3c53094cc87145f171f377161c0158",
-      "bytes": 25614
+      "sha256": "766ffc32950f5682ac95865a8b45813e051f0c4ff308de9e39d01b6d7e97b770",
+      "bytes": 25575
     },
     "gallery/business-functions/scope-3-reporting-readiness.opf.json#0": {
       "sha256": "3e2a9db4999f59d449a0bb03f51faa7378662f99e55d395178e4ef00c0f0f7dd",
@@ -663,12 +663,12 @@
       "bytes": 17485
     },
     "gallery/business-functions/strategy-offsite-pre-read.opf.json#5": {
-      "sha256": "027d24c0a682b6e7c33082a0e7ea3e7be899ef12e15edd9ae0adaf23f3b10a27",
-      "bytes": 24137
+      "sha256": "ad7e5c64c7107b4567ac0038968acc30897188a2f56e30bb11856bf575973916",
+      "bytes": 24122
     },
     "gallery/business-functions/strategy-offsite-pre-read.opf.json#6": {
-      "sha256": "201d4b091b275aa6fbf0a5f860dbf952a7957b8c589b32e091d071817457bea9",
-      "bytes": 17459
+      "sha256": "5e1ed3662f52e90caa3e1853bc5f830086b0fd395289f3d84aba4455c95b2301",
+      "bytes": 17465
     },
     "gallery/business-functions/strategy-offsite-pre-read.opf.json#7": {
       "sha256": "2aa0d99a93dc8b915566dfa7381a2b7ae7343b223309f8adbbe36681aeb26c4c",
@@ -679,48 +679,48 @@
       "bytes": 9050
     },
     "gallery/business-functions/strategy-offsite-pre-read.opf.json#9": {
-      "sha256": "ee99feb91a9ce317c586cf7e1d98c0c83d54bddc2d70f7deef5d6c56d81c3d96",
-      "bytes": 20109
+      "sha256": "d2239a7e64f172948d4b9ae65167ffbe175d78edcfe21ec2007a0919c759426f",
+      "bytes": 20184
     },
     "gallery/business-functions/supplier-risk-heatmap.opf.json#0": {
-      "sha256": "f95cca6b6777c0d724ec6e500b9859266048ce57c9c3f099142b3e8770d7dd77",
-      "bytes": 5948
+      "sha256": "cd54e20a0ded444d27b99b2b952f501ca1d3ae35258a5912dbb74a0f41c217ec",
+      "bytes": 5998
     },
     "gallery/business-functions/supplier-risk-heatmap.opf.json#1": {
-      "sha256": "b47254037e11d5b9f0c97e8005e85a433af6cd675fd60cb2681e13713df47c86",
-      "bytes": 8397
+      "sha256": "4414dceea0c0d2b5cf95e18c113bd8f8d997b84502cc58d840044d3556ff8465",
+      "bytes": 8444
     },
     "gallery/business-functions/supplier-risk-heatmap.opf.json#2": {
-      "sha256": "e847b1634572f53b28e3338a56ccaaf0d7aac07afb8b4aa578bead2f38823f62",
-      "bytes": 3826
+      "sha256": "72c715459ad15d660db8b83db642f13145b3ceffac74d0c1670a0dc43e6f09fd",
+      "bytes": 3798
     },
     "gallery/business-functions/supplier-risk-heatmap.opf.json#3": {
-      "sha256": "871fcb0efe5f834fb518d09a479fe9596c596d074ff1277392ed1be0a12c9f81",
-      "bytes": 7208
+      "sha256": "bc4773e19b4a6c5d4ca34372ea7d9074f94873fe9e2982fc552444b3eddcc871",
+      "bytes": 7223
     },
     "gallery/business-functions/supplier-risk-heatmap.opf.json#4": {
-      "sha256": "2cb046326ac11a969c44debeae656298dfdb4cc08dfda30d975a1859573b0e9f",
-      "bytes": 8487
+      "sha256": "1ea4aed6e413205ff95c193daaa00ee392706804dfbc8b50dd2d51249b1cf768",
+      "bytes": 8409
     },
     "gallery/business-functions/supplier-risk-heatmap.opf.json#5": {
-      "sha256": "fcd1dc02675706cd0d122deadacf2429a7f9e246e9418ef78cd00dd954de79b0",
-      "bytes": 17453
+      "sha256": "e61f1ac0b6b54051e09223f6c654972ef7d408472feb2ad2c1addc687086fb42",
+      "bytes": 17361
     },
     "gallery/business-functions/supplier-risk-heatmap.opf.json#6": {
-      "sha256": "e688ad3ce98ef92d643dd88caf788df572abba1175b0b335ae08c7e5272c92bd",
-      "bytes": 13237
+      "sha256": "8bd4a751479f6ef2280a2ba549a8723550c1a4f670b48c35a2bdd0a8f8aa9794",
+      "bytes": 13278
     },
     "gallery/business-functions/supplier-risk-heatmap.opf.json#7": {
-      "sha256": "6e99c38fdb92cbcd403050d6cda1dd6d6fffd83122982184519111a946c22064",
-      "bytes": 6943
+      "sha256": "be300acf860b83da94eee5e5fbf43cbde76411c03e099f58d6dac3d57df8aebb",
+      "bytes": 6941
     },
     "gallery/business-functions/supplier-risk-heatmap.opf.json#8": {
-      "sha256": "cfda7f4b5fcc39fc96b6a01ca02e529bd6ac301d07e80e6eba9f2a616bffc883",
-      "bytes": 6410
+      "sha256": "b86f5c964a8b1878e881823e54b00726b6fb986bed4681d0a0c550e0fcf31400",
+      "bytes": 6382
     },
     "gallery/business-functions/supplier-risk-heatmap.opf.json#9": {
-      "sha256": "7d8ea335040a2d38e3660b04e231716e0a21f0e1c7c24dfae0556018de93aadf",
-      "bytes": 12120
+      "sha256": "d7783628adce9e36186e9d3b0653b97b6e7350cb5ecb15f63431e5629b69dd8d",
+      "bytes": 12097
     },
     "gallery/business-functions/support-deflection-program.opf.json#0": {
       "sha256": "ba35f7d99af889406a10d3d8a08768bd64dc73a68b771f9c302ce09a2375acc0",
@@ -791,12 +791,12 @@
       "bytes": 7614
     },
     "gallery/design-and-media/data-storytelling-atlas.opf.json#5": {
-      "sha256": "a0bab913f4da64eb4b81ba844a532c86c4611cd5d900b6a4cb004915935ba64a",
-      "bytes": 14599
+      "sha256": "54074bbf6c4522ab4e39bd3cdfe9c4e838371e5dda1e77f007e386a7e04bb9a8",
+      "bytes": 14595
     },
     "gallery/design-and-media/data-storytelling-atlas.opf.json#6": {
-      "sha256": "2118650b7736ec0091bf5ffd6801ce369466a7f53bca95792cba139f8d64ead4",
-      "bytes": 7410
+      "sha256": "a32043f103d9811f543fc56310d737b9b101a2f1a1f819ba997e7fe9b5a00348",
+      "bytes": 7408
     },
     "gallery/design-and-media/data-storytelling-atlas.opf.json#7": {
       "sha256": "6093381795eebd46f0e10e102e383ac6acbdaf418c7710935aab441736ff63f1",
@@ -811,44 +811,44 @@
       "bytes": 9358
     },
     "gallery/design-and-media/kiosk-orientation-deck.opf.json#0": {
-      "sha256": "d69128f15a39d4e91a1ff029863dac18b02449a1223ee8e6cc676623bbb5b744",
-      "bytes": 5988
+      "sha256": "e7f55790f0dd96164b7d645b27193eca895f9d19407355dab1b21b42ad2e322a",
+      "bytes": 6054
     },
     "gallery/design-and-media/kiosk-orientation-deck.opf.json#1": {
-      "sha256": "02d9fc338c1ff800fb43f981c2a3a3cc21164d6b1bd3e52110765a20e53482a5",
-      "bytes": 8699
+      "sha256": "c4ce93d524b5f2fe1be92d534340559fd30ac35cd849255903db84df452c6f29",
+      "bytes": 8795
     },
     "gallery/design-and-media/kiosk-orientation-deck.opf.json#2": {
-      "sha256": "0b20e0bd6b7a0958f53d3f01d2df3ec2144efffc7ec5910e56210c9f4216e4f1",
-      "bytes": 7190
+      "sha256": "0e0af33a199f42beb8723a119c844f9e495cf2a8bbb6afd577c87baef3ae1c7d",
+      "bytes": 7215
     },
     "gallery/design-and-media/kiosk-orientation-deck.opf.json#3": {
-      "sha256": "4610fe6639e6bf5d6614749d44c20843dd404929401b49ef10c6fd0d0f931390",
-      "bytes": 7242
+      "sha256": "21acbe8f3e799fc6ca2b600d418608e9f5cb21ab489d047571b5c38cbaa45e46",
+      "bytes": 7310
     },
     "gallery/design-and-media/kiosk-orientation-deck.opf.json#4": {
-      "sha256": "2361c955f3d19631cb216ae504f2b4512064f3542d16a66687cb000a1751e5fb",
-      "bytes": 8629
+      "sha256": "22227fdeac08e7f1fb56f568f0a59c5a9fde2ace54c09c4ccc5ce77bcccb9723",
+      "bytes": 8596
     },
     "gallery/design-and-media/kiosk-orientation-deck.opf.json#5": {
-      "sha256": "eaf1e61f9b9f9ef6e16fe0ea38117cc11bc8874feee64be354593da46d30f160",
-      "bytes": 17790
+      "sha256": "5206f946674890518c0d7731f89054c1b3a19c2354146a712ddf23cfb9c3240c",
+      "bytes": 17731
     },
     "gallery/design-and-media/kiosk-orientation-deck.opf.json#6": {
-      "sha256": "5ae0ecad86655f8975ce2f044430436131b2f1a6489315d354014a1974103750",
-      "bytes": 10024
+      "sha256": "1649592688a2ad1b6a30c7ccb14642f78989dde12fd3e1d0c6f20746f204d707",
+      "bytes": 10069
     },
     "gallery/design-and-media/kiosk-orientation-deck.opf.json#7": {
-      "sha256": "554ecbd601aec43ae1956265f07b1d53a7ab49856a59b9668fa2e121f460d3b0",
-      "bytes": 4602
+      "sha256": "562ccc6d1ec8a1cbffcbbec01948a3bd27bd7229bdef0e7105970c3c9fbea06f",
+      "bytes": 4616
     },
     "gallery/design-and-media/kiosk-orientation-deck.opf.json#8": {
-      "sha256": "de8eea1323bc28561999a25b6a3bc058ff011a2ff25bb852df59d7cb4e7c4997",
-      "bytes": 6434
+      "sha256": "794cabdf17f9a9efc95a692e6b22efff6ff74a2ea123689f93eb9ab54a74f723",
+      "bytes": 6466
     },
     "gallery/design-and-media/kiosk-orientation-deck.opf.json#9": {
-      "sha256": "85e282839da75a7dc82e36aadb374b66789489b4954304777a1abb008a35998c",
-      "bytes": 11001
+      "sha256": "e1e652b66acc8e65460970bcc1225efb6a6724953fc4f2fd08ab33fc9d0533e2",
+      "bytes": 11095
     },
     "gallery/design-and-media/photo-essay-portfolio.opf.json#0": {
       "sha256": "db95b0d6464ea1c8c2b6932c456b3b6f9f8c03d18324aa4778a3d2dca5e98f5b",
@@ -871,12 +871,12 @@
       "bytes": 7267
     },
     "gallery/design-and-media/photo-essay-portfolio.opf.json#5": {
-      "sha256": "e177193ef306150a2245ab661819f86fcf3298a1b712f408a6437d74fdb52b5a",
-      "bytes": 14154
+      "sha256": "b1d86e36162bb4ed652e1b53fd9c9dd1e90361d5d87ee1e1dcffa7a243df2b53",
+      "bytes": 14160
     },
     "gallery/design-and-media/photo-essay-portfolio.opf.json#6": {
-      "sha256": "625383585d52082eb0cfb97db7d1ddb733a3c30994afd9446fe027931939c9c2",
-      "bytes": 8969
+      "sha256": "0e255931bbac2a1ad2b347b3043dff69a5cbea7d952402dc2ff863d6a6aeca87",
+      "bytes": 8966
     },
     "gallery/design-and-media/photo-essay-portfolio.opf.json#7": {
       "sha256": "2b041934afac3c8156affaf8fba6cfb88c6f5be49666a254885edf2f79534518",
@@ -887,8 +887,8 @@
       "bytes": 5147
     },
     "gallery/design-and-media/photo-essay-portfolio.opf.json#9": {
-      "sha256": "cbb805311cb8f719b321f2a7fd31e34f6a0d6ddf9e34bf1bb4f626de82d43bec",
-      "bytes": 9784
+      "sha256": "20971c7e09c68605dca9fc568e43f71ad88e4b86735502d1ce727c1e2a33fa6b",
+      "bytes": 9791
     },
     "gallery/design-and-media/video-demo-sales-narrative.opf.json#0": {
       "sha256": "a6f55d023ecd00465cf4ce76bb06b3ddfe543bcae52ad36697b9cbbcf68f008f",
@@ -911,12 +911,12 @@
       "bytes": 6900
     },
     "gallery/design-and-media/video-demo-sales-narrative.opf.json#5": {
-      "sha256": "eb21ab8b97e489ac80f62a3d30ffb1d4c1506576d36e162a683a566c45360606",
-      "bytes": 15103
+      "sha256": "317be050483c887b194b2abc224e734e17aa6abcdc3a74a1047b936ca8cd6e4c",
+      "bytes": 15100
     },
     "gallery/design-and-media/video-demo-sales-narrative.opf.json#6": {
-      "sha256": "46ba2a368f95a07754c06dbbd69177997dbc9898582de1b0a1cc334020e8e68e",
-      "bytes": 9391
+      "sha256": "3e5e8b55928005edd3d00f85f590eb45ad83b37a33a137d82b26fbb83ad4b043",
+      "bytes": 9387
     },
     "gallery/design-and-media/video-demo-sales-narrative.opf.json#7": {
       "sha256": "221470f9887f468a142c263fdf56af31e97a821fc7dfd815304584f656c63788",
@@ -927,56 +927,56 @@
       "bytes": 5345
     },
     "gallery/design-and-media/video-demo-sales-narrative.opf.json#9": {
-      "sha256": "ceeac8189743d501cfe055f054a2c318287b4a61c4a68dcc811386388aa91bae",
-      "bytes": 10083
+      "sha256": "62debe85898311c17790995d3c016f3b9952d8571b07aba658701f5acbd0b628",
+      "bytes": 10110
     },
     "gallery/design-and-media/visual-brand-system-sampler.opf.json#0": {
-      "sha256": "8c51c1ab3b60a4854926391e35e936056fe4390a2404497f9899bfa5edbf625d",
-      "bytes": 7970
+      "sha256": "7f0d5f59c37d3c41e706884b0bdce14135ec16b8b9bedc7100d47e69f3c06025",
+      "bytes": 7959
     },
     "gallery/design-and-media/visual-brand-system-sampler.opf.json#1": {
-      "sha256": "83fce6783641d845990047df0b49bb2ab30cde95f28ac15b62871ae1eeb253d2",
-      "bytes": 10731
+      "sha256": "bf0972a0b4dd604b88d7d709a9c2c80368218f17457c8daf9f7b3ca4b05eaa47",
+      "bytes": 10733
     },
     "gallery/design-and-media/visual-brand-system-sampler.opf.json#2": {
-      "sha256": "8b8b51a9cbaa60be65a65f7ea33c7e1a5e837e5220b742dd1c7698938ab386bb",
-      "bytes": 6269
+      "sha256": "42c49df8d17138c3294d7b1c83961b98ccaa065844d0a55ca7ed30402c7e6ff5",
+      "bytes": 6286
     },
     "gallery/design-and-media/visual-brand-system-sampler.opf.json#3": {
-      "sha256": "8168caa2597a0beb6acda1c83b395e7fc2eab46341162ad8137c4937dafb9fbd",
-      "bytes": 8496
+      "sha256": "01cac5ab3b246786f5a0f39e19cbaffefa03814192792a4e3b47123c52cce8fb",
+      "bytes": 8526
     },
     "gallery/design-and-media/visual-brand-system-sampler.opf.json#4": {
-      "sha256": "d947531e938d1c7f33551b6172a4205c47d8bc448cf9867d575ea3384bb58932",
-      "bytes": 11097
+      "sha256": "f064afb64a866bd4174f4f2bb220c66637ebff8f790b4c94f858e1c9ad4b608b",
+      "bytes": 11154
     },
     "gallery/design-and-media/visual-brand-system-sampler.opf.json#5": {
-      "sha256": "3782f5a65aab677c350b8c10d75bc2a3432e0f9d03f211548825780d5302a66c",
-      "bytes": 10010
+      "sha256": "37e8187d3b1064a356287f8bb3183eab28659162139c3e2b9864a13a196a7c2e",
+      "bytes": 9962
     },
     "gallery/education/advising-retention-review.opf.json#0": {
-      "sha256": "323bd1069692f407ac13e4b564371b42e70f487a39e35cabbbc6361a24e4eb01",
-      "bytes": 12040
+      "sha256": "53ee8b3169d469e0329c554285084ed8f372ea05955cee27fb262602f4f93322",
+      "bytes": 12095
     },
     "gallery/education/advising-retention-review.opf.json#1": {
-      "sha256": "ad641ced9386e2281b3b713fd004a90caf5bc6453cc639a2677390e423a6afad",
-      "bytes": 10471
+      "sha256": "31009d2ba1dda11dd9dafea03be2af999f80a3b7bb410f59c9b962d9552fe8dc",
+      "bytes": 10542
     },
     "gallery/education/advising-retention-review.opf.json#2": {
-      "sha256": "bc13117309e15b548a7bb1060ea82f9f46d6c6f671b7c69e0e3aa8c02db2587d",
-      "bytes": 8603
+      "sha256": "778fc5cf37d64b63067f84732806683a491d3629332f18686ae925e180373092",
+      "bytes": 8660
     },
     "gallery/education/advising-retention-review.opf.json#3": {
-      "sha256": "3805b1d11ee6b136bb6ac978010e5c89b05f70ecfb9b430d9f8ea4fc64a3b2a9",
-      "bytes": 9189
+      "sha256": "ab75af7fb2a2bc7540e8de4f5d3cbe144561ae8826a80c85602103b0ec0a85be",
+      "bytes": 9195
     },
     "gallery/education/advising-retention-review.opf.json#4": {
-      "sha256": "922f70ecfc9b464b04acf4ab9336522bbea1a6ff87545a434dfb29b103c1b746",
-      "bytes": 10476
+      "sha256": "a78a49503f48ea4dfd7252933f14f3821c6dca72f0e721e7e113661be4bc5ebc",
+      "bytes": 10436
     },
     "gallery/education/advising-retention-review.opf.json#5": {
-      "sha256": "754873b3da8105fac19f6c7878e63cb5f7a1509918a66ca09870986556e2089b",
-      "bytes": 9276
+      "sha256": "b530c4b4f904066c41190d438025e9f0a85cc8fc72014b910589d4492cb0c256",
+      "bytes": 9289
     },
     "gallery/education/alumni-giving-campaign.opf.json#0": {
       "sha256": "92802a551cf1810ab5a31ca14800087166d686974e9d293f12a8c60ade01433f",
@@ -1051,8 +1051,8 @@
       "bytes": 17155
     },
     "gallery/education/athletics-budget-review.opf.json#6": {
-      "sha256": "d50ae519d7eee9adb8114653063d7ab7c496b590c8de722df0429621886939e1",
-      "bytes": 11213
+      "sha256": "fc59afa9541d7379baed6bae3b754e36d0b944857bce5729c61fb88b0cdb4f67",
+      "bytes": 11215
     },
     "gallery/education/athletics-budget-review.opf.json#7": {
       "sha256": "ac9ec3946b8059058a78857591421b21b1645fe23008460eab63e44fab1b61b5",
@@ -1063,8 +1063,8 @@
       "bytes": 6246
     },
     "gallery/education/athletics-budget-review.opf.json#9": {
-      "sha256": "727ba78ea94e374599aeae7590cf001ec9a4e916b4f2a74ed9f4de0f2332aacc",
-      "bytes": 12032
+      "sha256": "a7d7e8fa8553bc190f24c4ed60c91864debd88a96f145200db93a4827929eb4c",
+      "bytes": 12005
     },
     "gallery/education/campus-energy-action-brief.opf.json#0": {
       "sha256": "50f5017b5ee41d4d2876b313298764c15040b91200887728d4a8e57798d90690",
@@ -1091,44 +1091,44 @@
       "bytes": 8276
     },
     "gallery/education/curriculum-approval-brief.opf.json#0": {
-      "sha256": "2730b0468d44ca1903b8ce4c4ac91c53528c1d4e50991608e2832c89840006cd",
-      "bytes": 6641
+      "sha256": "e5c318566e09a5e54bb9b667dab972e24445332d091ec6b5c31251656e3d3581",
+      "bytes": 6662
     },
     "gallery/education/curriculum-approval-brief.opf.json#1": {
-      "sha256": "12a5899564997786ff5da695451c2148b84b5591f38540386065d82f731b15b5",
-      "bytes": 8337
+      "sha256": "b2a716c91a8f18d52ee3819e919cd7baa3a2b99ddf5cdf5918e6515f613e0b88",
+      "bytes": 8197
     },
     "gallery/education/curriculum-approval-brief.opf.json#2": {
-      "sha256": "54bfba98e77f62e8bffbd28a92b4c8718c2b813ff0c7b7ac67811410a6feaf2d",
-      "bytes": 6217
+      "sha256": "91b5a8a9c44d26ee0cf41a6e6117a3c24291b56511a7f895827fba4d4bc4f91f",
+      "bytes": 6201
     },
     "gallery/education/curriculum-approval-brief.opf.json#3": {
-      "sha256": "84e866bc6fd239113ffa2fe874736614a891fe4223449a3a5169d3008df4dedd",
-      "bytes": 7575
+      "sha256": "0f3fdbf4b0372996673c3f92a5f99df84c1cd9ad7383f14dabc86e2c26fa5293",
+      "bytes": 7600
     },
     "gallery/education/curriculum-approval-brief.opf.json#4": {
-      "sha256": "78ad1fb5246227e48c7c32465e3a5484413968737168816fdcf693f94bf4bbac",
-      "bytes": 9021
+      "sha256": "bc1862c15467e06c894243cbe707a19d0cdb0d3a8d35d6e7956fb5e23af30a0b",
+      "bytes": 8988
     },
     "gallery/education/curriculum-approval-brief.opf.json#5": {
-      "sha256": "2429fdabc47f65a5c2d5cebc211e28b8936721a99aade430c9418060548edf70",
-      "bytes": 16037
+      "sha256": "456d4100fa22a6952367bd713e91f80637ca7560baa8583892b9d540cf0deedd",
+      "bytes": 16079
     },
     "gallery/education/curriculum-approval-brief.opf.json#6": {
-      "sha256": "e7510ef36a6969d3940fd96828450638ac84a1353fc4e1b90a16487891117254",
-      "bytes": 11704
+      "sha256": "75536698cf0ad2099967b89c8b24f43d15ab287dd7804d63f53b94bf899097cd",
+      "bytes": 11656
     },
     "gallery/education/curriculum-approval-brief.opf.json#7": {
-      "sha256": "b20bfef2a18fb98d19f1447ca6da99a12a157be3547cd0fb2d6788fc0aef808e",
-      "bytes": 4430
+      "sha256": "46d89374219a6eaf7ce48d39d705430e8fb3d60bfb86138812cf8aa3e59f4fff",
+      "bytes": 4400
     },
     "gallery/education/curriculum-approval-brief.opf.json#8": {
-      "sha256": "0446d72657fc2a8e7a6e95d49ce2183d7393b0d6b2f07e91434b6790626e262f",
-      "bytes": 6236
+      "sha256": "27e8cb693a44d9fdb034757b7cd941266412e712a91ef90fcb39cae7a2a41728",
+      "bytes": 6291
     },
     "gallery/education/curriculum-approval-brief.opf.json#9": {
-      "sha256": "18d869845501ce2bbef426218db33e2ab5c7172cf773a5b57cdeb0a87ba21b72",
-      "bytes": 10479
+      "sha256": "d8ebd5845d585d415b26df6d701ad637d45e26ab0c4a43289e42a4659d8b4ff8",
+      "bytes": 10348
     },
     "gallery/education/district-literacy-acceleration-plan.opf.json#0": {
       "sha256": "08428d505bb52a86df7970428f08420babb8e12eb4f2a805bdb9fb05c6a81c3c",
@@ -1147,12 +1147,12 @@
       "bytes": 4075
     },
     "gallery/education/library-modernization-roadmap.opf.json#0": {
-      "sha256": "e1cd3ef69294054bdd43d0373a762cf146d3fd99a888aa9291a5ddcd044573a7",
-      "bytes": 5020
+      "sha256": "2d33269f49f27404f12decf95ed7ed67fdea7a85b60a0e984461eb3a6b0c2fc9",
+      "bytes": 5011
     },
     "gallery/education/library-modernization-roadmap.opf.json#1": {
-      "sha256": "b3c8a3147c60b3d7a2389b222a8c39a0464b595e14e36369e6005f84873e6a86",
-      "bytes": 5731
+      "sha256": "67055b38f761e5f16c0e6d62c787550ad811156313332a605721897b4629a02c",
+      "bytes": 5704
     },
     "gallery/education/library-modernization-roadmap.opf.json#2": {
       "sha256": "1e620be8f653ee6a9b4c5476e69bffeb9fbf3cd90482cdbcea59b53bc4a9ee49",
@@ -1167,12 +1167,12 @@
       "bytes": 5648
     },
     "gallery/education/library-modernization-roadmap.opf.json#5": {
-      "sha256": "2898d51fa57235032e515716b4266b4cb578d4ed7db09c36dbdbf63d9ccfee30",
-      "bytes": 11631
+      "sha256": "2852596320bebea61a01197fca3744dedae29cd8c887701ffd364fb7145c432c",
+      "bytes": 11658
     },
     "gallery/education/library-modernization-roadmap.opf.json#6": {
-      "sha256": "a3aab32b4cf2a4b39a1770c48aaf1f9a817ca22162660f1159504f2e6eec09c4",
-      "bytes": 7924
+      "sha256": "924333eaf2b1fceda8513895a10482d4b386a5fb22c5f0ec73dbe145050b99d1",
+      "bytes": 7895
     },
     "gallery/education/library-modernization-roadmap.opf.json#7": {
       "sha256": "3e412b39c7f67c1fa1a7e6d8673d8199476c45387f2d2460e7c46c564d10e701",
@@ -1183,32 +1183,32 @@
       "bytes": 4176
     },
     "gallery/education/library-modernization-roadmap.opf.json#9": {
-      "sha256": "ee9875bd59db5f632affdcd12366eb93e4d87279d992882254e6644573421ca8",
-      "bytes": 7076
+      "sha256": "8ef6ba1c119869d96b5cb7a12fc1b46a3e78d7f992bfd58ced3ba9e52d01223a",
+      "bytes": 7089
     },
     "gallery/education/online-program-launch-plan.opf.json#0": {
-      "sha256": "39b69c1a0a9125d03345e5c90eed9e6d20a86a3f946d1709bfbb00b1a1fd073e",
-      "bytes": 19238
+      "sha256": "0fe91965711a8725044da3d7f528bf1f181609fd4f18ea800cd6e9500bd813c0",
+      "bytes": 19251
     },
     "gallery/education/online-program-launch-plan.opf.json#1": {
-      "sha256": "d47f2c5363294536fe289d472b8d2b753350d3dbd757baa948ee95a989fdfe39",
-      "bytes": 22307
+      "sha256": "be2950315fa64689d50c6b1f481483c68c64845a3d42eaa44895cd8a805e75bd",
+      "bytes": 22204
     },
     "gallery/education/online-program-launch-plan.opf.json#2": {
-      "sha256": "de77e72f768148a33d38e57839570af2c7c02ebcc64d2fba6c1060db457d6c06",
-      "bytes": 16903
+      "sha256": "acf24546aa99c4a326f4a5db498d7c72e9b1f138a4a1cef020739d6cc265a1ef",
+      "bytes": 16911
     },
     "gallery/education/online-program-launch-plan.opf.json#3": {
-      "sha256": "a8d2a9b7ffe5f9fd3198cef04c9bc9a6a98f514058c0159b8752917aaaa96e77",
-      "bytes": 17142
+      "sha256": "5d4e3f07df3e4963c5ac70d10d7b7e76d0055a5361f21d90e1574368e3bf6509",
+      "bytes": 17159
     },
     "gallery/education/online-program-launch-plan.opf.json#4": {
-      "sha256": "8db93323482e17bfd02729f22382a1e182f00225e4f79f589cb557c60bcb09d6",
-      "bytes": 21902
+      "sha256": "66fe1ab8d5aba5ff5a23a13f6bf18aea614f3193b5e1b0e5c0814e973e3ecd3f",
+      "bytes": 21889
     },
     "gallery/education/online-program-launch-plan.opf.json#5": {
-      "sha256": "b0fc078b167006f71f9bb8f7e2a26c561127b64de90bf8c5c836c3bb218c66f5",
-      "bytes": 21037
+      "sha256": "eca55257b75b44f35dab2662cb617ff767458044ff782637c33e9c1822e4ac6d",
+      "bytes": 21059
     },
     "gallery/education/research-grant-pitch.opf.json#0": {
       "sha256": "ac4e639ccdc2f857cb625767617ef862a922184acd6be604f79e75ebe7886ce2",
@@ -1267,44 +1267,44 @@
       "bytes": 4219
     },
     "gallery/education/stem-lab-funding-proposal.opf.json#0": {
-      "sha256": "01557df38114c32de3d21e91186370da3af05cbb9660ab6a64f3038a024035fe",
-      "bytes": 3262
+      "sha256": "b45108eacba71cb7d190320b072c5f73a184b1805857fb6688a252138eca7f94",
+      "bytes": 3252
     },
     "gallery/education/stem-lab-funding-proposal.opf.json#1": {
-      "sha256": "53686de5e12364ce472605fe7cb5a64db741d2b6bb3887aa94df887f49dd1cb0",
-      "bytes": 4801
+      "sha256": "f283263f82b515d6ca43d1bf62a194262e1079dad7f890c84410175c213ec24e",
+      "bytes": 4772
     },
     "gallery/education/stem-lab-funding-proposal.opf.json#2": {
       "sha256": "cb56195d5edb1cb6df9b151f689d1080c87fd19c770056a16be28d5f9caf37ce",
       "bytes": 7018
     },
     "gallery/education/stem-lab-funding-proposal.opf.json#3": {
-      "sha256": "4af9df63323ca8e167f131da07d3203330d48c8a1440ccd288d72f50a250d6cb",
-      "bytes": 3491
+      "sha256": "01673889fef47408fc2f6e0077952ab2a28a3912be235a8f6b8b98f1ca6483a5",
+      "bytes": 3483
     },
     "gallery/education/student-mental-health-capacity-review.opf.json#0": {
-      "sha256": "0816729db9868ecf82af134b3a615e2ef5b8bb92a4a2342b5e21db06f98f3d90",
-      "bytes": 9520
+      "sha256": "9154dc72a9975dd5efd9a44460a4e291939f23eae078bf10d51c5bcd9f3a9653",
+      "bytes": 9528
     },
     "gallery/education/student-mental-health-capacity-review.opf.json#1": {
-      "sha256": "3ff4117c0498cf791dd2b696409aeca30071d4f4fba4ba825e320f2d8786a88a",
+      "sha256": "bc38a52a84c7e6df6388143f3b37a7349e19235fdf22a8ee109577ee5faf2560",
       "bytes": 10125
     },
     "gallery/education/student-mental-health-capacity-review.opf.json#2": {
-      "sha256": "44d1a338f70f07eff7b12ecba7c29aacdb059dcd67e813ed75811b124dc6c690",
-      "bytes": 7416
+      "sha256": "ec820ef0ca3548b69cb5502551d8814c00432aa897ec1d5fef49dbf04cbda43e",
+      "bytes": 7379
     },
     "gallery/education/student-mental-health-capacity-review.opf.json#3": {
-      "sha256": "cfb831611df5dbd163f6dadbaa7536a2cf82b06db5b0c2e4730713eb48ad3b31",
-      "bytes": 8700
+      "sha256": "3f658a7120412dc5823cd93b8cec53e29f17841dd09bc545f828018fa336c9a4",
+      "bytes": 8726
     },
     "gallery/education/student-mental-health-capacity-review.opf.json#4": {
-      "sha256": "0439d014f407460334eb1cf3b3fb7344d7ad32fd7651e5c81c23ce3d4c01a732",
-      "bytes": 9999
+      "sha256": "dea007300699df56ddad57a07c48b31ddbaf1b32c012075c349d83d77438f71e",
+      "bytes": 9985
     },
     "gallery/education/student-mental-health-capacity-review.opf.json#5": {
-      "sha256": "422cdf54203177b5b9ce87314ff62606c38393b0404c389cfa5ac14fe0f6bac7",
-      "bytes": 10033
+      "sha256": "032b10c2a009170d80d1890e11b422a3ff631252a9f221cfde38391563790606",
+      "bytes": 9992
     },
     "gallery/education/workforce-pathway-partnership.opf.json#0": {
       "sha256": "2798600ade96244236f2e3997671c7d8a89eacf0f97068eb349a8483809441fa",
@@ -1327,12 +1327,12 @@
       "bytes": 6675
     },
     "gallery/education/workforce-pathway-partnership.opf.json#5": {
-      "sha256": "d33b5c21abd10bab220b0b85eb85aeae800e7213362fade1aeea9240a0f41858",
-      "bytes": 13934
+      "sha256": "e09f9c6e9114990a1a7be9b71a889fc8ca0cbea3850e0ed2a0637571afc383f6",
+      "bytes": 13920
     },
     "gallery/education/workforce-pathway-partnership.opf.json#6": {
-      "sha256": "73b0f92df9125ef5bc6c246147f83ab6bebc19cf26080ce6f4eb806319f4da00",
-      "bytes": 8764
+      "sha256": "118c38b9aa3a815a5b56dcb6922ccc349e51970bb97e28f85f3b50507ff533d9",
+      "bytes": 8768
     },
     "gallery/education/workforce-pathway-partnership.opf.json#7": {
       "sha256": "55b72945c8504b3c6e2ebcf33f07fb45292d5d58583bc038fa0dd364880478a5",
@@ -1343,8 +1343,8 @@
       "bytes": 5270
     },
     "gallery/education/workforce-pathway-partnership.opf.json#9": {
-      "sha256": "6743277d7484b4e378ce12981d8418400f0fefd48d2ba20e5a959e49f2e1bf6e",
-      "bytes": 8321
+      "sha256": "9b015844562ec5a8fcd5014f11e23b557fcf5970988d907529ff8a79f0028e7f",
+      "bytes": 8353
     },
     "gallery/government/broadband-public-hearing-deck.opf.json#0": {
       "sha256": "4c6a6567fb4fe838c103af04dc997ab986023488d12a6b70bd0ea10f1cf8e343",
@@ -1367,12 +1367,12 @@
       "bytes": 10140
     },
     "gallery/government/broadband-public-hearing-deck.opf.json#5": {
-      "sha256": "cafb9432ba2d48b1e6a7832e4e8c729ca72d0805e018343e6a6695e256c2f1d1",
-      "bytes": 18839
+      "sha256": "cae56e0a012a87ead31f7bbc24f72c886176f28f9f8861e50f6e7e66ea9a4c28",
+      "bytes": 18832
     },
     "gallery/government/broadband-public-hearing-deck.opf.json#6": {
-      "sha256": "cb78b4efa534837c98d6f24e3581e4022a847297fee3cc2b2a08cf8fe7e4c39d",
-      "bytes": 12987
+      "sha256": "3896c203417cfe2c12b025fa93a708865bd6cfab8ad3c5be13f6e475adf990a6",
+      "bytes": 12977
     },
     "gallery/government/broadband-public-hearing-deck.opf.json#7": {
       "sha256": "6afea1c5a8ec13a21ad903111e67b0653094d6d85394b807014213183d57d189",
@@ -1383,8 +1383,8 @@
       "bytes": 6195
     },
     "gallery/government/broadband-public-hearing-deck.opf.json#9": {
-      "sha256": "f8c657656ce44516fed71598cd53e8afcd1d84c720233a092ce930f7d8bbcc11",
-      "bytes": 13318
+      "sha256": "9ce8612f256a3ff80dab965e466dcb58b3a3d3f6fd02a19a7f8f8c7dbb0e2eda",
+      "bytes": 13294
     },
     "gallery/government/court-backlog-reduction-plan.opf.json#0": {
       "sha256": "d817517c0b20f29febdf321632019ce8082d0bb4baeccac83af2bda6e8f8fba8",
@@ -1427,20 +1427,20 @@
       "bytes": 5160
     },
     "gallery/government/grant-equity-review.opf.json#0": {
-      "sha256": "3b4a2fc96619c0dba6b00852623e391546c9a627a40eaf7727f6884ac3771345",
+      "sha256": "9f9777590059dfe7c9b379fcf3beef67b935f45c19f7ca710274ca81a185f49f",
       "bytes": 3914
     },
     "gallery/government/grant-equity-review.opf.json#1": {
-      "sha256": "454d20378594bda437237a4481a48d85428e4d3f85f1a0a62a73b307d6f39d41",
-      "bytes": 7447
+      "sha256": "978adca7d2b56e2b25d2b5fd2f65c3eb7762bd43963498a56a3695e7b275c1e6",
+      "bytes": 7478
     },
     "gallery/government/grant-equity-review.opf.json#2": {
-      "sha256": "12ef32ea30a9ab3e0598498081294c68fa31a4476b57450052f3f150d0ba9ea6",
-      "bytes": 3394
+      "sha256": "aba9e765b219fc33b1a8a6447247736e9ed968f36655411f1330215e60d643e9",
+      "bytes": 3389
     },
     "gallery/government/grant-equity-review.opf.json#3": {
-      "sha256": "028470aa814238524225979b81a7682bb6ac495e6f1b2a35fa7c7dfc2e155075",
-      "bytes": 4895
+      "sha256": "306e0ca8e2caa1fe88c4aa988c894f550f9a8f6a69dd336062ecb7707833d64b",
+      "bytes": 4863
     },
     "gallery/government/housing-zoning-council-brief.opf.json#0": {
       "sha256": "53b14c5b847a011924cae53f84978721ed708251ef0b5b7027f00bb1916e4b5d",
@@ -1463,12 +1463,12 @@
       "bytes": 7190
     },
     "gallery/government/housing-zoning-council-brief.opf.json#5": {
-      "sha256": "93ec2f85163ac6ee9654c93206327d5d3ea982eb24ff059448e3d5a4193ebc85",
-      "bytes": 15957
+      "sha256": "02e5a45cb6a6d5a52795ebe8f69a747ea424ada1f096eb33894721e2d9cf4179",
+      "bytes": 15950
     },
     "gallery/government/housing-zoning-council-brief.opf.json#6": {
-      "sha256": "baa8f26ac510b235ca6eb0a0733ad026e73397700135accb2c885d8948827798",
-      "bytes": 9488
+      "sha256": "4674bda5168e4960c036679930320f34210d747d2b91f046ea93383b4f12ed90",
+      "bytes": 9492
     },
     "gallery/government/housing-zoning-council-brief.opf.json#7": {
       "sha256": "ab0f876f8af78ba542ef988eefb746a14ff859f550de605060492e301ee50679",
@@ -1479,16 +1479,16 @@
       "bytes": 5581
     },
     "gallery/government/housing-zoning-council-brief.opf.json#9": {
-      "sha256": "32072b97b06edd9f25c99a3ba44f52c53b659fb253743f3f85c2234d5dbb045a",
-      "bytes": 10288
+      "sha256": "a9dc8cb05d079e5970ad1ebcdaaa55bf0147822b3810effa53b91feb728a36c0",
+      "bytes": 10306
     },
     "gallery/government/parks-master-plan-workshop.opf.json#0": {
-      "sha256": "24f9f192e396932a2a8799f952a0bc2e8717587b4fc69ef3ce52aaea91ec717a",
-      "bytes": 4832
+      "sha256": "26dd98698ee9e2879555acb79ae93fd6d4dbf12a4364f3b3b06af7d6d515f04a",
+      "bytes": 4831
     },
     "gallery/government/parks-master-plan-workshop.opf.json#1": {
-      "sha256": "d2d3a2ce70418a3d5bf70babf45d0dd8241534e8d5ba67c62bc0a76b9349edd2",
-      "bytes": 5834
+      "sha256": "8d7eb931792e793b6f8386290d87ea240b2105c38c2b0023e3f41961bb15604b",
+      "bytes": 5828
     },
     "gallery/government/parks-master-plan-workshop.opf.json#2": {
       "sha256": "4306b70bbd536a585c216e0f46afd69032267ba969e2f5648c5214e88c7b1af4",
@@ -1503,8 +1503,8 @@
       "bytes": 5991
     },
     "gallery/government/parks-master-plan-workshop.opf.json#5": {
-      "sha256": "e2c75180ac6cebf6aef7245037294b69090e8f09269bca0de20c332ab42ed425",
-      "bytes": 5571
+      "sha256": "0709c39f0f26cf64805953cd0f61706b1e6e0ee3eb30ec5266c182c6c705cce5",
+      "bytes": 5605
     },
     "gallery/government/police-training-program-update.opf.json#0": {
       "sha256": "7a6db05aa6a0ec7df34bb909b5ed7e70dab6cce360f774bd845f60a9fe8cc8c1",
@@ -1551,12 +1551,12 @@
       "bytes": 8844
     },
     "gallery/government/recycling-participation-campaign.opf.json#5": {
-      "sha256": "b42f77b5d8b9b0c8f7d40e74918a782d55641dbd7048bb4d854042fd8ccc9f10",
-      "bytes": 16660
+      "sha256": "3e17f96a87eb9a2df7ce2a264e663acb9cfffd0e36eed9ade9c66edee780a6cd",
+      "bytes": 16661
     },
     "gallery/government/recycling-participation-campaign.opf.json#6": {
-      "sha256": "570ec3d2a65cdbe3a1b21794fc96da8b35dcb3acbbaddafadf669b228f765699",
-      "bytes": 11164
+      "sha256": "bff8d8007dbcb1e34173689eebb1332ba2b761aee6f46fe800617e5bf3a78c0a",
+      "bytes": 11174
     },
     "gallery/government/recycling-participation-campaign.opf.json#7": {
       "sha256": "2dfbff4a213c3f164503e5887c7070fc66a20347742dff7ac4a097f2cee5a384",
@@ -1567,32 +1567,32 @@
       "bytes": 6318
     },
     "gallery/government/recycling-participation-campaign.opf.json#9": {
-      "sha256": "034f4a451694c93799fe116bda8c658156479e617093c1964c506458256ecd06",
-      "bytes": 11736
+      "sha256": "c2a568dae01c470a52913908611f7cb9aa3e9e1a5c21ea9db73bfe49c5f983de",
+      "bytes": 11685
     },
     "gallery/government/regulatory-risk-brief.opf.json#0": {
-      "sha256": "b8fc0f3f1298d6e663f2e944341606bb0fe8ca53e7ccc04c1e2eab84f138d694",
-      "bytes": 5132
+      "sha256": "296bfd5b82ecd5a10a06ea674ba7472e9adc6f40ba837fa1ced3ce984dc7d236",
+      "bytes": 5158
     },
     "gallery/government/regulatory-risk-brief.opf.json#1": {
-      "sha256": "bca607d30ddabbbee89889af26d95746dc1e48c7475c1d67fa60cc6d882323ad",
-      "bytes": 8467
+      "sha256": "31c5b433eda6c70e1c32b494242400cdcf0ea5b2c00155fba9fa83fb98dce407",
+      "bytes": 8468
     },
     "gallery/government/regulatory-risk-brief.opf.json#2": {
-      "sha256": "087545221a585fc2e9075370adc87ed0f626d9c84797df9d3b948871ac97dd8c",
-      "bytes": 4829
+      "sha256": "396dc7fcfb1965e372883b65e4b0c8655a694c48e7b48cf8d3a038d34d9eadf5",
+      "bytes": 4818
     },
     "gallery/government/regulatory-risk-brief.opf.json#3": {
-      "sha256": "1ad68c7b70f3c6dc445696e62feef781dd80455d9134d10f317ad524c370b4a2",
-      "bytes": 7189
+      "sha256": "cbb4ae2e9020442996c2df61afc766bfeb2bd6981c2d4f937cef68cc3e0e34b5",
+      "bytes": 7231
     },
     "gallery/government/regulatory-risk-brief.opf.json#4": {
-      "sha256": "bca79419707e0319cba2f578b54ad2a969380c8ac68ca25faa4cefb9d86735e8",
-      "bytes": 8686
+      "sha256": "dc29c4f3d246fb7eedf12339efbd09cf5d46168f3e4e2957df7931246806228c",
+      "bytes": 8628
     },
     "gallery/government/regulatory-risk-brief.opf.json#5": {
-      "sha256": "0f11deeed19768ce5f114a86203c9c6730f1aefa3836cf4ffd5f828fa0c5c31c",
-      "bytes": 7325
+      "sha256": "bcd6e94dbaf82f624e1bb64ef12c7bdcb8b93ec3b1f50301562d75e878c24a4c",
+      "bytes": 7337
     },
     "gallery/government/tax-portal-modernization.opf.json#0": {
       "sha256": "a51f79084b375583bb57d2e036ee08567aec8ca12a9c9dac6853f12213075aa0",
@@ -1615,12 +1615,12 @@
       "bytes": 9082
     },
     "gallery/government/tax-portal-modernization.opf.json#5": {
-      "sha256": "1d563e3487d1ca0cf232e9095e69d6272ac4ebe654b7a8db9f98dbf48800f24a",
+      "sha256": "f7539b187e41ab59061195147c3a026f8d0940712e7bde3c9d295d79bb11bcbd",
       "bytes": 17891
     },
     "gallery/government/tax-portal-modernization.opf.json#6": {
-      "sha256": "7fe3dd34ada3a08790cebf3de1ec08054692a19ea0a57e6d4a5b59dd00561b12",
-      "bytes": 11703
+      "sha256": "d8d6de79521209373cb8f9fb36c5b62861b672edab1a72921c29e3f7e0ca1589",
+      "bytes": 11707
     },
     "gallery/government/tax-portal-modernization.opf.json#7": {
       "sha256": "a6703c8115c4f5b828d26b0b76950c8e7cfd2c60da4015c66ff2c7efc58bef4e",
@@ -1631,8 +1631,8 @@
       "bytes": 7258
     },
     "gallery/government/tax-portal-modernization.opf.json#9": {
-      "sha256": "3991c809f338ee7c98455b5d564c8daa5d6a9051539e69dbc0dde3865d7f68bd",
-      "bytes": 14510
+      "sha256": "6c57ba1c939018f7621c29bb7efa3e43e479c750401f8ec2b4cce1167f597acb",
+      "bytes": 14533
     },
     "gallery/government/transit-corridor-alternatives.opf.json#0": {
       "sha256": "e7ce34220730271671603a81c0c5fb6c9b41d47267e627334b9993d2bc4b463b",
@@ -1655,11 +1655,11 @@
       "bytes": 7642
     },
     "gallery/government/transit-corridor-alternatives.opf.json#5": {
-      "sha256": "9307b7f980622a3363be11cc79247b6586a90ca7b865c69caa9be3e442e37b1c",
-      "bytes": 14575
+      "sha256": "0b37c3f78476c48feb5a56c407f72bb62cb18459bf2f9da5bbda0781ed9b91d4",
+      "bytes": 14585
     },
     "gallery/government/transit-corridor-alternatives.opf.json#6": {
-      "sha256": "051ea94964896bb2e5df51c8b36a0deb1d3d12b84a648f4aab4ed5df6dc402a6",
+      "sha256": "bb08ea0dbf1b453978bb465dc7de45b1e097b17247a162fde16bc39424281f15",
       "bytes": 9752
     },
     "gallery/government/transit-corridor-alternatives.opf.json#7": {
@@ -1671,40 +1671,40 @@
       "bytes": 5325
     },
     "gallery/government/transit-corridor-alternatives.opf.json#9": {
-      "sha256": "a0811c4adc02c35326b50a1769c1f6f453789d89de0b53bc04ab880e1d9111ee",
-      "bytes": 10168
+      "sha256": "4a6a0393f7bb83152f81d1dd4b88ae6f90ec481a404dd06b47063863a5c8943a",
+      "bytes": 10166
     },
     "gallery/government/vaccination-outreach-briefing.opf.json#0": {
-      "sha256": "b61361ed7050b8e83b33820b5b02cfc571f05cc720d9cb1098a6760b5853092a",
-      "bytes": 6068
+      "sha256": "ded5cc05e9d5ec745ee4c0cac43afd691beabe0b00cbc6b49e075a3890a95c98",
+      "bytes": 6043
     },
     "gallery/government/vaccination-outreach-briefing.opf.json#1": {
-      "sha256": "1918d8b9a7f1529c0d5007f3a5c0212eea666c2a786cdfb550de59c1c7fb442c",
-      "bytes": 8297
+      "sha256": "6430980dd73fec691cc94cc07456093788e4bbc8967c34afc581bbb8edc493e0",
+      "bytes": 8265
     },
     "gallery/government/vaccination-outreach-briefing.opf.json#2": {
-      "sha256": "7685cedd58edcdbf034cc90db94d926d0c7ef3893deecb3d609cc884a9461d0e",
-      "bytes": 5944
+      "sha256": "0d901135c9a6d289af93297f6657fd70aeed4d3d3f7ee03f43e67724c408b99a",
+      "bytes": 5974
     },
     "gallery/government/vaccination-outreach-briefing.opf.json#3": {
-      "sha256": "cf1f806336e61160a1f06a5389466738d0607388165da648794f16ed99b40d32",
-      "bytes": 7128
+      "sha256": "ff696beee3c62858b6d1ff6a94fc78b683224383eda3ad37a4420985f6434277",
+      "bytes": 7171
     },
     "gallery/government/vaccination-outreach-briefing.opf.json#4": {
-      "sha256": "95945331098b9b3c10a5c98d4612adc19d4354bc3c4786c97f2c0ed863067141",
-      "bytes": 8450
+      "sha256": "a9a6b2d9ce78f245c3c156d570bef61fd066783f3d865467e93a0b310a18807f",
+      "bytes": 8488
     },
     "gallery/government/vaccination-outreach-briefing.opf.json#5": {
-      "sha256": "ea0a571f6df6f39a0e6997188b77dcd8c77af008161ddb7630d6a761a79abf73",
-      "bytes": 7572
+      "sha256": "e37593ddfd5a16c18fc38794104ffc5a12700f642215562e51bb95f732794efd",
+      "bytes": 7539
     },
     "gallery/government/water-utility-capital-plan.opf.json#0": {
-      "sha256": "7eb493988c8f490dd813d37315b34908279041a4c624acf208974c6686efde9e",
-      "bytes": 14508
+      "sha256": "65a82032aa602757e79c75288c2501872a780f301b20011e99f5b616ee003e03",
+      "bytes": 14530
     },
     "gallery/government/water-utility-capital-plan.opf.json#1": {
-      "sha256": "dac233e907897ccf11907168891c3dc66a0a10f4dc620f05769f39550005f7d2",
-      "bytes": 9832
+      "sha256": "84492f590ce5d0fd8e226e527c894df9a2d7559ff9767e7fb17f8fdf1ee01ad4",
+      "bytes": 9812
     },
     "gallery/government/water-utility-capital-plan.opf.json#2": {
       "sha256": "3d2b2071efbc8377129d2135db0ef2818b98a4ce9f1a9234df21def5204ba011",
@@ -1719,12 +1719,12 @@
       "bytes": 9786
     },
     "gallery/government/water-utility-capital-plan.opf.json#5": {
-      "sha256": "f435aacc6f6d168ed35c3137d3e60ec33361b820b42aab48f1050fd648ddd39e",
-      "bytes": 16555
+      "sha256": "6437eddd09fe81806eaeed0271dbc683ad3efea13b8b4d8d33e59907c05712ed",
+      "bytes": 16552
     },
     "gallery/government/water-utility-capital-plan.opf.json#6": {
-      "sha256": "f4f32f41aee7eff3bea096a0f9a56f55d4b762cf1f95e2520660f0ac5266adf0",
-      "bytes": 11882
+      "sha256": "382216fd0b7d55f84be2067b11923f3fcc1372a4470a5ffd217afe7e46480425",
+      "bytes": 11875
     },
     "gallery/government/water-utility-capital-plan.opf.json#7": {
       "sha256": "9d689de4f15accc23c503f5ff8345874df4032c10caec7a83505b04f99d6afe1",
@@ -1735,8 +1735,8 @@
       "bytes": 8211
     },
     "gallery/government/water-utility-capital-plan.opf.json#9": {
-      "sha256": "169af8cac112890b71c2d24e6b976e5c1a514293a3c940ce3ccb3e6d30228bf9",
-      "bytes": 11419
+      "sha256": "8679924df9261050b9556abe822117d1b776d7ba7e751a76f5f587e651a3f665",
+      "bytes": 11420
     },
     "gallery/government/wildfire-evacuation-preparedness.opf.json#0": {
       "sha256": "164cef36d2a8e11695d5a71676dbce7c92d71b903286de94c19e89d4711baa90",
@@ -1759,12 +1759,12 @@
       "bytes": 7930
     },
     "gallery/government/wildfire-evacuation-preparedness.opf.json#5": {
-      "sha256": "b04e58d11d0d9990684ce0c5af31676b627c50329301fd5687b2a2f74f4a92a5",
-      "bytes": 13916
+      "sha256": "ace1c2da1faa37d10ed341863ff00f58c7911d0b17e4f9715c55634e8e071776",
+      "bytes": 13903
     },
     "gallery/government/wildfire-evacuation-preparedness.opf.json#6": {
-      "sha256": "b6324428a21779b59d8722217ebf2ddafb0b01dcbfd5425f605a4fa98345bb4e",
-      "bytes": 9314
+      "sha256": "b459b56866111553ff82d0803cb656352788b68f2f84bf63a88ff5b6739e1acb",
+      "bytes": 9336
     },
     "gallery/government/wildfire-evacuation-preparedness.opf.json#7": {
       "sha256": "433478f914f596355cbe8d00ef13171eb35708ef079dce448713cacccf082eda",
@@ -1775,104 +1775,104 @@
       "bytes": 5318
     },
     "gallery/government/wildfire-evacuation-preparedness.opf.json#9": {
-      "sha256": "5f0e57bec6172a474a63ba7e1b9a42822ec5e36b927f0250a61b6a08a261a96d",
-      "bytes": 8804
+      "sha256": "5c1895c5be46a7dbdbf322c7b58a7939c79f47db79126de81bd74227309e62e3",
+      "bytes": 8775
     },
     "gallery/government/workforce-reskilling-initiative.opf.json#0": {
-      "sha256": "4e2774b1b1b941c46afa6c79c789033525262026f119a932546942653cf2f70d",
-      "bytes": 20371
+      "sha256": "2c102300f7c5f654b62cc76d8de502a75b4669bfb24acae36781b7b1db8a0b42",
+      "bytes": 20408
     },
     "gallery/government/workforce-reskilling-initiative.opf.json#1": {
-      "sha256": "722988cdcdf1f54687b00a0253e5bfb047491799f01b7dadd6e4b419204405ba",
-      "bytes": 22367
+      "sha256": "cdbe4dbfcf662b2b8c1fc3c94234765b4d051f18d11c4023365e8b9d01a6b749",
+      "bytes": 22289
     },
     "gallery/government/workforce-reskilling-initiative.opf.json#2": {
-      "sha256": "d4a944922d738d97b9caf3f3b6ec12a3a5530b6df04bd001dece3c64473344ba",
-      "bytes": 15768
+      "sha256": "a0d18bd289270790f6be2f360685d55d6edafd0cc9a3382bfea69f33d0b3171a",
+      "bytes": 15766
     },
     "gallery/government/workforce-reskilling-initiative.opf.json#3": {
-      "sha256": "77693cb2b6af5a1972c252e41c2c094c8ca3cb318ed5aa8f8d50f036167a2c1a",
-      "bytes": 17025
+      "sha256": "245b9881a523b439f5cc1e9478931a415a438e696299c5e00df5ac523d5609d0",
+      "bytes": 17037
     },
     "gallery/government/workforce-reskilling-initiative.opf.json#4": {
-      "sha256": "ea16e3193bec9a12d075c6aa7446400e885447bf64ee485bc99e0d90b2719366",
-      "bytes": 22002
+      "sha256": "3e7abc1cf175f0f6a56634c52911b7f00d0be80f68426705f33be3d7a4623766",
+      "bytes": 21971
     },
     "gallery/government/workforce-reskilling-initiative.opf.json#5": {
-      "sha256": "d5306dd459a060c5984235e36b18fefbfc1f78ea4f4212fdafeed6bd5c64f35e",
-      "bytes": 28755
+      "sha256": "cee558cb79aa7a5755a28c6c5f61ff3fa5e233556efe1ccea12bf0800cdaf6b4",
+      "bytes": 28790
     },
     "gallery/government/workforce-reskilling-initiative.opf.json#6": {
-      "sha256": "67c37b5b00b99ca68e519657c45a9ddafb8517092582ddf0a215ca7999fb7521",
-      "bytes": 19531
+      "sha256": "6ca5e1dd662d3527b233abbe97dfa6e7a8ca878972b00fce062cfc3c9bf4e1f6",
+      "bytes": 19485
     },
     "gallery/government/workforce-reskilling-initiative.opf.json#7": {
-      "sha256": "855225d537aab35f033221a47040c41d3e8442a78a0a085af69d87dbce9d6963",
-      "bytes": 9299
+      "sha256": "bc7234668dba8c9645cd7850b70e7abd141f63b99a19d5ae9e174ec832e2112f",
+      "bytes": 9306
     },
     "gallery/government/workforce-reskilling-initiative.opf.json#8": {
-      "sha256": "a3ca9e68bcb10058e360d1b37e0f99b1d2c8a5ef0d42be49a516cd710f235961",
-      "bytes": 11189
+      "sha256": "a3b22283b860a8c850edfff4f8220a19d155580e9a34ebf45ab8056871708aa2",
+      "bytes": 11243
     },
     "gallery/government/workforce-reskilling-initiative.opf.json#9": {
-      "sha256": "1c2d4632c4c611afc8d0050c559476bf34dfd1130c264330d6a2faf6ef491710",
-      "bytes": 24760
+      "sha256": "4c712971935d831c8214f20fabbe27337d0adcf0f6a2b2fab2dcfc3a761c4193",
+      "bytes": 24585
     },
     "gallery/industries/airline-disruption-recovery-review.opf.json#0": {
-      "sha256": "bce21143d73a3735942de3895c7f6526a948261ff51b5a6643fef2c5e5d71bdb",
-      "bytes": 6922
+      "sha256": "1f335c0d307779302b3995324bdd61b1e5f0081d9b01fdd67f12e422b0c6a1ab",
+      "bytes": 6934
     },
     "gallery/industries/airline-disruption-recovery-review.opf.json#1": {
-      "sha256": "6b1abefde97a3af3421ff380e5c001d9503a5c8234741d55b8f185df714714aa",
-      "bytes": 8845
+      "sha256": "8c8aaebb27813f23205885485ded4baceab39c9fbb53c24fd18dbc1a20554746",
+      "bytes": 8840
     },
     "gallery/industries/airline-disruption-recovery-review.opf.json#2": {
-      "sha256": "ea2663d821e768665b65a2442537b99eba29dff2335a4bc5f9d2a687d55567e5",
-      "bytes": 5780
+      "sha256": "c51788bfd8690366f3a9fdb2f49bfad69585924aff58447eeed70ae02936e984",
+      "bytes": 5765
     },
     "gallery/industries/airline-disruption-recovery-review.opf.json#3": {
-      "sha256": "5b994e0fd2b5daab1f043ed49e325c66e9112da690ce2be04d7960b9bd8f48e0",
-      "bytes": 7402
+      "sha256": "885b546fbc43009a5a6984ce71dc7377d0be3ab1280644de6624d743f4d3f3cb",
+      "bytes": 7421
     },
     "gallery/industries/airline-disruption-recovery-review.opf.json#4": {
-      "sha256": "2b1a42bc9f3d94cc8ac60849da4226141e17e7992fb0db683d63cd25852aa4ef",
-      "bytes": 8676
+      "sha256": "a65aecdfcfda34613969f2b3cbfaa9a9b6efbe3e40523988a23f826425eabf9e",
+      "bytes": 8631
     },
     "gallery/industries/airline-disruption-recovery-review.opf.json#5": {
-      "sha256": "8ec658242eae8cf6d0c755274c7fc3a6656add856d5ea06fdff11506f34acfe3",
-      "bytes": 17672
+      "sha256": "c7ade29adea6aaa64a10126996e9634a3c7c5ae4dc5e9fa6b4f0c50c25694d16",
+      "bytes": 17582
     },
     "gallery/industries/airline-disruption-recovery-review.opf.json#6": {
-      "sha256": "e1d4b67ab16dfd77cb22ca45e6739f9f0588e95195793a29ccfb8d8057e1e3f0",
-      "bytes": 11408
+      "sha256": "e0352892ca4ebcf7851441b33d6c4d1c119565db7c7b811f97c93c3503fa346f",
+      "bytes": 11416
     },
     "gallery/industries/airline-disruption-recovery-review.opf.json#7": {
-      "sha256": "412963a0fb41d82ec6a9858067796d334f576051d7c9d6cdf675bffd781e7de5",
-      "bytes": 6414
+      "sha256": "8cceb8d1a1dbab142f825665530a383d534e05d49446ce231d5a80e73b797dad",
+      "bytes": 6335
     },
     "gallery/industries/airline-disruption-recovery-review.opf.json#8": {
-      "sha256": "98743596d02147e053c29be35d5649282e76d15184b7af330fd89b0a906d5e62",
-      "bytes": 6580
+      "sha256": "a9b04fe5006ef792aa5f133c0a69229b3f7a1f99518fd8fc9012c2a2cfca8d76",
+      "bytes": 6568
     },
     "gallery/industries/airline-disruption-recovery-review.opf.json#9": {
-      "sha256": "54b77d64db5c9fa007c4062f2fb71786d5757aa1a9cec0a70b8e408a6436a323",
-      "bytes": 11799
+      "sha256": "5f0a27c9caa6d622e91eb6a7a1fb567ad8f6d240a2cf21ef1e30d01b45b027a9",
+      "bytes": 11897
     },
     "gallery/industries/ambulatory-access-recovery-plan.opf.json#0": {
-      "sha256": "25d37f29f0b4be40e87881ef310a4dd81c876bdd6c53459ea9ed4866ca08836b",
-      "bytes": 5331
+      "sha256": "b14284b69f76ce1ab6eba08585526d44681b4fd80fb3eafcf0ec7563cb7f3900",
+      "bytes": 5299
     },
     "gallery/industries/ambulatory-access-recovery-plan.opf.json#1": {
-      "sha256": "60c277422881afa4c84be37505be02e900eddbddef48b829faccf8f1acb9df70",
-      "bytes": 8173
+      "sha256": "b904aef0d5a87b8a515ff3e36f9b2a91889e573f3c7e395630fed974a6b7fd7e",
+      "bytes": 8126
     },
     "gallery/industries/ambulatory-access-recovery-plan.opf.json#2": {
-      "sha256": "ac37214f186bc23bc89fb20995dfc04338085118cb2e7f67b9a13fdfa30e6e72",
-      "bytes": 5926
+      "sha256": "02735d2c0c608eee785a02366d15deb7e31ee81a52e8028674f6b3fb2d762c78",
+      "bytes": 5938
     },
     "gallery/industries/ambulatory-access-recovery-plan.opf.json#3": {
-      "sha256": "30e2b6cc5dcb161425c135939e02f1258c5eecbe43c29d3c4fb16f688d24f9e1",
-      "bytes": 5159
+      "sha256": "cc058daf6bf56d35af295f95a5e275685836111092d4a4bb3eb76afaad915056",
+      "bytes": 5143
     },
     "gallery/industries/battery-line-supplier-readiness.opf.json#0": {
       "sha256": "3a9dd054414694f77b851762c9c4ebe099978e3d40377da238ea63ad7cf4ced9",
@@ -1899,8 +1899,8 @@
       "bytes": 16122
     },
     "gallery/industries/battery-line-supplier-readiness.opf.json#6": {
-      "sha256": "d0448244d919099e10dd298fa798cf4beaf584a06fc2eb9d74cb0101e7342739",
-      "bytes": 9230
+      "sha256": "65d8ae282fee23799246c1d2dedc74061b0305d3777c320602b7990bacdc5760",
+      "bytes": 9234
     },
     "gallery/industries/battery-line-supplier-readiness.opf.json#7": {
       "sha256": "9bee8a6626de0079e600d2dba21a181aac2bb48f22f3b5977b6e420e7af4c2a6",
@@ -1911,8 +1911,8 @@
       "bytes": 6275
     },
     "gallery/industries/battery-line-supplier-readiness.opf.json#9": {
-      "sha256": "f0f04c197e562a698e6253ab0831d85a40d6897e00cd3c9912a0a1f56228e45b",
-      "bytes": 10295
+      "sha256": "30920c491d5518c9721d7662882555fca12838118588f29449da39e632355c6f",
+      "bytes": 10248
     },
     "gallery/industries/boutique-hotel-revenue-recovery.opf.json#0": {
       "sha256": "49e0056da879db135296a2527152188e75b4539d92ff3c7396e09a40f32d7fcd",
@@ -1935,12 +1935,12 @@
       "bytes": 6511
     },
     "gallery/industries/boutique-hotel-revenue-recovery.opf.json#5": {
-      "sha256": "dad3f6f9f0036303241311d493b3d302aae745caaaa94c0dbfab6870156950d0",
-      "bytes": 13825
+      "sha256": "a1d31cd410c910f184160278b69fdb667e913d1eccd4c4920d7522cc4f861a3a",
+      "bytes": 13817
     },
     "gallery/industries/boutique-hotel-revenue-recovery.opf.json#6": {
-      "sha256": "8491802c94877df4cf149247adda3c157b32971650f909460eb905b905d709e2",
-      "bytes": 7927
+      "sha256": "1937bf5a83775027f7b7b7647e17a3aa432b6811485c6ae67556e77a8675e3f5",
+      "bytes": 7932
     },
     "gallery/industries/boutique-hotel-revenue-recovery.opf.json#7": {
       "sha256": "9e04d0139a37c73fa61c608653f6bc962e0b14f7cc3aefcf77f2a800ab3beadd",
@@ -1951,8 +1951,8 @@
       "bytes": 5223
     },
     "gallery/industries/boutique-hotel-revenue-recovery.opf.json#9": {
-      "sha256": "df7069bc970a16bc014b9b3c1dee3e55981b55455704602fc2f797e892510035",
-      "bytes": 8409
+      "sha256": "1f9e5320b1800840e22e765d70f451247c77a8306cead16b9f3775199ff3a055",
+      "bytes": 8433
     },
     "gallery/industries/branch-modernization-investment-case.opf.json#0": {
       "sha256": "a1a217a4d8c5b8980984d1c617b0ec5ddddaf9b0c49ffe61709a309c284af15f",
@@ -1971,20 +1971,20 @@
       "bytes": 4223
     },
     "gallery/industries/claims-triage-operating-model.opf.json#0": {
-      "sha256": "0b7950ae7f5e6c0ae1c31966d584a63059a7474829a3149b93c8d3a6ae4f5000",
-      "bytes": 4606
+      "sha256": "13bfa77129f0d83d05a01a884b312e8fe5a0c114dec0797e6b200edc83c6a00e",
+      "bytes": 4586
     },
     "gallery/industries/claims-triage-operating-model.opf.json#1": {
-      "sha256": "d19737834032ee3c3d0692c7da874d540cb6c6100860d88687fcdf3e86a621a3",
-      "bytes": 7683
+      "sha256": "d9805f5b3d8b84a8d990529a65856b088901fcf2f2d75adf45a3dff89124a19f",
+      "bytes": 7684
     },
     "gallery/industries/claims-triage-operating-model.opf.json#2": {
-      "sha256": "3a0311646f03cfa3e0399f452982e488d15fe288fc8a3e4f97860fda80e9fe0b",
-      "bytes": 5717
+      "sha256": "2077bb629feedacddf99d35e60e27353214e632e0c7e653fe52b0c93fa01cb9b",
+      "bytes": 5674
     },
     "gallery/industries/claims-triage-operating-model.opf.json#3": {
-      "sha256": "c4c81045b1b20a7321a230a2eb647adf361ad0d85db970fa1fbd5804369b6d2c",
-      "bytes": 4798
+      "sha256": "550f13d1e17c9d851a858fa7fa692b4de9e1a94d344238018e968f47f13d7181",
+      "bytes": 4754
     },
     "gallery/industries/cold-chain-waste-reduction-review.opf.json#0": {
       "sha256": "3fa7b6b6d010ae9c2fd6db4f8750d3287ac44e13648588a7c2582fb1788dbcf6",
@@ -2011,44 +2011,44 @@
       "bytes": 7498
     },
     "gallery/industries/construction-safety-stand-down.opf.json#0": {
-      "sha256": "c1db665b2b75d3e95ab6fd69a40594ca64c18fb07c633957c4599ccc23d7442f",
-      "bytes": 6873
+      "sha256": "47f8679b00c33ddf10226fcd0fa348b3126f00dfea0e4f4b0bedbe459f49aeea",
+      "bytes": 6942
     },
     "gallery/industries/construction-safety-stand-down.opf.json#1": {
-      "sha256": "befb824de6613d30c7390f64f8c7d9a925f36ffde644b6d6df5a336a5786071f",
-      "bytes": 8510
+      "sha256": "d2a11a6f5fb3d9f811ab53ccf2118533e84909520495a3ba9cf8d6e3bda37041",
+      "bytes": 8430
     },
     "gallery/industries/construction-safety-stand-down.opf.json#2": {
-      "sha256": "bb125eac4057c635d0c4a70dd2c46fc9d15c1119ffd70a4ebdf6d55073b85fc8",
-      "bytes": 5949
+      "sha256": "9a1ec21d192778b42eefb6279b91ef4d8dc736994f354ff6302b0ae3f3fb64d7",
+      "bytes": 5939
     },
     "gallery/industries/construction-safety-stand-down.opf.json#3": {
-      "sha256": "777d9e42ec256d90ead30e9528ef5cc4fd4268d57d81bd21db1612ece1a62082",
-      "bytes": 7640
+      "sha256": "042b9c83a4e89a8678ac84617a8d134d1d1ff23c90192ea9023a99c3fec27b3e",
+      "bytes": 7703
     },
     "gallery/industries/construction-safety-stand-down.opf.json#4": {
-      "sha256": "efe3a0cdf3cc78eb7d0fe463efe663b6c072c86be5ee238b71fd897c1e1dad08",
-      "bytes": 8617
+      "sha256": "5ed49e135416500540dc43b698e1048cfb2942b3dc3fc0ebc098844edd4e640c",
+      "bytes": 8642
     },
     "gallery/industries/construction-safety-stand-down.opf.json#5": {
-      "sha256": "11295ceb3bdfe8e74e1d13464f2022fc6c56ed8f0e90379e335e9b0eb589cda9",
-      "bytes": 16803
+      "sha256": "b015b695cbd5d9fcde4864584a5afa1647912dd1e68dd817b021ee593925e544",
+      "bytes": 16859
     },
     "gallery/industries/construction-safety-stand-down.opf.json#6": {
-      "sha256": "68f69c167680f7d080cd6cf44a171c5d5184289edde5336f1603e5c905af467e",
-      "bytes": 10608
+      "sha256": "fb97768cb398bbd709e9d5c1cc925b010c04a90bd64de9e6e9b9afe65fe8bf10",
+      "bytes": 10611
     },
     "gallery/industries/construction-safety-stand-down.opf.json#7": {
-      "sha256": "01837142ee9d24d8031bc700810f1ec0cccfd0979c755fd0d817a65a02e36a7a",
-      "bytes": 4283
+      "sha256": "7879cb92ad99fd87e2d0a7c69a3103f3ee17b0b2b9c28dd34783074fbb247827",
+      "bytes": 4285
     },
     "gallery/industries/construction-safety-stand-down.opf.json#8": {
-      "sha256": "7fc8e17dec9b71d2281ffccf534542c0fc12a50341d965f97d3b1cc563f0e519",
-      "bytes": 6239
+      "sha256": "98ebb898aac07dc8d5e916444e7652183d6b3ed32554353d02e37d1477353d7e",
+      "bytes": 6326
     },
     "gallery/industries/construction-safety-stand-down.opf.json#9": {
-      "sha256": "2bc597a1c689126d602d26e82179230046576c93255cf13c5b563d1ec2c19041",
-      "bytes": 11340
+      "sha256": "bb428aa5cfe1364f20a901dae7790a5a421f2bca433987bca92e8049eeca71de",
+      "bytes": 11402
     },
     "gallery/industries/consulting-margin-recovery-plan.opf.json#0": {
       "sha256": "4982c3c4000770634b676c81cf3f13ce5f4c7bfab944f89f9f6d4fae9f699e8c",
@@ -2075,12 +2075,12 @@
       "bytes": 11405
     },
     "gallery/industries/drive-thru-throughput-playbook.opf.json#0": {
-      "sha256": "939292f1f5f7ec5c071e623ec65bdf47d4be5ab818cf3049bd81bdc807ff83bc",
-      "bytes": 6520
+      "sha256": "0818b92c1a0baafdb2d5c0da5db7dc68292bf5871b131242b416ae56d9643ee3",
+      "bytes": 6547
     },
     "gallery/industries/drive-thru-throughput-playbook.opf.json#1": {
-      "sha256": "61b77f247ae90ffb6c681c3c0ffeaf5d0c72e6feac0cb298cd9f1860bb7841c8",
-      "bytes": 6865
+      "sha256": "54f25778c9c1111ca066d1d813157f092b68dcad51bfb6f69f79b780f77010d1",
+      "bytes": 6848
     },
     "gallery/industries/drive-thru-throughput-playbook.opf.json#2": {
       "sha256": "39b29ae7dfcb782151e5f6b5a4a15a250d54971284f781c2ed60960a1015fbe5",
@@ -2095,32 +2095,32 @@
       "bytes": 6840
     },
     "gallery/industries/drive-thru-throughput-playbook.opf.json#5": {
-      "sha256": "af9c970524fe0249cd62167f755ecbae825350a1eb8ded9734f59d937771a00a",
-      "bytes": 6628
+      "sha256": "e6595f9ae7b230bf4487861ead36ddfc3a06798f582cdb8e17272eeff450b332",
+      "bytes": 6665
     },
     "gallery/industries/fan-experience-operations-brief.opf.json#0": {
-      "sha256": "60e230a7fac1923fe92e6f593bc3ad9e7a7ba3cd036883aa96bf335c147a47fc",
-      "bytes": 8739
+      "sha256": "4eb39eaac31b3030ac2e96274595a1724eae6315bc7a029692b5281f5a1e46cb",
+      "bytes": 8745
     },
     "gallery/industries/fan-experience-operations-brief.opf.json#1": {
-      "sha256": "bf36e96ccbcae8c0f7e31f9ba0c82228f7599581f126a66125372ae295b9380c",
-      "bytes": 10695
+      "sha256": "86584759c5a7c66274732bf73b807383c7979c006810c37b3f1e4ee538bbde0c",
+      "bytes": 10610
     },
     "gallery/industries/fan-experience-operations-brief.opf.json#2": {
-      "sha256": "3a8612e8a04c557109fe1b4301fea4702b8ce161c08827bcd4a36cb7e69304e5",
-      "bytes": 7606
+      "sha256": "11bc1fa3edd7eb59e8ffa6151a6b70ff500388a14a1b29487165d12427e08d5a",
+      "bytes": 7617
     },
     "gallery/industries/fan-experience-operations-brief.opf.json#3": {
-      "sha256": "756fdd2bb9d5a5a1ff32e51b1767f987cb29f9ce677e5e14cd6fe846fc7e6f54",
-      "bytes": 9006
+      "sha256": "127a14b226b1187495dea748ab85278431d1a7f4c42f318e4b14e34e6e3be274",
+      "bytes": 9004
     },
     "gallery/industries/fan-experience-operations-brief.opf.json#4": {
-      "sha256": "1a704e02aa45b392742ca7b0b1aadf151bd1f99ed680125551cb0c9023971bb0",
-      "bytes": 11315
+      "sha256": "87aea5870d4b8e65846da0e0e643766b1912ee594b468c2d45160847caf2292f",
+      "bytes": 11329
     },
     "gallery/industries/fan-experience-operations-brief.opf.json#5": {
-      "sha256": "bc0bc5c3ba0cfec60edbd3280bfac7eed0bc9c820408c45e5759c65cb8b14616",
-      "bytes": 9986
+      "sha256": "82ddee50620c48c605a5cc899c8f1c9c71d8cfd31ad93a1373fb0aed91c51a83",
+      "bytes": 10028
     },
     "gallery/industries/food-bank-distribution-capacity-plan.opf.json#0": {
       "sha256": "951049d8db6d80118190c6b4be08c538a63989af9814b77b21213afdabfc7a03",
@@ -2163,60 +2163,60 @@
       "bytes": 8443
     },
     "gallery/industries/managed-detection-market-update.opf.json#0": {
-      "sha256": "30dc56911204805a0aa80f90c4e6b303ceffc4c46f0b3e32fa1318ec8c4ce752",
-      "bytes": 3888
+      "sha256": "37c1085a40e68e73ae49dd8fb110fb235890b5f74773a5541ac35d40a1b31ad7",
+      "bytes": 3891
     },
     "gallery/industries/managed-detection-market-update.opf.json#1": {
-      "sha256": "f960e3e47de234766b4a00dd7c2806e445ac7a1d9bec159987be935f364db486",
-      "bytes": 5049
+      "sha256": "e0ba3e6beaff684880e403735fa24f453dab1b9579c927a6d1003d711a815d27",
+      "bytes": 5032
     },
     "gallery/industries/managed-detection-market-update.opf.json#2": {
       "sha256": "e6d461a60b95e4c925615132a2f1efd6ddebd5e5f574c6247a9cf74faf392dff",
       "bytes": 3936
     },
     "gallery/industries/managed-detection-market-update.opf.json#3": {
-      "sha256": "4713ecadd05e2ff2e3b200cef409b5610145f225a2537a5c482377b6d27e7d82",
-      "bytes": 3716
+      "sha256": "a45065d3b0c3ca816033968508b7efad8e480b0785d71029416d8f18cc5725e4",
+      "bytes": 3714
     },
     "gallery/industries/mixed-use-leasing-pipeline-review.opf.json#0": {
-      "sha256": "90ecf604b6cf0e456f5863caa8ae98e32c7b3faf1c0ec9b61e4b0625b492e9d0",
-      "bytes": 7201
+      "sha256": "bd0327a36f9a3e1e7e3aa35d814c37a805c4b4b91258c8b70f266a4be3cac14e",
+      "bytes": 7179
     },
     "gallery/industries/mixed-use-leasing-pipeline-review.opf.json#1": {
-      "sha256": "cb45886649ff3c62c54f308c93e74013ac96cba2910fda560d3c501204f0cdbe",
-      "bytes": 8638
+      "sha256": "3bd0c0e8f64e4df86d6e42bc282cf295f077c0d9c9ca33bd30e2d21d62f2a96e",
+      "bytes": 8629
     },
     "gallery/industries/mixed-use-leasing-pipeline-review.opf.json#2": {
-      "sha256": "00d8d2341d52363fa9475c2f66fbcc823dfbe1c60c3b3bd153beb80acd8d9679",
-      "bytes": 6735
+      "sha256": "5bde786b6feab57f757bae4614ed9b198dc3d7dc00202b2acae052589632b12d",
+      "bytes": 6741
     },
     "gallery/industries/mixed-use-leasing-pipeline-review.opf.json#3": {
-      "sha256": "a6afafcaad029859aec4b27a63722d36273c70a7f8e821ad82f18a825ebfe8a0",
-      "bytes": 7202
+      "sha256": "89025f40d7233dc332771281254ea07ea7cb640165ee97087f7c515f64dbc883",
+      "bytes": 7264
     },
     "gallery/industries/mixed-use-leasing-pipeline-review.opf.json#4": {
-      "sha256": "f3cab0e487802857edae14bf909fb52329a9f69f4f14f25dab2a22cc4f9c6abc",
-      "bytes": 8721
+      "sha256": "ee0744ecc3d45b3295004a6e581246a7bf0f2af495f2f1b390c26a74a2e8d84f",
+      "bytes": 8710
     },
     "gallery/industries/mixed-use-leasing-pipeline-review.opf.json#5": {
-      "sha256": "93cee0c0c45ef0a7fd82b9b4563a11a4c5edf06b3fdfeb2fb9a9112e420ae3b7",
-      "bytes": 17877
+      "sha256": "eccc19531801235230d7e0affa80f6aa9032e7aaa26be755e04065d6e2292a3e",
+      "bytes": 17907
     },
     "gallery/industries/mixed-use-leasing-pipeline-review.opf.json#6": {
-      "sha256": "33b3368b09f7d8678a3bf25e9f4b0b271e744543b8372d1044a9c840f2177823",
-      "bytes": 10758
+      "sha256": "036a874e39d465faa1aa958532a0b33ad37c556ed842f95a4d162daafc0bfecc",
+      "bytes": 10769
     },
     "gallery/industries/mixed-use-leasing-pipeline-review.opf.json#7": {
-      "sha256": "2932c5fd027d6d830a61f5a31fb3a6b5d0cec1bdf334366579418c129d81b48e",
-      "bytes": 4736
+      "sha256": "836aea5623c883f401b3d4c330754b6065087d91dc3988eea6063bca5031dc52",
+      "bytes": 4745
     },
     "gallery/industries/mixed-use-leasing-pipeline-review.opf.json#8": {
-      "sha256": "b7002f646b634e0bdf566ab56e0fa36c8980e52b3083fcee36d9636185426fab",
-      "bytes": 6538
+      "sha256": "b975491bac3ead137f434f970e6c5726df98f749e775fc871bf6ccd996e0d6d0",
+      "bytes": 6563
     },
     "gallery/industries/mixed-use-leasing-pipeline-review.opf.json#9": {
-      "sha256": "4a64a6e9f7625c466becf7e635124770f2f6973c16a1fc268d5da6b8317143cd",
-      "bytes": 10843
+      "sha256": "89a6a7738977b4ce68675291b82def559d038c2cbc36d832bdbc3ed7e00d43f2",
+      "bytes": 10927
     },
     "gallery/industries/port-dwell-time-improvement-plan.opf.json#0": {
       "sha256": "d1950d3eb6d3f0e940d062ce9e0e7515fe7e268138f459b5be84d73ae146bfb3",
@@ -2239,8 +2239,8 @@
       "bytes": 8862
     },
     "gallery/industries/port-dwell-time-improvement-plan.opf.json#5": {
-      "sha256": "b855a7e92681c823e8a2f84243caa50c1b336724e991fd27302e6b44a86ddb2a",
-      "bytes": 18276
+      "sha256": "1441d989a37e426347d7fa6abce5c659e12f59c14585fcdb42ffc3bf388a3680",
+      "bytes": 18277
     },
     "gallery/industries/port-dwell-time-improvement-plan.opf.json#6": {
       "sha256": "78d987e1c42f4c7b30b904e259b0940e4ec48b01938085c8dac362b85ebeb9de",
@@ -2255,8 +2255,8 @@
       "bytes": 7211
     },
     "gallery/industries/port-dwell-time-improvement-plan.opf.json#9": {
-      "sha256": "120398ca700c1c80b025c6e07501ec9a2e78ba79d16d4fd20c5a5dc7150a9eef",
-      "bytes": 14861
+      "sha256": "ca21a0edce4e98376a54f94d1f814b94e92a6b2b2731748e5fbd35d25dc578b7",
+      "bytes": 14880
     },
     "gallery/industries/retail-launch-readiness-deck.opf.json#0": {
       "sha256": "d4afacaccfecacebfae33b5f535683c6f8f4c66bd426a18ff404b6c5a8d18a32",
@@ -2283,12 +2283,12 @@
       "bytes": 6353
     },
     "gallery/industries/robotics-quality-escape-briefing.opf.json#0": {
-      "sha256": "abb5ae4eb552df4f1e6e8543d44e2169e786abee486e0f902c91d6d099974e20",
-      "bytes": 5159
+      "sha256": "84ad8e04a4fccaf7021c66c9ff1db669f7e7b0b3b1a101de09206896d87a8d50",
+      "bytes": 5193
     },
     "gallery/industries/robotics-quality-escape-briefing.opf.json#1": {
-      "sha256": "a3a77ffb44a28e62347e2a71224edc729188045e7b55b2743dc6d902176ca219",
-      "bytes": 6183
+      "sha256": "d802c32e07cd833f565e96fd896fa6698dc3c6230b3acd0ee1f25e6897a70c5e",
+      "bytes": 6143
     },
     "gallery/industries/robotics-quality-escape-briefing.opf.json#2": {
       "sha256": "3f9000e484767d781427a7fe9550ac8315a115bbc4c09d3c1a619cb2d5da654c",
@@ -2303,8 +2303,8 @@
       "bytes": 5897
     },
     "gallery/industries/robotics-quality-escape-briefing.opf.json#5": {
-      "sha256": "92c4db0970052f1a231b81a87811a22222a0f7043bab5167a51925244fa640c3",
-      "bytes": 5784
+      "sha256": "82ce9e4be8da2c03783f96ea6088ae637bc14e6bd5873589313ee6a1d4505907",
+      "bytes": 5782
     },
     "gallery/industries/rural-broadband-expansion-proposal.opf.json#0": {
       "sha256": "bf1a2ae57fd04d4d238d164249b56fa15d8a0c6875ce6644fb17ddc70089cdbf",
@@ -2347,28 +2347,28 @@
       "bytes": 16917
     },
     "gallery/industries/streaming-churn-winback-strategy.opf.json#0": {
-      "sha256": "a4c8182d05829e9786338e46ab0664e402c63d3cd0efa9d2c7cd8715dbaf72c1",
-      "bytes": 20154
+      "sha256": "4e0b8aeecf1e6031ab4af70ee30956a6aad29ee74f0b8b47388e258eb76888a1",
+      "bytes": 20166
     },
     "gallery/industries/streaming-churn-winback-strategy.opf.json#1": {
-      "sha256": "998c21d17ac5600f783fe88ece44ca6f5aeff58f53a5903278fa15ad9ac92fd5",
-      "bytes": 22421
+      "sha256": "689ffbe65e7955f271084194d78b2aa62165160e50f1b1a4f746c3b0bdc61c42",
+      "bytes": 22453
     },
     "gallery/industries/streaming-churn-winback-strategy.opf.json#2": {
-      "sha256": "1b6250573c6d6565da3100ed418733d446170ade82e0c8afa341353ff68f56ae",
-      "bytes": 16747
+      "sha256": "f61e6b7b2f551f85a36b1683c9c0c4aefe2fb2249bb31dc507aebf68c416d9a5",
+      "bytes": 16730
     },
     "gallery/industries/streaming-churn-winback-strategy.opf.json#3": {
-      "sha256": "affa08394391c1d827b5c18702e325cf1db43876ee09f94743960980b4bedd06",
-      "bytes": 16613
+      "sha256": "69bd59a0afc2a3d8b37d79397f7a75445954006e9d7a4a456c96da9268c29157",
+      "bytes": 16678
     },
     "gallery/industries/streaming-churn-winback-strategy.opf.json#4": {
-      "sha256": "bf2132eb38b43c58e58d2f5a813497c3e50de1e4fdbc02c5c703de28abb7d65a",
-      "bytes": 21686
+      "sha256": "0ccc3e107daaa19b877c0b159fc0cd02fc0f3d4f47f4aa0579d8e93efcabacff",
+      "bytes": 21714
     },
     "gallery/industries/streaming-churn-winback-strategy.opf.json#5": {
-      "sha256": "28fd61ecb6252dc8d591d8662c97f20fdf3daf39cc418b9069a128aea90e2b49",
-      "bytes": 21018
+      "sha256": "f8d8f773fb2513cea7e6da57946b4f4ccec904de8bf283761663c161721d8500",
+      "bytes": 20960
     },
     "gallery/industries/tailings-monitoring-investment-brief.opf.json#0": {
       "sha256": "6fb6bf8ae83eddb24cd35b09e7967e5c32134bf4782b686cd6ae0c948bf9114e",
@@ -2391,12 +2391,12 @@
       "bytes": 7472
     },
     "gallery/industries/tailings-monitoring-investment-brief.opf.json#5": {
-      "sha256": "8332f01a463f085b8c2d4f28e55ef47d735660981f4b67422a12b6db8e2a2b45",
-      "bytes": 14359
+      "sha256": "e85a9c51bb295ff3dd46778430843b07016f81f51eef6e22aafb06cfc48a2bc8",
+      "bytes": 14351
     },
     "gallery/industries/tailings-monitoring-investment-brief.opf.json#6": {
-      "sha256": "cde3c309ecd81f97951550a409b1b77b7ee45ac2bff50489231c8ceb56b22569",
-      "bytes": 10014
+      "sha256": "6700c99f5239d852178fa1556b349c80af6c74df31a049d24450c8079fec83ad",
+      "bytes": 9996
     },
     "gallery/industries/tailings-monitoring-investment-brief.opf.json#7": {
       "sha256": "2d110b9ca948dc47eb790cc5c9cc8311edfd811876be7747b992dff19e40a381",
@@ -2407,8 +2407,8 @@
       "bytes": 5346
     },
     "gallery/industries/tailings-monitoring-investment-brief.opf.json#9": {
-      "sha256": "bd509926e355ccbbaba68d62e4007a94395220188886fa97dc81b74512ea9d00",
-      "bytes": 10405
+      "sha256": "eb3e53ca513be46aab1b345c16dfec1bf1a43df5b011eecd4d34d37ad3b9cc99",
+      "bytes": 10444
     },
     "gallery/industries/trial-enrollment-rescue-plan.opf.json#0": {
       "sha256": "19273f5196c4039fbe6d23f7c1663520042d869ba1d5df282889ef15a74afce9",
@@ -2479,12 +2479,12 @@
       "bytes": 9847
     },
     "gallery/industries/water-stewardship-grower-brief.opf.json#5": {
-      "sha256": "4d4a8a133a8ceb27f54eea09fbd1b6e4381c6ea77bb40adbf19835768f2213dc",
-      "bytes": 18614
+      "sha256": "df5810857faa852e6f2851d60577389e6734c0339a3b0d157c648cf41cc2d3e2",
+      "bytes": 18603
     },
     "gallery/industries/water-stewardship-grower-brief.opf.json#6": {
-      "sha256": "e0ddcabd89ae5bd5a552d38a51684aded1e9cf17975fba6df9ffa4cca00c4eba",
-      "bytes": 12934
+      "sha256": "2a57e4b129e9b5113df130e9bcaee2c0d4c363fe5427f86b2c987b45fe82c209",
+      "bytes": 12938
     },
     "gallery/industries/water-stewardship-grower-brief.opf.json#7": {
       "sha256": "44f3fa2da551be710b51d5bde9d993699c8f49f593e1a73f88540f6f8951c64f",
@@ -2495,8 +2495,8 @@
       "bytes": 6173
     },
     "gallery/industries/water-stewardship-grower-brief.opf.json#9": {
-      "sha256": "4cf2df0a896a7e5abf0f88bcdad1579673516d57b3d5d241bee423a984479296",
-      "bytes": 13468
+      "sha256": "7b5176298bf44ec9fb59ba7161bdbfb7144993be525e5d61e51b7eff59716686",
+      "bytes": 13447
     },
     "gallery/international/arabic-digital-services-brief.opf.json#0": {
       "sha256": "82749da1508d69b54eac734f43cfa0cc129e5bce9c3bc4df27f8c91c8e5c2924",
@@ -2547,12 +2547,12 @@
       "bytes": 6777
     },
     "gallery/international/german-works-council-update.opf.json#0": {
-      "sha256": "9cc08daa8f09cd602e79dfd21d88f58df42299d973dd11cd8f8901a5648bbf04",
-      "bytes": 14885
+      "sha256": "c34744e1e2395bbfa476f1ce409144ca09d7465d931eadc18082d0bea85e15fa",
+      "bytes": 14897
     },
     "gallery/international/german-works-council-update.opf.json#1": {
-      "sha256": "0bba63a0df2c9c8b5e267ca406f4f7d1559b38e479e8ab2d81c91e1e38cd7f29",
-      "bytes": 9924
+      "sha256": "a4a767b31127bc1d451332bebe538770b023e84d344aefac565969140f7eb6ab",
+      "bytes": 9854
     },
     "gallery/international/german-works-council-update.opf.json#2": {
       "sha256": "4220d9606ebc640f5afe9d0334d8aa9c28e880158ceb224a0c188decf700b73a",
@@ -2567,8 +2567,8 @@
       "bytes": 9727
     },
     "gallery/international/german-works-council-update.opf.json#5": {
-      "sha256": "d39e97e01512650d9973ee7e9dc8120123b8942d31233091597df5acea3a631d",
-      "bytes": 14195
+      "sha256": "5de13e9041c022a4847b773a1caa947f13884a2fe653d8c4c37afe8f179a9572",
+      "bytes": 14173
     },
     "gallery/international/india-rural-payments-pilot.opf.json#0": {
       "sha256": "961503c5d965ce72d4fa6f185633add9c37ae590174080d68acd83befa7b8dea",
@@ -2587,20 +2587,20 @@
       "bytes": 4240
     },
     "gallery/international/japan-market-entry-readout.opf.json#0": {
-      "sha256": "939399118badf5e64f22b3f83f65503b9d8d8aa7f4affcb3ae70d37b3b12e635",
-      "bytes": 5080
+      "sha256": "8a247ca932b3c092262436fec60cd9ad837e9f6c5381d63e4318a2fc3d467f2d",
+      "bytes": 5072
     },
     "gallery/international/japan-market-entry-readout.opf.json#1": {
-      "sha256": "72d9b57a72a920295760718f792c7d24dc00f15ce67451d357dff01e6b01c2db",
-      "bytes": 7924
+      "sha256": "fbb36e92be275f8e486abed637d2b59866957d1fa82c093d89bca106a8a369f7",
+      "bytes": 7880
     },
     "gallery/international/japan-market-entry-readout.opf.json#2": {
-      "sha256": "9acee1b6bb105efa790f61ab234036afcbb12df6eba83b0f3794004cd291452e",
-      "bytes": 3794
+      "sha256": "2fa990fa9ea1c9cb071b7516d28dce36821d6f6d6100e0f2c0752030d239a8a2",
+      "bytes": 3833
     },
     "gallery/international/japan-market-entry-readout.opf.json#3": {
-      "sha256": "ed22bcd9d40c4d11c30d8c88208bdb36c780b7c9f82edf866b39732ec41d018e",
-      "bytes": 5285
+      "sha256": "98e48b388f923202361216cd0026f0a8dbabbd9193cf66de3219c1c8ad13f68e",
+      "bytes": 5293
     },
     "gallery/presentation-types/customer-qbr-renewal-deck.opf.json#0": {
       "sha256": "7c27b37795dfcb127f8d27c8580c280dfe427e488d0de7190fe042c65ec905ac",
@@ -2651,28 +2651,28 @@
       "bytes": 16615
     },
     "gallery/presentation-types/developer-conference-talk.opf.json#0": {
-      "sha256": "8e7146b77f317493089dd1e08726e9bc6d75a071df8ed6c20f86d064a63daa41",
-      "bytes": 5940
+      "sha256": "6fd48437f150a67446dab06a7e2bdf18988575ca99be3ab6c8fda10c3f8196ae",
+      "bytes": 6010
     },
     "gallery/presentation-types/developer-conference-talk.opf.json#1": {
-      "sha256": "05476b87d4be8981fd30b81e1386ad6c84889156956c44a5297433c4a5037739",
-      "bytes": 8102
+      "sha256": "0cae061447f3e5b301e49fe0ba0c9fb6aebff6bd48cf9d0e77e8ccf9d3b6b986",
+      "bytes": 7946
     },
     "gallery/presentation-types/developer-conference-talk.opf.json#2": {
-      "sha256": "a783e46be7285718cd08de6f3fc6884553d6d4978863622662b75dd094318a69",
-      "bytes": 6448
+      "sha256": "43db9d56454b102aa052686fb4e2602b1c99b950af0cad64695dc9602f6a043a",
+      "bytes": 6402
     },
     "gallery/presentation-types/developer-conference-talk.opf.json#3": {
-      "sha256": "bbd2037a6554d11750f3723e889c2b7305bee2e7dc855a5b815ef284b48f311e",
-      "bytes": 7414
+      "sha256": "fd4dbdccdda00afcd6f9259f698f12a705b3a5a6961084eee9634539009752fa",
+      "bytes": 7441
     },
     "gallery/presentation-types/developer-conference-talk.opf.json#4": {
-      "sha256": "e88b02f2bbc999855a2727118022483db109b9d751a0ad575b46cc0a9fe30029",
-      "bytes": 8519
+      "sha256": "c61ecc657ed50675418292718a2b8b6da95a0d4356cfa98cb6a43a07624ce9d6",
+      "bytes": 8531
     },
     "gallery/presentation-types/developer-conference-talk.opf.json#5": {
-      "sha256": "fb9dea757dc0cc3a7e876c998fe3c5ee386ca0213e23fdc325f914a252d1a9dc",
-      "bytes": 7822
+      "sha256": "0904e284909f725c1470b3a974280c153bbc40d3f832a79e96eb76643d32880f",
+      "bytes": 7815
     },
     "gallery/presentation-types/executive-workshop-facilitation.opf.json#0": {
       "sha256": "9ee324a4a8c6efc01ff62d3bee3d4f221a48bb118d743f70198b8ef745211271",
@@ -2723,8 +2723,8 @@
       "bytes": 15659
     },
     "gallery/presentation-types/manager-training-deck.opf.json#6": {
-      "sha256": "938b098295ceeaa060674af403b07ab80b2052535d7d2448df3b896f68485bd7",
-      "bytes": 10208
+      "sha256": "6fac9a748ad6e4c38a576e9435f30a6299f9b7c492d26bfb06c9f44267e2fcd5",
+      "bytes": 10212
     },
     "gallery/presentation-types/manager-training-deck.opf.json#7": {
       "sha256": "053f8a96522f7ac809fe377e3f4f131ff55d8c8afdf068d51c96d9bd667db561",
@@ -2735,32 +2735,32 @@
       "bytes": 6108
     },
     "gallery/presentation-types/manager-training-deck.opf.json#9": {
-      "sha256": "25912575f7d51624ef6f8b26a46a018d0b2b86d71c5812def3c61f2a6b7aa906",
-      "bytes": 10386
+      "sha256": "3e4aa5af16c20a4b571cd698d3aa386e93887997710a9d55165a16abe6ef9284",
+      "bytes": 10338
     },
     "gallery/presentation-types/monthly-board-update.opf.json#0": {
-      "sha256": "7c66f6996368c462b714b69576df12e46716f0a5e0b5a41479b7ecaacd93b6c1",
-      "bytes": 4058
+      "sha256": "9fc8bed0b50692e01de0e7cbd070afd7ff78bf5c7fc03002a31a374755064887",
+      "bytes": 4022
     },
     "gallery/presentation-types/monthly-board-update.opf.json#1": {
-      "sha256": "77df1ae9cf304ce90e447228db24b0c33e0c07dbec2b929ca456234738d3f8fe",
-      "bytes": 7339
+      "sha256": "502773afa359289d5a63cc87b9b9a92eb5ad65fa64b92c6ddadcc727307162cf",
+      "bytes": 7271
     },
     "gallery/presentation-types/monthly-board-update.opf.json#2": {
-      "sha256": "a08b3b871d58f6a78930d4ea61e88025c8553a99562f68d02f74f5c274713e65",
-      "bytes": 6263
+      "sha256": "e627ba9a43b28d1eb7cb1a584cb7591cbd0e712e68f1e136f369cfa0acd7dd91",
+      "bytes": 6284
     },
     "gallery/presentation-types/monthly-board-update.opf.json#3": {
-      "sha256": "a7a2cae69a61463afa1744adc24fe1de068e926d640fc771a9bb9966c4e500d9",
-      "bytes": 5091
+      "sha256": "a4b4b699198a8a331b948e51ddaca21fb0d7f4638c4271d4e56970cdd47e21dd",
+      "bytes": 5089
     },
     "gallery/presentation-types/policy-briefing-for-advisors.opf.json#0": {
-      "sha256": "ecae8629cb5ca430e6c75e2633f98facba02eb05874f28b75705dd72d1f76b67",
-      "bytes": 5865
+      "sha256": "d6f7980ec75b3acba2575e84422ec85fca23ae6e5fc6f07294b91f830fb1c684",
+      "bytes": 5869
     },
     "gallery/presentation-types/policy-briefing-for-advisors.opf.json#1": {
-      "sha256": "048f324a5308f0a10b15764a3ad73e2646132811735bc5228b5aa00b94e7898b",
-      "bytes": 6526
+      "sha256": "239b621cad7827eeb2b5fa8e1e7b9b7108ab7d5360b63304cf74bd2cc5b1d55e",
+      "bytes": 6518
     },
     "gallery/presentation-types/policy-briefing-for-advisors.opf.json#2": {
       "sha256": "e5f3d0fbd71c8cca4f096a8d83fc0b11e5db016e335c71f83a97d9af675afd69",
@@ -2775,12 +2775,12 @@
       "bytes": 6506
     },
     "gallery/presentation-types/policy-briefing-for-advisors.opf.json#5": {
-      "sha256": "fb8bae20954528914edf4870076e57c3475b7563c9188f348c85e44e946af0b7",
+      "sha256": "7fc10a0f79557293c87fd3f39a418bde9201dce4e937a769153b2fcd34b38e91",
       "bytes": 12561
     },
     "gallery/presentation-types/policy-briefing-for-advisors.opf.json#6": {
-      "sha256": "ef62fde6628ce3f93f5b05c7f41e2089c8a4b4314a5136b4488599f07baa1fe7",
-      "bytes": 9041
+      "sha256": "2de0f6f42793e44dc33a3dc2c1b7db05de4d8403410d44e5508a91be53d66f0b",
+      "bytes": 9016
     },
     "gallery/presentation-types/policy-briefing-for-advisors.opf.json#7": {
       "sha256": "fea2bd4a05e3d6178cf1f500cdfbe4a6c2b7018cb0df7a091d18b2aa0f411cca",
@@ -2791,8 +2791,8 @@
       "bytes": 5126
     },
     "gallery/presentation-types/policy-briefing-for-advisors.opf.json#9": {
-      "sha256": "68b4ed8da022510d9928d009103b8d6731ea17c0b42c6ea3f84cd59153ee16a8",
-      "bytes": 8263
+      "sha256": "5cea73bb1499986787d78a9ca020515a47a983194929a33d5da781f05117ab6f",
+      "bytes": 8257
     },
     "gallery/presentation-types/product-launch-narrative.opf.json#0": {
       "sha256": "a24d184ad48c0b81f169c5fe6619a63cc37aacd6f79b2b391aab202c657b0aa7",
@@ -2815,12 +2815,12 @@
       "bytes": 11717
     },
     "gallery/presentation-types/product-launch-narrative.opf.json#5": {
-      "sha256": "4959f911528ba4fd7f674792ef06c16959a3e6759a873ade68d01897c629cb2d",
-      "bytes": 17957
+      "sha256": "dd27dd11d7f4afa4bc6c8a8982ff6512423c5020606d5cf77b4e24fcd1e8183e",
+      "bytes": 17970
     },
     "gallery/presentation-types/product-launch-narrative.opf.json#6": {
-      "sha256": "d8009cfc19a989c8786303c5ff51e29b495847726b0054ddf24eef5f91c79a7c",
-      "bytes": 11474
+      "sha256": "5d351e480ada8203595f761426960bcacefe393b3b5941819dec8946af29c832",
+      "bytes": 11465
     },
     "gallery/presentation-types/product-launch-narrative.opf.json#7": {
       "sha256": "63d0b8fb073f0c3c6db12f3c3803b55008dce910e78a9eb2f14f3b3ec8c9cc1f",
@@ -2831,48 +2831,48 @@
       "bytes": 6546
     },
     "gallery/presentation-types/product-launch-narrative.opf.json#9": {
-      "sha256": "3759b25113533dd11ea2bdc2c2fcf60bda3fcbb54584112eb776495756c1b687",
-      "bytes": 13391
+      "sha256": "0e23e140450b5fff5630665fce52f18c0039297534c7a2300f61b116d0887790",
+      "bytes": 13447
     },
     "gallery/presentation-types/research-findings-report.opf.json#0": {
-      "sha256": "278cfd2d317658eab5609da7d90710ad0e975fc6bcf04521d2503c8ccb785ae4",
-      "bytes": 6345
+      "sha256": "37dd9de80fd54356b8fb81e4be395e38e4d407dcd9bb82143eb5926f4966f846",
+      "bytes": 6375
     },
     "gallery/presentation-types/research-findings-report.opf.json#1": {
-      "sha256": "bbe835d1a633247da8bf93cabd15dab028dc4da05bf619aeb19ec841bbf9bf0c",
-      "bytes": 8356
+      "sha256": "3fb981d903a10bcb353beba1d69dc13fcc23c9d47fe64dfcadba9ed6588bf15a",
+      "bytes": 8311
     },
     "gallery/presentation-types/research-findings-report.opf.json#2": {
-      "sha256": "983551177e4b90334a7704503dc681ecc965c5971cbfb0d67b1b5d66a654881d",
-      "bytes": 6157
+      "sha256": "a737bd33eba90a9f632cf8aa1b5943720d7536f95fadda4e146a4f417972aaf7",
+      "bytes": 6176
     },
     "gallery/presentation-types/research-findings-report.opf.json#3": {
-      "sha256": "f16b678ffb4e20c53a687e3ce7c8c35324a527d6c3667d531f220c675302eafb",
-      "bytes": 7611
+      "sha256": "d5c87af0d07801c049bddc26903e1d8b29d58aabd83d7158fbb73bfaa1dd8ef8",
+      "bytes": 7648
     },
     "gallery/presentation-types/research-findings-report.opf.json#4": {
-      "sha256": "d7e81eb796a2b51678a7aa48b0ebb431b7ce4f6e2532e293e05fe1137a7746d0",
-      "bytes": 8556
+      "sha256": "823c895ee2484483f9a4a0dcfe2e39960a481b21b87120614d8eb38569ed58ba",
+      "bytes": 8602
     },
     "gallery/presentation-types/research-findings-report.opf.json#5": {
-      "sha256": "0e0d27994c0fd9ddcc0b2f76ba52119cae41ed8ff5add178491ac16c044c407c",
-      "bytes": 16548
+      "sha256": "8273e9d08da5d39b9f6ac20494ff47cd6a846e88bfee86b4ef92b968a7c5f21a",
+      "bytes": 16496
     },
     "gallery/presentation-types/research-findings-report.opf.json#6": {
-      "sha256": "d63872169ea50d4fc4cc095add2976055bfd8b2394641cd483dfab59f328c438",
-      "bytes": 10972
+      "sha256": "59c55e1dacdb325f07ea3d1c3faa6e80908da429d0c2864607f022a277610af4",
+      "bytes": 10868
     },
     "gallery/presentation-types/research-findings-report.opf.json#7": {
-      "sha256": "f5d5f848def8152fe8e97305362fd69d5863a5a443324efafc3988d903ddc2cb",
-      "bytes": 4286
+      "sha256": "b8b569262f6ceff712e46155e8ef197f1d443378c7dd0624f5bb70d7888d2bfa",
+      "bytes": 4260
     },
     "gallery/presentation-types/research-findings-report.opf.json#8": {
-      "sha256": "d065d3e22410d61907209123dfc9f34c7a29a9a91ff38e4925094c02deae43a9",
-      "bytes": 6164
+      "sha256": "c30fedc68cb6fdb5f1b861aa63ba508b7a0a7873c3be409081bfafab35ddf814",
+      "bytes": 6206
     },
     "gallery/presentation-types/research-findings-report.opf.json#9": {
-      "sha256": "ffd1f950f0f24d3098603da2151596b40de546deb16dbbd43876ff055acce36b",
-      "bytes": 10354
+      "sha256": "1e164d6b4cceba9319e5f5d08d1394852fdc6bbe06f01b9a8e19c6f4e77045c1",
+      "bytes": 10301
     },
     "gallery/presentation-types/seed-pitch-for-climate-risk-api.opf.json#0": {
       "sha256": "09929a61d23e03c43abf011512bfa99aff38bd4f36b783cde39d9708f042f2c9",
@@ -2907,8 +2907,8 @@
       "bytes": 2909
     },
     "technical/block-composition.opf.json#0": {
-      "sha256": "0b8b2c95870e1eb6d6ade3c4bdfac1f0828f6b355a6156d8e7ae4a2bb62c81a5",
-      "bytes": 9454
+      "sha256": "ae284db1577d98f9c42be9173e123f5285f996e79779141abbe8fa6a47f5290d",
+      "bytes": 9473
     },
     "technical/catalog-overrides.opf.json#0": {
       "sha256": "02d1f2317f11ffd809f0269138ee62d9903c8867263f0677771f0868ac27111c",
@@ -2959,8 +2959,8 @@
       "bytes": 3191
     },
     "technical/content-payload-matrix.opf.json#2": {
-      "sha256": "a354521df06bdf73f6975fad081b34c35e02ed386a1653b0a61ef96b2f72c650",
-      "bytes": 3875
+      "sha256": "baa6826a67431a7054f6afda55c428613c1e5ea99bf073d8f13250b461b1021c",
+      "bytes": 3874
     },
     "technical/content-payload-matrix.opf.json#3": {
       "sha256": "82b1f1be4e16e97bc37060899b323301d9f9ab02fcb5662f5e6b196271b79b0d",
@@ -3051,8 +3051,8 @@
       "bytes": 6792
     },
     "technical/full-feature-tour.opf.json#5": {
-      "sha256": "0805ab724a95f9ae3f1bfadace3adabc86eee427423238b4b20c5230d8039bcd",
-      "bytes": 6338
+      "sha256": "60b9e5dbd46555e489fd996f739c4f2ac438d077733cac7c197338257d74f2e8",
+      "bytes": 6335
     },
     "technical/full-feature-tour.opf.json#6": {
       "sha256": "8fe8713936c5655d047ef58df279906ace3dd53f43b76b30e31cbaf37d23a0bf",
@@ -3147,16 +3147,16 @@
       "bytes": 5112
     },
     "technical/promoted-region-grid.opf.json#2": {
-      "sha256": "7e1c88a1206c9e55b1c3954953f5543bca69c5a54bbc57c06c9ba43c93d5c16b",
-      "bytes": 3939
+      "sha256": "6d866ec4459e5522393f667bc622c0cbf44a4ae0eeb170174b8e140a3b27cec8",
+      "bytes": 3933
     },
     "technical/rich-text-runs.opf.json#0": {
       "sha256": "634af326e2606c861a696bb27b2ebea166a1586da2e6c3762516f504a71d875f",
       "bytes": 3067
     },
     "technical/rich-text-runs.opf.json#1": {
-      "sha256": "b24187e0a8825b1a277a5adb9f8473fd9047da803848e04e794675f98b5d60d1",
-      "bytes": 4206
+      "sha256": "1f9bbab7911b65b08ab33a48832ea53af962d421d6648cb921f5eeb19d878ca6",
+      "bytes": 4214
     },
     "technical/rich-text-runs.opf.json#2": {
       "sha256": "1dec819f5568d3d2581ca397512b994df128f1af4de9f1c447df1aba509a5e63",
@@ -3167,8 +3167,8 @@
       "bytes": 3253
     },
     "technical/root-content.opf.json#1": {
-      "sha256": "50b7fcd8fa7854296bc0c4854e2973483066ad4d09974f2dbfbdfaa37247c140",
-      "bytes": 4442
+      "sha256": "3798d913044e9ec3ccb014f802f5d0b3c3959b882e4965a1b8db72a813f365cd",
+      "bytes": 4435
     },
     "technical/root-content.opf.json#2": {
       "sha256": "4b058d55a3263d32c23a3c1e8cc7005a09d2590781a34245b1ef7bce965e1c04",
