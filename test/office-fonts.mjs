@@ -139,7 +139,13 @@ assert.equal(theme.resolveFont({fontFamily:'+mn-lt',fontWeight:400}).resolvedFam
 assert.equal(theme.resolveFont({fontFamily:'+mj-lt',fontWeight:700}).resolvedFamily,'Caladea');
 assert.throws(()=>theme.resolveFont({fontFamily:'+mn-ea',fontWeight:400}),{code:'unresolved-theme-font'});
 assert.equal(theme.resolveFont({fontFamily:'Unknown Font',fontWeight:400}).compatibility,'generic');
-for(const fontFamily of ['Wingdings','Wingdings 2','Wingdings 3','Webdings','Symbol']) assert.throws(()=>theme.resolveFont({fontFamily,fontWeight:400}),{code:'font-encoding-required'});
+// FF-45: a symbol-encoded family no longer fails; it previews through its code table with the first loaded open symbol face
+// (here the office pack's Noto Sans, when loaded), else the fallback family. test/symbol-fonts.mjs covers the path exhaustively.
+for(const fontFamily of ['Wingdings','Wingdings 2','Wingdings 3','Webdings','Symbol']){
+  const symbol=theme.resolveFont({fontFamily,fontWeight:400});
+  assert.equal(symbol.substitute,true);
+  assert.ok(symbol.symbolEncoding===fontFamily&&symbol.resolvedFamily==='Noto Sans'||symbol.compatibility==='generic'&&symbol.resolvedFamily==='Roboto',`${fontFamily}: ${JSON.stringify(symbol)}`);
+}
 // FF-45: without the math pack Cambria Math follows the policy like any other visual family (here the registry's generic fallback); with the pack loaded it previews with STIX Two Math (test/emoji-math.mjs).
 assert.equal(theme.resolveFont({fontFamily:'Cambria Math',fontWeight:400}).compatibility,'generic');
 assert.throws(()=>createFontRegistry(entries,{substitutionPolicy:'metric'}).resolveFont({fontFamily:'Cambria Math',fontWeight:400}),error=>error.code==='font-unavailable'&&error.details.replacement==='STIX Two Math'&&error.details.packs.includes('scripts'));

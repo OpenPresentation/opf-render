@@ -66,9 +66,9 @@ assert.equal(scriptFontAliases(['Noto Color Emoji', 'Noto Emoji', 'STIX Two Math
 assert.equal(scriptFontAliases(['Noto Emoji'])['Segoe UI Emoji'], 'Noto Emoji');
 assert.equal(scriptFontAliases(['STIX Two Math', 'Noto Sans Math'])['Cambria Math'], 'STIX Two Math');
 assert.equal(scriptFontAliases(['Noto Sans Math'])['Cambria Math'], 'Noto Sans Math');
-// The chain tries every real script face before the emoji and math faces, which come last.
+// The chain tries every real script face before the emoji and math faces; the two symbol faces (FF-45 symbols) close it.
 const chain = glyphFallbackFamilies('\u{1F600}', core.resolveScriptFonts(deck('x')));
-assert.deepEqual(chain.slice(-3), ['Noto Color Emoji', 'Noto Sans Math', 'STIX Two Math'], 'a sans deck: the sans math face first');
+assert.deepEqual(chain.slice(-5), ['Noto Color Emoji', 'Noto Sans Math', 'STIX Two Math', 'Noto Sans Symbols 2', 'Noto Sans Symbols'], 'a sans deck: the sans math face first, then the symbol faces');
 assert.equal(chain[0], 'Noto Sans');
 
 // 2. Detection: emoji presentation and mathematical notation are reported as Zsye and Zmth; text-default symbols are not.
@@ -134,7 +134,8 @@ for (const [name, text] of Object.entries(EMOJI)) {
 }
 assert.deepEqual(plan(`${EMOJI.family}${EMOJI.flag}${EMOJI.thumbsMedium}`), [['Noto Color Emoji', `${EMOJI.family}${EMOJI.flag}${EMOJI.thumbsMedium}`]], 'adjacent sequences merge into one run');
 {
-  const textFace = ['Roboto', ...designatedFamilies('Latn')].find(family => strictCovers(registry, family, '\u2764'));
+  // With the symbol faces loaded as well (FF-45), the chain's text faces include Noto Sans Symbols 2, which draws the heart.
+  const textFace = ['Roboto', ...designatedFamilies('Latn'), 'Noto Sans Symbols 2'].find(family => strictCovers(registry, family, '❤'));
   const heart = plan('I \u2764\uFE0E you').find(([, text]) => text.includes('\u2764'));
   assert.equal(heart[0], textFace ?? 'Noto Color Emoji', 'VS15 keeps a text face when one has the heart');
 }
