@@ -23,7 +23,7 @@ const SNAPSHOT=freeze({
  },
  "source": {
   "path": "spec/reference/font-policy.json",
-  "sha256": "24a93401a168be4cb236b4b1afc06e6fd610a28f445381056682e56fb8d952a0"
+  "sha256": "4598163da6ebb0e74cd9c7180762cf7f8cc698abc0491bc9312658ceb9b5dc6e"
  },
  "families": [
   {
@@ -553,7 +553,16 @@ const SNAPSHOT=freeze({
     "office-cloud"
    ],
    "embeddableByOpf": false,
-   "replacement": null
+   "replacement": {
+    "family": "STIX Two Math",
+    "compatibility": "visual",
+    "measured": null,
+    "source": "https://github.com/stipub/stixfonts"
+   },
+   "alternates": [
+    "Noto Sans Math",
+    "Caladea"
+   ]
   },
   {
    "family": "Candara",
@@ -1591,6 +1600,22 @@ const SNAPSHOT=freeze({
    }
   },
   {
+   "family": "Noto Color Emoji",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
+   "family": "Noto Emoji",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
    "family": "Noto Naskh Arabic",
    "licenseClass": "open",
    "license": "OFL-1.1",
@@ -1732,6 +1757,14 @@ const SNAPSHOT=freeze({
   },
   {
    "family": "Noto Sans Malayalam",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
+  },
+  {
+   "family": "Noto Sans Math",
    "licenseClass": "open",
    "license": "OFL-1.1",
    "availability": [],
@@ -2105,7 +2138,15 @@ const SNAPSHOT=freeze({
     "office-cloud"
    ],
    "embeddableByOpf": false,
-   "replacement": null
+   "replacement": {
+    "family": "Noto Color Emoji",
+    "compatibility": "visual",
+    "measured": null,
+    "source": "https://github.com/googlefonts/noto-emoji"
+   },
+   "alternates": [
+    "Noto Emoji"
+   ]
   },
   {
    "family": "Segoe UI Light",
@@ -2318,6 +2359,14 @@ const SNAPSHOT=freeze({
      "reference": "Source Sans Pro 2.045"
     }
    }
+  },
+  {
+   "family": "STIX Two Math",
+   "licenseClass": "open",
+   "license": "OFL-1.1",
+   "availability": [],
+   "embeddableByOpf": true,
+   "replacement": null
   },
   {
    "family": "Sylfaen",

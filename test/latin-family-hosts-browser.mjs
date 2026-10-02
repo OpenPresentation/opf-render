@@ -77,7 +77,7 @@ try {
       const host = document.querySelector('main');
       host.innerHTML = renderSvg(deck, {textMeasurement: registry.textMeasurement});
       await document.fonts.ready;
-      const clean = value => value.split(',')[0].trim().replace(/^"|"$/g, '');
+      const clean = value => value.split(',')[0].trim().replace(/^["']|["']$/g, '');
       const faces = [...document.fonts].map(face => ({family: clean(face.family), weight: Number(face.weight), style: face.style, status: face.status}));
       const runs = [...host.querySelectorAll('text[textLength], tspan[textLength]')].filter(element => element.textContent.trim()).map(element => {
         const owner = element.closest('text'), get = name => element.getAttribute(name) ?? owner.getAttribute(name);
