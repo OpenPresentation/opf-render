@@ -40,9 +40,9 @@ jobs:
       # RR-32 pins core PR opf#256 (template variables, resolveVariables) and RR-16 pins core PR opf#247 (composed font sizes on PowerPoint's 0.01 pt grid; 316 golden slides move, selected through OPF_GOLDEN_BASELINE). Both are unmerged, so the pin is the throwaway branch codex/rr-16-combined-rr-32-b (8c2bfd9: opf#247 commit 448c47f merged with the opf#256 commit render main pins, ba727c7; it carries no other core change, so the font policy snapshot stays valid). Repin to the core merge commit once both merge (never leave it on an unmerged head).
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # FF-45 (RR-17): core branch codex/rr-17b-core-pin = core main (which has opf#255, the font policy rows for Segoe UI Emoji and Cambria Math) plus opf#247 (RR-16, which the render goldens use); repin to the core main commit that includes it before or when merging.
+          # FF-45 (RR-17): core branch codex/rr-17b-core-pin2 = the core commit render main pins (RR-16 and RR-32 work) plus the font policy rows of opf#255 (merged: Segoe UI Emoji, Cambria Math). Repin to core main once opf#247 (RR-16, which the render goldens use) merges.
           repository: OpenPresentation/opf
-          ref: 26ae10587582fedfcd797ba894b779f08c60427c
+          ref: ec64a5dbeb0c433ddaf5a90b3064a7b68c6becd0
           path: opf
           fetch-depth: 0
           persist-credentials: false

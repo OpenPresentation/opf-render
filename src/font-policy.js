@@ -23,7 +23,7 @@ const SNAPSHOT=freeze({
  },
  "source": {
   "path": "spec/reference/font-policy.json",
-  "sha256": "4598163da6ebb0e74cd9c7180762cf7f8cc698abc0491bc9312658ceb9b5dc6e"
+  "sha256": "bae0cc16dab9f81b59a9933edeaff9cff5514fe32860b3f9b2544e8c11d23d01"
  },
  "families": [
   {
@@ -135,14 +135,7 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Cousine",
     "compatibility": "visual",
-    "measured": {
-     "replacement": "Cousine",
-     "meanAbsWidthDelta": 0,
-     "meanWidthDelta": 0,
-     "maxAbsWidthDelta": 0,
-     "styles": 4,
-     "reference": "Aptos Mono 2.01;O365"
-    }
+    "measured": null
    },
    "alternates": [
     "Roboto Mono"
@@ -1235,19 +1228,7 @@ const SNAPSHOT=freeze({
    "license": "OFL-1.1",
    "availability": [],
    "embeddableByOpf": true,
-   "replacement": {
-    "family": "Cousine",
-    "compatibility": "metric",
-    "measured": {
-     "replacement": "Cousine",
-     "meanAbsWidthDelta": 0,
-     "meanWidthDelta": 0,
-     "maxAbsWidthDelta": 0,
-     "styles": 4,
-     "reference": "Liberation Mono 2.1.5"
-    },
-    "source": "https://github.com/liberationfonts/liberation-fonts/blob/2.1.5/README.md"
-   }
+   "replacement": null
   },
   {
    "family": "Liberation Sans",
@@ -1255,19 +1236,7 @@ const SNAPSHOT=freeze({
    "license": "OFL-1.1",
    "availability": [],
    "embeddableByOpf": true,
-   "replacement": {
-    "family": "Arimo",
-    "compatibility": "metric",
-    "measured": {
-     "replacement": "Arimo",
-     "meanAbsWidthDelta": 0,
-     "meanWidthDelta": 0,
-     "maxAbsWidthDelta": 0,
-     "styles": 4,
-     "reference": "Liberation Sans 2.1.5"
-    },
-    "source": "https://github.com/liberationfonts/liberation-fonts/blob/2.1.5/README.md"
-   }
+   "replacement": null
   },
   {
    "family": "Liberation Serif",
@@ -1275,19 +1244,7 @@ const SNAPSHOT=freeze({
    "license": "OFL-1.1",
    "availability": [],
    "embeddableByOpf": true,
-   "replacement": {
-    "family": "Tinos",
-    "compatibility": "metric",
-    "measured": {
-     "replacement": "Tinos",
-     "meanAbsWidthDelta": 0,
-     "meanWidthDelta": 0,
-     "maxAbsWidthDelta": 0,
-     "styles": 4,
-     "reference": "Liberation Serif 2.1.5"
-    },
-    "source": "https://github.com/liberationfonts/liberation-fonts/blob/2.1.5/README.md"
-   }
+   "replacement": null
   },
   {
    "family": "Libre Caslon Text",
@@ -1642,14 +1599,6 @@ const SNAPSHOT=freeze({
    "replacement": null
   },
   {
-   "family": "Noto Sans Arabic",
-   "licenseClass": "open",
-   "license": "OFL-1.1",
-   "availability": [],
-   "embeddableByOpf": true,
-   "replacement": null
-  },
-  {
    "family": "Noto Sans Armenian",
    "licenseClass": "open",
    "license": "OFL-1.1",
@@ -1748,14 +1697,6 @@ const SNAPSHOT=freeze({
    "replacement": null
   },
   {
-   "family": "Noto Sans Lao",
-   "licenseClass": "open",
-   "license": "OFL-1.1",
-   "availability": [],
-   "embeddableByOpf": true,
-   "replacement": null
-  },
-  {
    "family": "Noto Sans Malayalam",
    "licenseClass": "open",
    "license": "OFL-1.1",
@@ -1780,14 +1721,6 @@ const SNAPSHOT=freeze({
    "replacement": null
   },
   {
-   "family": "Noto Sans Myanmar",
-   "licenseClass": "open",
-   "license": "OFL-1.1",
-   "availability": [],
-   "embeddableByOpf": true,
-   "replacement": null
-  },
-  {
    "family": "Noto Sans Oriya",
    "licenseClass": "open",
    "license": "OFL-1.1",
@@ -1799,22 +1732,6 @@ const SNAPSHOT=freeze({
   },
   {
    "family": "Noto Sans SC",
-   "licenseClass": "open",
-   "license": "OFL-1.1",
-   "availability": [],
-   "embeddableByOpf": true,
-   "replacement": null
-  },
-  {
-   "family": "Noto Sans Sinhala",
-   "licenseClass": "open",
-   "license": "OFL-1.1",
-   "availability": [],
-   "embeddableByOpf": true,
-   "replacement": null
-  },
-  {
-   "family": "Noto Sans Syriac",
    "licenseClass": "open",
    "license": "OFL-1.1",
    "availability": [],
@@ -1846,14 +1763,6 @@ const SNAPSHOT=freeze({
    "replacement": null
   },
   {
-   "family": "Noto Sans Thaana",
-   "licenseClass": "open",
-   "license": "OFL-1.1",
-   "availability": [],
-   "embeddableByOpf": true,
-   "replacement": null
-  },
-  {
    "family": "Noto Sans Thai",
    "licenseClass": "open",
    "license": "OFL-1.1",
@@ -1863,14 +1772,6 @@ const SNAPSHOT=freeze({
   },
   {
    "family": "Noto Serif Hebrew",
-   "licenseClass": "open",
-   "license": "OFL-1.1",
-   "availability": [],
-   "embeddableByOpf": true,
-   "replacement": null
-  },
-  {
-   "family": "Noto Serif Tibetan",
    "licenseClass": "open",
    "license": "OFL-1.1",
    "availability": [],
@@ -2350,14 +2251,7 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Source Sans 3",
     "compatibility": "visual",
-    "measured": {
-     "replacement": "Source Sans 3",
-     "meanAbsWidthDelta": 0.0003,
-     "meanWidthDelta": -0.0003,
-     "maxAbsWidthDelta": 0.0041,
-     "styles": 4,
-     "reference": "Source Sans Pro 2.045"
-    }
+    "measured": null
    }
   },
   {
@@ -2444,14 +2338,7 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Figtree",
     "compatibility": "visual",
-    "measured": {
-     "replacement": "Figtree",
-     "meanAbsWidthDelta": 0.042,
-     "meanWidthDelta": 0.042,
-     "maxAbsWidthDelta": 0.0836,
-     "styles": 1,
-     "reference": "Tenorite 1.04;O365"
-    }
+    "measured": null
    },
    "alternates": [
     "Roboto"
@@ -2468,14 +2355,7 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Figtree",
     "compatibility": "visual",
-    "measured": {
-     "replacement": "Figtree",
-     "meanAbsWidthDelta": 0.1476,
-     "meanWidthDelta": 0.1476,
-     "maxAbsWidthDelta": 0.1975,
-     "styles": 2,
-     "reference": "Tenorite Display 1.04;O365"
-    }
+    "measured": null
    },
    "alternates": [
     "Roboto"
