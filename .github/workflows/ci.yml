@@ -20,6 +20,7 @@ jobs:
     env:
       OPF_GOLDEN_BASELINE: ${{ github.workspace }}/opf-render/test/golden/opf-examples-png.cover-centering.sha256.json
     steps:
+      # RR-38 pins core PR opf#279 (font policy lineAscent) on the RR-05 pin: the throwaway branch codex/rr-38-render-ci-pin (ecd7461: core main 293b5d3 plus the merged opf#275 commit and the opf#279 commit, which change only reference data, docs and the policy test, so no composition or golden moves). Repin to the core merge commit once opf#279 merges (never leave it on an unmerged head).
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -44,7 +45,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OpenPresentation/opf
-          ref: 293b5d39db9a5f30dca3e74c9a8e6c9fc0d21e9f
+          ref: ecd746141757e363b1823e426cbb6e294069dfc0
           path: opf
           fetch-depth: 0
           persist-credentials: false
