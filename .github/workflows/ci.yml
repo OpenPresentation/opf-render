@@ -122,6 +122,7 @@ jobs:
       - run: npm run test:lazy-fonts-browser
       - run: npm run test:extra-lazy-fonts-browser
       - run: npm run test:latin-family-hosts-browser
+      - run: npm run test:script-family-hosts-browser
       - run: npm run test:lazy-face-fallback-browser
       - run: npm run test:script-fonts-browser
       - run: npm run test:script-fonts-auto-browser
