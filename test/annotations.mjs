@@ -33,8 +33,8 @@ const geometry = index => composeSlide(document.slides[index], { presentation: d
   assert.deepEqual(markers.map(marker => marker['data-opf-marker']), ['1', '1,2', '3']);
   for (const marker of markers) {
     ok(marker.raw.endsWith(`>${marker['data-opf-marker']}</tspan>`), 'marker text');
-    assert.equal(marker['font-size'], '17.5'); // 0.7 of the 25 px body
-    assert.equal(marker['baseline-shift'], '5.25'); // raised 0.3 of its own size
+    assert.equal(marker['font-size'], '16.667'); // 2/3 of the 25 px body: PowerPoint draws a superscript at 2/3 of its size (native probe 2026-10-01)
+    assert.equal(marker['baseline-shift'], '7.5'); // raised 0.3 of the nominal (marked run) size
     ok(!('data-opf-text-start' in marker) && !('data-opf-text-end' in marker), 'a marker has no source offsets');
     ok(!('text-decoration' in marker), 'a marker is not decorated');
   }
