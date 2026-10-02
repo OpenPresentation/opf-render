@@ -2,7 +2,7 @@
 
 ## RR-17 wrap on the RR-07 branch: 93 further slides (core opf#260)
 
-This branch pins core main after opf#260 (wrapped lines no longer start with a space; exact fits no longer wrap one word early) while renderer main still pins the core before it, so the candidate here moves 286 of 805 slides against renderer main: the 193 RR-07 slides below plus 93 slides that contain no code language, metric trend or pattern background and move only because of the core wrap change (all 93 are text slides whose line breaks changed). Whichever of this change and the renderer RR-17 wrap update merges second regenerates the manifest on top of the other; the source digest is unchanged.
+This branch pins core main after opf#260 (wrapped lines no longer start with a space; exact fits no longer wrap one word early) while renderer main still pins the core before it, so the candidate here moves 286 of 805 slides against renderer main: the 193 RR-07 slides below plus 93 slides that contain no code language, metric trend or pattern background and move only because of the core wrap change. Whichever of this change and the renderer RR-17 wrap update merges second regenerates the manifest on top of the other; the source digest is unchanged.
 
 ## RR-07: code language colours, metric trend arrows and preset patterns
 
