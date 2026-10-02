@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OpenPresentation/opf
-          ref: f5b3eaae7ac2f37edca4144b3eef1a24143af905 # core codex/rr-05-rr-32-integration (RR-05 right-to-left composition on the core RR-32 branch render main pins; render main's font policy predates core's RR-17 table)
+          ref: f5b3eaae7ac2f37edca4144b3eef1a24143af905
           path: opf
           fetch-depth: 0
           persist-credentials: false
