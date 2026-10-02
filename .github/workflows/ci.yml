@@ -44,7 +44,7 @@ jobs:
         with:
           repository: OpenPresentation/opf
           # RR-07 pins the core RR-07 branch (core PR opf#246: core main plus the shared code syntax, metric trend and measured pattern tables); repin to its merge commit once merged (never leave it on an unmerged head).
-          ref: 2de1886329ff2a1fd65be0df36649b221d6a83bc
+          ref: 24bc59e1ddb061a9cda2ec513a55d8b4acd0c082
           path: opf
           fetch-depth: 0
           persist-credentials: false
