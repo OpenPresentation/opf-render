@@ -83,6 +83,9 @@ const find = (list, text, from = 0) => list.find(item => item.body.includes(text
   assert.ok(lines.length >= 2, 'the paragraph wraps');
   assert.ok(lines.every(line => line.anchor === 'end'), 'all lines start at the right edge');
   assert.ok(/^[a-z ]+$/.test(lines.at(-1).body), 'the last line holds only Latin letters');
+  // PowerPoint ignores edge whitespace on a right-aligned right-to-left line (native check 2026-10-02): a wrapped line that keeps its
+  // trailing space draws without it, so the glyph edge stays on the box edge.
+  assert.ok(lines.every(line => line.body === line.body.trim()), 'no edge whitespace on right-aligned right-to-left lines');
 }
 
 console.log('RTL layout passed: logical alignment, bullet side, mirrored regions, table columns, chart categories and per-paragraph line direction.');
