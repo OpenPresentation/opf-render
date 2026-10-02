@@ -2,6 +2,7 @@ import {prepareRasterImages} from './raster-images.js';
 import {OPFRenderError,packageName} from './svg.js';
 import {separateLigatures} from './font-compatibility.js';
 import {monochromeColorFonts,rasterFontFiles} from './color-fonts.js';
+import {pinScriptClusters} from './raster-text.js';
 const DEFAULT_DIMENSIONS = { width: 1280, height: 720 };
 const DEFAULT_RASTER_SCALE = 1;
 const DEFAULT_RASTER_BACKGROUND = "#FFFFFF";
@@ -87,17 +88,18 @@ async function rasterizeSvg(svgInput, options) {
     ...(options.useBundledFonts === false ? [] : await bundledFontFiles()),
     ...stringArray(options.fontFiles)
   ]);
+  const font = {
+    loadSystemFonts: options.loadSystemFonts === true,
+    fontFiles,
+    fontDirs: stringArray(options.fontDirs),
+    defaultFontFamily: options.defaultFontFamily ?? "Roboto",
+    sansSerifFamily: options.sansSerifFamily ?? options.defaultFontFamily ?? "Roboto",
+    monospaceFamily: options.monospaceFamily ?? "Roboto Mono"
+  };
   const renderOptions = {
     fitTo: { mode: "zoom", value: scale },
     background: options.background ?? DEFAULT_RASTER_BACKGROUND,
-    font: {
-      loadSystemFonts: options.loadSystemFonts === true,
-      fontFiles,
-      fontDirs: stringArray(options.fontDirs),
-      defaultFontFamily: options.defaultFontFamily ?? "Roboto",
-      sansSerifFamily: options.sansSerifFamily ?? options.defaultFontFamily ?? "Roboto",
-      monospaceFamily: options.monospaceFamily ?? "Roboto Mono"
-    },
+    font,
     logLevel: "off"
   };
 
@@ -105,13 +107,15 @@ async function rasterizeSvg(svgInput, options) {
 
   // An SVG used as an image draws its text with these fonts: resvg gives the nested document none.
   const nestedSvg = async text => {
-    const probe = new Resvg(text, { font: renderOptions.font, logLevel: "off" });
+    const pinned = await pinScriptClusters(text, font);
+    const probe = new Resvg(pinned, { font, logLevel: "off" });
     const zoom = Math.min(4, Math.max(1, 2048 / Math.max(probe.width, probe.height)));
-    return new Resvg(text, { ...renderOptions, fitTo: { mode: "zoom", value: zoom }, background: "rgba(0, 0, 0, 0)" }).render().asPng();
+    return new Resvg(pinned, { ...renderOptions, fitTo: { mode: "zoom", value: zoom }, background: "rgba(0, 0, 0, 0)" }).render().asPng();
   };
   // FF-31: resvg ignores the SVG's ligature properties, so separate the letters a Gelasio ligature would join.
   // FF-45: colour families (Noto Color Emoji) are drawn with their monochrome stand-in, which resvg can draw.
-  const svg = separateLigatures(monochromeColorFonts(await prepareRasterImages(normalizeSvgInput(svgInput), { nestedSvg })));
+  // FF-44: resvg loses the advance of a vowel sign or space inside a complex-script cluster, so pin each cluster (raster-text.js).
+  const svg = await pinScriptClusters(separateLigatures(monochromeColorFonts(await prepareRasterImages(normalizeSvgInput(svgInput), { nestedSvg }))), font);
 
   try {
     const image = new Resvg(svg, renderOptions).render();
