@@ -128,12 +128,12 @@ try {
       assert.ok(observed.runs.length >= 3, `${where} ${sample.id}: the deck draws its runs (${observed.runs.length})`);
       const bound = limits.get(`${entry.family}|${sample.id}`);
       for (const run of observed.runs) {
-        assert.equal(run.family, entry.family, `${where} ${sample.id}: "${run.text.slice(0, 12)}" is drawn in ${entry.family}, not ${run.family}`);
-        assert.ok(run.faceLoaded, `${where} ${sample.id}: a loaded FontFace backs "${run.text.slice(0, 12)}" (${run.family} ${run.weight})`);
+        assert.equal(run.family, entry.family, `${where} ${sample.id}: "${[...run.text].slice(0, 12).join('')}" is drawn in ${entry.family}, not ${run.family}`);
+        assert.ok(run.faceLoaded, `${where} ${sample.id}: a loaded FontFace backs "${[...run.text].slice(0, 12).join('')}" (${run.family} ${run.weight})`);
         const delta = Math.abs(run.natural - run.accepted);
         // Linux Chromium (the pinned Playwright image) paints fullwidth punctuation lines differently from Edge and macOS Chromium: recorded, not gated there.
         if (process.platform === 'linux' && FULLWIDTH.test(run.text)) notGatedOnLinux.push({family: entry.family, sample: sample.id, delta: Number(delta.toFixed(3))});
-        else if (bound === undefined) assert.ok(delta < 0.1, `${where} ${sample.id}: "${run.text.slice(0, 12)}" advance ${run.natural} differs from accepted ${run.accepted}`);
+        else if (bound === undefined) assert.ok(delta < 0.1, `${where} ${sample.id}: "${[...run.text].slice(0, 12).join('')}" advance ${run.natural} differs from accepted ${run.accepted}`);
         else assert.ok(delta <= bound * run.size / 100 + 0.1, `${where} ${sample.id}: the recorded limit ${bound} (at 100 px) no longer bounds ${delta.toFixed(3)} px at ${run.size} px`);
         if (sample.rtl && run.order) assert.ok(run.order[0] > run.order[1], `${where} ${sample.id}: a right-to-left run displays right to left`);
         runChecks += 1;

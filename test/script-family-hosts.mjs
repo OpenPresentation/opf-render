@@ -82,7 +82,7 @@ for (const entry of families) {
     assert.ok(runs.length >= 3, `${where} ${sample.id}: the deck draws its title and two body runs (${runs.length})`);
     const drawnWeights = new Set();
     for (const run of runs) {
-      assert.equal(run.family, entry.family, `${where} ${sample.id}: "${run.text.slice(0, 12)}" is drawn in ${entry.family}, not ${run.family}`);
+      assert.equal(run.family, entry.family, `${where} ${sample.id}: "${[...run.text].slice(0, 12).join('')}" is drawn in ${entry.family}, not ${run.family}`);
       assert.ok(entry.weights.includes(run.weight), `${where} ${sample.id}: weight ${run.weight} is one of the family's`);
       drawnWeights.add(run.weight);
       const direct = directAdvance(fontOf(run.weight), run.text, run.size, sample.lang);
