@@ -23,7 +23,7 @@ const SNAPSHOT=freeze({
  },
  "source": {
   "path": "spec/reference/font-policy.json",
-  "sha256": "4598163da6ebb0e74cd9c7180762cf7f8cc698abc0491bc9312658ceb9b5dc6e"
+  "sha256": "25edd9ee7f9fd874b5f8750d0f205c0dcdf7a64b74a85bcfda5a0771a402c361"
  },
  "families": [
   {
@@ -1058,7 +1058,14 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Barlow",
     "compatibility": "visual",
-    "measured": null
+    "measured": {
+     "replacement": "Barlow",
+     "meanAbsWidthDelta": 0.0467,
+     "meanWidthDelta": -0.0467,
+     "maxAbsWidthDelta": 0.0976,
+     "styles": 4,
+     "reference": "Grandview 1.04;O365"
+    }
    },
    "alternates": [
     "Roboto"
@@ -1075,7 +1082,14 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Barlow",
     "compatibility": "visual",
-    "measured": null
+    "measured": {
+     "replacement": "Barlow",
+     "meanAbsWidthDelta": 0.0249,
+     "meanWidthDelta": -0.0242,
+     "maxAbsWidthDelta": 0.0599,
+     "styles": 2,
+     "reference": "Grandview Display 0.90;O365"
+    }
    },
    "alternates": [
     "Roboto"
@@ -2079,7 +2093,14 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Source Sans 3",
     "compatibility": "visual",
-    "measured": null
+    "measured": {
+     "replacement": "Source Sans 3",
+     "meanAbsWidthDelta": 0.0483,
+     "meanWidthDelta": -0.0483,
+     "maxAbsWidthDelta": 0.0965,
+     "styles": 4,
+     "reference": "Seaford 1.04;O365"
+    }
    },
    "alternates": [
     "Carlito"
@@ -2096,7 +2117,14 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Source Sans 3",
     "compatibility": "visual",
-    "measured": null
+    "measured": {
+     "replacement": "Source Sans 3",
+     "meanAbsWidthDelta": 0.0389,
+     "meanWidthDelta": 0.0388,
+     "maxAbsWidthDelta": 0.0667,
+     "styles": 2,
+     "reference": "Seaford Display 1.04;O365"
+    }
    },
    "alternates": [
     "Carlito"
@@ -2306,7 +2334,14 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Open Sans",
     "compatibility": "visual",
-    "measured": null
+    "measured": {
+     "replacement": "Open Sans",
+     "meanAbsWidthDelta": 0.0926,
+     "meanWidthDelta": 0.0926,
+     "maxAbsWidthDelta": 0.1593,
+     "styles": 4,
+     "reference": "Skeena 1.04;O365"
+    }
    },
    "alternates": [
     "Carlito"
@@ -2323,7 +2358,14 @@ const SNAPSHOT=freeze({
    "replacement": {
     "family": "Open Sans",
     "compatibility": "visual",
-    "measured": null
+    "measured": {
+     "replacement": "Open Sans",
+     "meanAbsWidthDelta": 0.1306,
+     "meanWidthDelta": 0.1306,
+     "maxAbsWidthDelta": 0.2001,
+     "styles": 4,
+     "reference": "Skeena Display 1.04;O365"
+    }
    },
    "alternates": [
     "Carlito"
