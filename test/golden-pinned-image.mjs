@@ -33,7 +33,7 @@ assert.match(run.stderr, /Refusing to regenerate goldens outside the pinned Play
 // The workflow runs only in the image ci.yml pins, takes it from the same digest, and runs the guard before anything else.
 const workflow = readFileSync(path.join(root, '.github/workflows/regenerate-goldens.yml'), 'utf8');
 assert.ok(workflow.includes(`image: ${pins.image}`), 'regenerate-goldens.yml must run in the image ci.yml pins');
-assert.ok(workflow.includes('OPF_PLAYWRIGHT_IMAGE=${{ job.container.image }}'));
+assert.ok(workflow.includes(`OPF_PLAYWRIGHT_IMAGE: ${pins.image}`), 'The job env repeats the image the guard compares with ci.yml');
 assert.ok(workflow.indexOf('golden-pinned-image.mjs') < workflow.indexOf('npm ci'), 'The guard runs before any install');
 assert.equal(/runs-on:\s*(\S+)/.exec(workflow)[1], /runs-on:\s*(\S+)/.exec(ci)[1], 'The workflow uses the runner label of the ci.yml package job');
 assert.equal(pins.baselineDirectory, 'test/golden/opf-examples-png.cover-centering', 'ci.yml selects a per-deck baseline directory (legacy .sha256.json name accepted)');

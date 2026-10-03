@@ -33,13 +33,14 @@ jobs:
       pull-requests: write
       actions: write
     env:
+      # The container.image expression cannot read env, and the job context has no image, so the literal is repeated
+      # here; the guard compares it with ci.yml's pin and test/golden-pinned-image.mjs compares all three.
+      OPF_PLAYWRIGHT_IMAGE: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
       BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
     steps:
       - name: Never regenerate on the default branch
         shell: bash
         run: |
-          # The guard compares this with the image ci.yml pins (the job context is not available in job-level env).
-          echo "OPF_PLAYWRIGHT_IMAGE=${{ job.container.image }}" >> "$GITHUB_ENV"
           if [ "$BRANCH" = "${{ github.event.repository.default_branch }}" ]; then
             echo "Goldens are regenerated on a pull request branch, never on the default branch." >&2
             exit 1
