@@ -20,15 +20,15 @@ jobs:
     env:
       OPF_GOLDEN_BASELINE: ${{ github.workspace }}/opf-render/test/golden/opf-examples-png.cover-centering.sha256.json
     steps:
-      # RR-47: an expired or malformed test/quarantine.json entry fails CI. See test/QUARANTINE.md.
-      - name: Check the test quarantine
-        run: node --test scripts/quarantine.test.mjs && node scripts/quarantine.mjs check
       # Release 0.12.0 pins core main da45b2e (the release commit 5e1dda7, tag opf-v0.12.0, plus the renderer 0.12.0 lazy font count, opf#282). opf-pptx e6c0391 and opf-editor dea8a79 are unchanged from release 0.11.9.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
           path: opf-render
+      # RR-47: an expired or malformed test/quarantine.json entry fails CI. See test/QUARANTINE.md.
+      - name: Check the test quarantine
+        run: node --test scripts/quarantine.test.mjs && node scripts/quarantine.mjs check
       # FF-19 uses core resolveScriptFonts (FF-18) and paragraphDirection (#134); sibling pins
       # match core main's ecosystem-ci. Verify the released graph before using source links.
       # FF-29 pins merged core (opf#132) that adds composed item.alignment.
