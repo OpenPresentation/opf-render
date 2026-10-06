@@ -20,7 +20,7 @@ Deterministic local renderer for Open Presentation Format documents. The shared 
 
 In version 0.8.0, `design.contentBox` uses core's shared padded geometry. The card renders at `item.frameBox`; its payload uses `item.box` and accepted internals. Card padding participates in composition scoring, strict overflow and pagination. This requires core 0.10.0.
 
-Version 0.8.0 paints plain and rich text, titles, subtitles and tags using composition's accepted fits and resolved styles. Painting does not measure those payloads again. Supply a font registry during composition: reusing an estimated fit cannot correct spacing when the actual drawing font has different advances.
+Version 0.8.0 paints plain and rich text, titles, subtitles and tags using composition's accepted fits and resolved styles. A `TextRun[]` title, subtitle, tag or quote text (FA-10) is painted the same way, through the rich-line painter used for body text. Painting does not measure those payloads again. Supply a font registry during composition: reusing an estimated fit cannot correct spacing when the actual drawing font has different advances.
 
 Citations, footnotes and captions (core RR-34 fields `cite`, `footnote`, `references` and `caption`) draw from the same composed geometry: a marker is a superscript segment after its run (traced as `data-opf-segment="marker"` without source offsets), the slide's footnote area is a rule and `<n> <text>` lines in the muted colour above the footer band, and a caption is a band inside its block's region. Decks without those fields render as before.
 
