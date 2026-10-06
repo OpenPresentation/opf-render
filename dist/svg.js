@@ -970,12 +970,19 @@ function reportDiagnostic(diagnostic, options) {
   options.onDiagnostic?.(diagnostic);
 }
 
+// FA-09: Chart.alt is the chart's accessible name: a role="img" group with aria-label, which also makes the drawn marks and labels
+// inside presentational. An empty alt marks the chart decorative (aria-hidden). Without alt the SVG is unchanged.
+function chartText(chart, alt) {
+  if (typeof alt !== "string" || !chart) return chart;
+  return alt === "" ? tag("g", { "aria-hidden": "true" }, chart) : tag("g", { role: "img", "aria-label": alt }, chart);
+}
+
 function renderPayload(item, box, bound, options) {
   if (!box) return "";
   if (item.field === "items" || item.field === "bullets") return renderList(item, box, bound, options);
   switch (item.type) {
     case "chart":
-      return renderChart(item, box, bound, options);
+      return chartText(renderChart(item, box, bound, options), item.value?.alt);
     case "table":
       return renderTable(item, box, bound, options);
     case "image":
