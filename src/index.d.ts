@@ -41,7 +41,7 @@ export type RenderDiagnostic = LayoutDiagnostic | {
   scripts: string[];
   characters: string[];
 } | {
-  code: "unsupported-pattern" | "variable-example-used" | "date-needs-value" | "language-preview-unavailable" | "language-preview-unresolved" | "paragraph-direction-unavailable";
+  code: "unsupported-pattern" | "variable-example-used" | "variable-builtin-missing" | "date-needs-value" | "language-preview-unavailable" | "language-preview-unresolved" | "paragraph-direction-unavailable";
   path: string;
   message: string;
 } | {
@@ -76,7 +76,7 @@ export interface RenderSvgOptions {
   /**
    * Values for the deck's template variables, keyed by variable id (core `resolveVariables`). A deck that uses
    * content variables, or is marked `template: true`, is resolved to a concrete deck first. A template previews with
-   * each unfilled variable's example (reported as `variable-example-used`); a normal deck with an unfilled required
+   * each unfilled variable's example (reported as `variable-example-used`; a built-in such as `{{speaker.name}}` with no source value is reported as `variable-builtin-missing`); a normal deck with an unfilled required
    * variable throws `unfilled-variables`. `false` draws the document as authored, with `{{id}}` tokens and
    * `var:id` references visible and nothing resolved: the view an editor uses while the template itself is edited.
    */
