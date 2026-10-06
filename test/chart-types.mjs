@@ -273,7 +273,8 @@ for(const id of CHARTEX){
   const svg=render('mystery-chart');
   assert.doesNotMatch(svg,/data-opf-chart=/);
   assert.equal(marks(svg,'rect',/^slides\.0\.chart\.data\.rows\.\d+$/).length,4,'legacy single-series bars');
-  assert.ok(render('column',{src:'asset:missing'}).includes('No chart data'));
+  // A data source by asset is not part of the format (FA-07): it is rejected at the boundary.
+  assert.throws(()=>render('column',{src:'asset:missing'}),error=>error.code==='invalid-opf');
   checks++;
 }
 
