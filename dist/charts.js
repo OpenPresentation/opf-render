@@ -383,6 +383,24 @@ export function formatTick(value, percent = false, format = undefined) {
   return format === undefined ? String(clean(value)) : formatChartValue(value, format);
 }
 
+// RR-54: a formatted horizontal axis (horizontal bars, the scatter X axis) can have end tick labels far wider than the margin the layout
+// leaves beside the plot (a General label is a few characters, a long format code is not). Pull the plot in until the first and
+// last labels, centred on their ticks, stay inside the chart, and lay the ticks out again for the new width. Only formatted axes call it,
+// so a General axis keeps its placement.
+function insetForEndLabels(c, x, width, format, scaleFor) {
+  const left = c.box.x + c.pad, right = c.box.x + c.box.width - c.pad;
+  let scale = scaleFor(width);
+  for (let pass = 0; pass < 3; pass++) {
+    const ticks = scale.ticks;
+    if (!ticks.length) break;
+    const first = c.width(formatTick(ticks[0], false, format)) / 2, last = c.width(formatTick(ticks[ticks.length - 1], false, format)) / 2;
+    const nextX = Math.max(x, left + first), nextWidth = Math.max(1, Math.min(x + width, right - last) - nextX);
+    if (nextX === x && nextWidth === width) break;
+    x = nextX; width = nextWidth; scale = scaleFor(width);
+  }
+  return { x, width, scale };
+}
+
 function legendMetrics(c, entries) {
   const swatch = c.fontPx * 0.6, gap = c.fontPx * 0.4, keyWidth = entries.some((entry) => entry.key === "line") ? c.fontPx * 1.4 : swatch;
   return { swatch, gap, keyWidth, textWidth: Math.max(...entries.map((entry) => c.width(entry.name))) };
@@ -750,11 +768,14 @@ function renderCategoryChart(c, spec) {
   let plot, scale, valueTickWidth;
   if (horizontal) {
     const categoryWidth = Math.min(box.width * 0.3, Math.max(0, ...categories.map((name) => c.width(flatLabel(name)))) + fontPx * 0.5);
-    const x = box.x + pad + categoryWidth + c.pad / 2;
+    let x = box.x + pad + categoryWidth + c.pad / 2;
     const bottom = box.y + box.height - pad - c.lineHeight;
-    const width = Math.max(1, right - x - fontPx);
+    let width = Math.max(1, right - x - fontPx);
     const tickWidth = Math.max(c.width(formatTick(dataMax, percent, valueFormat)), c.width(formatTick(dataMin, percent, valueFormat)), c.width("100%")) + fontPx;
-    scale = niceScale(dataMin, dataMax, maxIntervalsFor(width, tickWidth), { percent });
+    const scaleFor = (w) => niceScale(dataMin, dataMax, maxIntervalsFor(w, tickWidth), { percent });
+    scale = scaleFor(width);
+    // RR-54: a formatted value axis keeps its end labels inside the chart.
+    if (valueFormat !== undefined && !percent) ({ x, width, scale } = insetForEndLabels(c, x, width, valueFormat, scaleFor));
     plot = { x, y: top, width, height: Math.max(1, bottom - top) };
     // Office bar charts draw the first category nearest the origin (bottom).
     const entries = categories.map((name, i) => ({ name, path: `${c.path}.data.rows.${i}.0` }));
@@ -980,7 +1001,10 @@ function renderScatterChart(c) {
   const plot = { x: box.x + pad + tickWidth, y: top, height };
   plot.width = Math.max(1, box.x + box.width - pad - legendWidth - fontPx - plot.x);
   const xLabelWidth = Math.max(c.width(formatTick(xs.length ? Math.max(...xs) : 1, false, xFormat)), c.width(formatTick(xs.length ? Math.min(...xs) : 0, false, xFormat))) + fontPx;
-  const xScale = niceScale(xs.length ? Math.min(...xs) : 0, xs.length ? Math.max(...xs) : 1, maxIntervalsFor(plot.width, xLabelWidth));
+  const scaleForX = (w) => niceScale(xs.length ? Math.min(...xs) : 0, xs.length ? Math.max(...xs) : 1, maxIntervalsFor(w, xLabelWidth));
+  let xScale = scaleForX(plot.width);
+  // RR-54: a formatted X axis keeps its end labels inside the chart.
+  if (xFormat !== undefined) ({ x: plot.x, width: plot.width, scale: xScale } = insetForEndLabels(c, plot.x, plot.width, xFormat, scaleForX));
   c.plotArea = plot;
   const xAt = (v) => plot.x + axisFraction(v, xScale) * plot.width;
   const yAt = (v) => plot.y + axisFraction(v, yScale, true) * plot.height;

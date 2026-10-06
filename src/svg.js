@@ -1615,14 +1615,16 @@ function renderChart(item, box, bound, options) {
 function legacyChartData(chart, bound) {
   if (typeof opfCore.resolveChartData !== "function") return chart.data;
   const resolved = opfCore.resolveChartData(chart, bound.presentation);
-  return resolved.ok ? { rows: resolved.rows } : chart.data;
+  return resolved.ok ? { rows: resolved.rows, resolved: true } : chart.data;
 }
 
 function inlineChartRows(data) {
   const rows = Array.isArray(data?.rows) ? data.rows : [];
   return rows.map((row, index) => {
     const cells = Array.isArray(row) ? row : [row];
-    const value = cells.find((cell) => typeof cell === "number") ?? Number(cells.find((cell) => Number.isFinite(Number(cell))) ?? 0);
+    // Resolved rows already hold strict numbers (a gap is null), so only a number cell is a value: reading a numeric-looking label
+    // ("2020") or a boolean as the value of a gap would plot it.
+    const value = cells.find((cell) => typeof cell === "number") ?? (data?.resolved ? 0 : Number(cells.find((cell) => Number.isFinite(Number(cell))) ?? 0));
     return {
       label: flattenText(cells.find((cell) => typeof cell === "string") ?? `Row ${index + 1}`),
       value: Number.isFinite(value) ? value : 0

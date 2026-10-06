@@ -265,4 +265,38 @@ for (const type of ['column', 'line', 'pie', 'scatter', 'treemap', 'sketch']) {
   for (const path of ['slides.0.table', 'slides.0.table.rows.0.0', 'slides.0.table.rows.1.0']) assert.ok([...tablePaths].some((reported) => reported === path || reported.startsWith(`${path}.`)), `${path} is reported`);
 }
 
+// ---------------------------------------------------------------------------------------------------------------------
+// 8. Tick labels with a long format stay inside the chart: the horizontal value axis (bars) and the scatter X axis reserve room for the
+//    first and last formatted tick label (a General label is short, a code like `$#,##0.00 "million"` is not). General axes keep
+//    their placement (section 0 holds the digests).
+
+{
+  const long = '$#,##0.00 "million"';
+  const textBoxes = (svg) => [...svg.matchAll(/<g data-opf-box-height="[\d.-]+" data-opf-box-width="([\d.-]+)" data-opf-box-x="([\d.-]+)" data-opf-box-y="[\d.-]+"[^>]*path="slides\.0\.blocks\.0\.chart[^"]*"[^>]*><text[^>]*>([^<]*)<\/text>/g)].map(([, width, x, text]) => ({ text, left: Number(x), right: Number(x) + Number(width) }));
+  const chartRect = (svg) => { const [, width, x] = svg.match(/<rect data-opf-path="slides\.0\.blocks\.0\.chart" [^>]*?width="([\d.]+)" x="([\d.-]+)"/); return { left: Number(x), right: Number(x) + Number(width) }; };
+  const outside = (type, columns, data) => {
+    const svg = render(doc({ title: 'T', blocks: [{ chart: { type, data: { columns, rows: data } } }, { text: 'side' }] }), { trace: true });
+    const rect = chartRect(svg);
+    // A text box carries one font size of padding (8 px each side); the text itself must be inside the chart.
+    return textBoxes(svg).filter((box) => box.left + 8 < rect.left || box.right - 8 > rect.right).map((box) => box.text);
+  };
+  const values = [['Q1', 12400.4, 3000.5], ['Q2', 18100.1, -5000], ['Q3', 21750.75, 2], ['Q4', 9000, 7]];
+  for (const type of ['bar', 'stacked-bar-3x']) {
+    assert.deepEqual(outside(type, ['Q', { name: 'N', format: long }, { name: 'S', format: long }], values), [], `${type}: formatted value-axis labels stay inside the chart`);
+  }
+  assert.deepEqual(outside('scatter', ['P', { name: 'X', format: long }, { name: 'Y', format: long }], values), [], 'scatter: formatted X-axis labels stay inside the chart');
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// 9. The legacy sketch plots a gap as nothing: a label that reads as a number ("2020") is not the value of a gap.
+
+{
+  const sketch = (rows) => render(chartDoc({ type: 'sketch', data: { columns: ['Year', 'V'], rows } }), { trace: true });
+  const heights = (svg) => [...svg.matchAll(/<rect [^>]*data-opf-path="slides\.0\.chart\.data\.rows\.\d"[^>]*height="([\d.]+)"/g)].map(([, height]) => Number(height));
+  const [gap, bar] = heights(sketch([['2020', 'n/a'], ['2021', 5]]));
+  assert.equal(gap, 0, 'a gap row draws a zero-height mark');
+  assert.ok(bar > 0, 'the next row still draws');
+  assert.equal(sketch([['2020', 'n/a'], ['2021', 5]]), sketch([['2020', null], ['2021', 5]]), 'a non-numeric string and null are the same gap');
+}
+
 console.log('Chart and table data passed: strict numbers, formatted labels, ticks and cells, DataColumn headers, dataset charts and tables, mapping, scatter X, trace paths.');
