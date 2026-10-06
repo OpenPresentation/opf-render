@@ -67,7 +67,7 @@ for (const id of Object.keys(CHART_TYPES)) {
   const bar = render({ type: 'bar', highlight: { categories: ['Q2'] } });
   assert.equal(colorsOf(bar, /\.data\.rows\.1\.1$/)[0], expected.accent);
   assert.equal(colorsOf(bar, /\.data\.rows\.0\.1$/)[0], expected.muted);
-  const stacked = render({ type: 'stacked-column-3x', highlight: { series: ['South'] } });
+  const stacked = render({ type: 'stacked-column', highlight: { series: ['South'] } });
   assert.equal(colorsOf(stacked, /\.data\.rows\.2\.2$/)[0], expected.accent);
   assert.equal(colorsOf(stacked, /\.data\.rows\.2\.1$/)[0], expected.muted);
   const single = render({ data: { columns: ['Quarter', 'Revenue'], rows: [['Q1', 1], ['Q2', 5], ['Q3', 2]] }, highlight: { categories: ['Q2'] } });
