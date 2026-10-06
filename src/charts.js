@@ -1,12 +1,10 @@
 // Chart previews for the OPF chart type catalog (FF-22).
 //
-// The core catalog keeps one chart type per Office chart construct and
-// deprecates the rest with a replacement id (`deprecation.replacedBy`,
-// `mappings.openxml`). The tables below are carried here so the preview stays
-// synchronous and self-contained; test/chart-catalog.mjs checks them against
-// the installed core catalog. Kept ids render the construct PowerPoint shows
-// for the exported chart; deprecated ids render exactly like their replacement;
-// any other id returns null so the caller keeps its legacy single-series preview.
+// The core catalog keeps one chart type per Office chart construct (`mappings.openxml`).
+// The table below is carried here so the preview stays synchronous and
+// self-contained; test/chart-catalog.mjs checks it against the installed core
+// catalog. Catalog ids render the construct PowerPoint shows for the exported
+// chart; any other id returns null so the caller keeps its legacy single-series preview.
 import { chartColorForFill, resolveTextStyle, textColorForFill, textWidthMeasurer } from "@openpresentation/opf/composition";
 // chartPaletteForFill ships with core RR-29 (opf#270); an older published core still loads and clamps each colour on its own.
 import * as opfComposition from "@openpresentation/opf/composition";
@@ -34,18 +32,18 @@ const radar = (style) => ({ kind: "radar", style, markers: style === "marker" })
 
 export const CHART_TYPES = Object.freeze({
   column: bar("col", "clustered"),
-  "stacked-column-3x": bar("col", "stacked"),
-  "100pct-stacked-column-3x": bar("col", "percentStacked"),
+  "stacked-column": bar("col", "stacked"),
+  "100pct-stacked-column": bar("col", "percentStacked"),
   bar: bar("bar", "clustered"),
-  "stacked-bar-3x": bar("bar", "stacked"),
-  "100pct-stacked-bar-3x": bar("bar", "percentStacked"),
+  "stacked-bar": bar("bar", "stacked"),
+  "100pct-stacked-bar": bar("bar", "percentStacked"),
   line: line("standard", false),
   "line-with-markers": line("standard", true),
-  "stacked-line-3x": line("stacked", false),
-  "stacked-line-with-markers-3x": line("stacked", true),
+  "stacked-line": line("stacked", false),
+  "stacked-line-with-markers": line("stacked", true),
   area: area("standard"),
-  "stacked-area-3x": area("stacked"),
-  "100pct-stacked-area-3x": area("percentStacked"),
+  "stacked-area": area("stacked"),
+  "100pct-stacked-area": area("percentStacked"),
   pie: { kind: "pie" },
   doughnut: { kind: "doughnut" },
   scatter: { kind: "scatter" },
@@ -61,51 +59,12 @@ export const CHART_TYPES = Object.freeze({
   world: { kind: "map" }
 });
 
-const variants = (base, target) => Object.fromEntries([base, `${base}-2x`, `${base}-3x`].map((id) => [id, target]));
-const suffixes = (base, target) => Object.fromEntries(["", "-2x", "-3x", "-4x", "-5x", "-6x"].map((suffix) => [`${base}${suffix}`, target]));
-
-// Deprecated core ids -> kept replacement (core spec/catalogs/chart-types `deprecation.replacedBy`).
-export const DEPRECATED_CHART_TYPES = Object.freeze({
-  ...variants("100pct-bullet-bar", "100pct-stacked-bar-3x"),
-  "100pct-progress-bar": "100pct-stacked-bar-3x",
-  "100pct-stacked-bar-2x": "100pct-stacked-bar-3x",
-  ...variants("100pct-bullet-column", "100pct-stacked-column-3x"),
-  "100pct-stacked-column-2x": "100pct-stacked-column-3x",
-  "100pct-stacked-area-2x": "100pct-stacked-area-3x",
-  australia: "world",
-  canada: "world",
-  "united-kingdom": "world",
-  "united-states": "world",
-  "box-and-whisker-2x": "box-and-whisker",
-  "box-and-whisker-3x": "box-and-whisker",
-  ...variants("bullet-bar", "bar"),
-  "clustered-bar-2x": "bar",
-  ...variants("bullet-column", "column"),
-  "clustered-column": "column",
-  ...suffixes("dot-plot", "scatter"),
-  dumbbell: "scatter",
-  "line-2x": "line",
-  "line-3x": "line",
-  "line-with-high-low": "line",
-  ...suffixes("sparkline", "line"),
-  "line-with-high-low-and-markers": "line-with-markers",
-  "line-with-markers-2x": "line-with-markers",
-  "line-with-markers-3x": "line-with-markers",
-  "stacked-area-2x": "stacked-area-3x",
-  "stacked-bar-2x": "stacked-bar-3x",
-  "stacked-column-2x": "stacked-column-3x",
-  "stacked-line-2x": "stacked-line-3x",
-  "stacked-line-with-markers-2x": "stacked-line-with-markers-3x",
-  "treemap-2x": "treemap",
-  "treemap-3x": "treemap"
-});
-
 const ALIASES = Object.freeze({ donut: "doughnut" });
 
 /** Resolve a chart type id to its kept catalog id, or null for ids outside the catalog. */
 export function resolveChartType(type) {
   const raw = String(type ?? "").trim().toLowerCase();
-  const id = ALIASES[raw] ?? DEPRECATED_CHART_TYPES[raw] ?? raw;
+  const id = ALIASES[raw] ?? raw;
   return Object.hasOwn(CHART_TYPES, id) ? id : null;
 }
 

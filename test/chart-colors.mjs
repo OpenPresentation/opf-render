@@ -10,7 +10,7 @@ const cases=[
  {background:'#000000',surface:'#FFFFFF80',text:'#FFFFFF',expected:'#FFFFFF'},
 ];
 let checked=0;
-for(const fixture of cases)for(const type of ['column','bar','line','area','pie','donut','stacked-column-3x','sparkline-5x']){
+for(const fixture of cases)for(const type of ['column','bar','line','area','pie','donut','stacked-column']){
  const circular=['pie','donut'].includes(type);
  const chart={type,data:{columns:circular?['Quarter','Current']:['Quarter','Current','Baseline'],rows:circular?[['Q1',2],['Q2',3]]:[['Q1',2,1],['Q2',3,2]]}};
  const input={design:{background:fixture.background,colorScheme:{id:'cool-horizon',dark1:fixture.text,light1:fixture.text,dark2:fixture.surface,light2:fixture.surface}},slides:[{chart}]},original=structuredClone(input);
