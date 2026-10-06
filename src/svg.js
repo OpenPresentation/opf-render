@@ -781,9 +781,12 @@ export function renderSvg(input, options = {}) {
   return renderResolvedSlide(resolved, slideIndex, options);
 }
 
+// One SVG per slide, in slide order. `skipHidden: true` leaves out slides marked `hidden` (the sequence the player presents);
+// the result is then shorter than `slides`, so an index no longer names the slide at that index.
 export function renderSvgDeck(input, options = {}) {
   const resolved = resolvePresentation(input, options);
-  return resolved.slides.map((_, index) => renderResolvedSlide(resolved, index, options));
+  const indexes = resolved.slides.map((_, index) => index).filter(index => !(options.skipHidden === true && resolved.presentation.slides[index]?.hidden === true));
+  return indexes.map(index => renderResolvedSlide(resolved, index, options));
 }
 
 function renderResolvedSlide(resolved, slideIndex, options) {

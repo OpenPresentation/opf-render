@@ -62,6 +62,11 @@ export type RenderDiagnostic = LayoutDiagnostic | {
   placeholder: "label" | "icon";
 };
 
+export interface RenderSvgDeckOptions {
+  /** Leave out slides marked `hidden: true`, as the player does. Default false: one SVG per slide. With true the result holds only the visible slides, in order. */
+  skipHidden?: boolean;
+}
+
 export interface RenderSvgOptions {
   textMeasurement?: TextMeasurement;
   /** `"chain"` (default): a character the resolved face lacks is drawn with the first bundled face that has it, and reported as `font-glyph-fallback`. `"none"`: exact faces, a missing glyph raises `missing-glyph`. */
@@ -166,6 +171,6 @@ export declare function resolvePresentation(input: unknown, options?: RenderSvgO
 
 export declare function renderSvg(input: unknown, options?: RenderSvgOptions): string;
 
-export declare function renderSvgDeck(input: unknown, options?: RenderSvgOptions): string[];
+export declare function renderSvgDeck(input: unknown, options?: RenderSvgOptions & RenderSvgDeckOptions): string[];
 
 
