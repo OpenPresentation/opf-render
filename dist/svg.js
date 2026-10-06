@@ -208,7 +208,7 @@ function resolveTemplateInput(presentation, options) {
     });
   }
   for (const entry of result.diagnostics) {
-    if (entry.code === "variable-example-used") options.onDiagnostic?.({ code: "variable-example-used", path: entry.path, message: entry.message, id: entry.id });
+    if (entry.code === "variable-example-used" || entry.code === "variable-builtin-missing") options.onDiagnostic?.({ code: entry.code, path: entry.path, message: entry.message, id: entry.id });
   }
   return result.presentation;
 }
