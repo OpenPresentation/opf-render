@@ -179,8 +179,8 @@ for (const type of ['column', 'line', 'pie', 'scatter', 'treemap', 'sketch']) {
   assert.throws(() => render(chartDoc({ type: 'column', mapping: { series: ['Nope'] }, data: { columns: ['A', 'B'], rows: [['x', 1]] } })), (error) => error.details.issues.some((issue) => issue.params?.code === 'chart-mapping-unknown-column'), 'an unknown mapping column is rejected at the boundary');
 }
 {
-  const external = render(chartDoc({ type: 'column', data: { src: 'revenue.csv' } }));
-  assert.ok(words(external).includes('No chart data'), 'a ChartDataSource still draws the placeholder');
+  // ChartDataSource is removed from the format (opf#240, descoped): a data source by file is rejected at the boundary.
+  assert.throws(() => render(chartDoc({ type: 'column', data: { src: 'revenue.csv' } })), (error) => error.code === 'invalid-opf', 'a data source by file is a validation error');
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
