@@ -28,7 +28,7 @@ export declare const engineDefaults: Readonly<{
     pptx: Readonly<{ latin: "aptos"; ea: "microsoft-yahei"; cs: "nirmala-ui" }>;
     google: Readonly<{ latin: "roboto"; ea: "noto-sans-sc"; cs: "noto-sans" }>;
   }>;
-  chartTypes: readonly ["stacked-column-3x", "stacked-area-3x", "line-with-markers-3x"];
+  chartTypes: readonly ["stacked-column", "stacked-area", "line-with-markers"];
 }>;
 
 export type RenderDiagnostic = LayoutDiagnostic | {

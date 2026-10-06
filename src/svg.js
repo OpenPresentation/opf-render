@@ -53,9 +53,9 @@ export const engineDefaults = Object.freeze({
     google: Object.freeze({ latin: "roboto", ea: "noto-sans-sc", cs: "noto-sans" })
   }),
   chartTypes: Object.freeze([
-    "stacked-column-3x",
-    "stacked-area-3x",
-    "line-with-markers-3x"
+    "stacked-column",
+    "stacked-area",
+    "line-with-markers"
   ])
 });
 
@@ -1512,7 +1512,7 @@ function renderTableBorders(defaultEdges, explicitEdges, scale, bound, options) 
 }
 
 function renderChart(item, box, bound, options) {
-  // Catalog chart types (kept, deprecated and aliased ids) preview the native
+  // Catalog chart types preview the native
   // construct opf-pptx exports; other ids keep the legacy single-series preview.
   const rendered = renderCatalogChart(item, box, bound, options, { tag, traceAttrs, stableNumber, renderTextBox, reportDiagnostic });
   if (rendered) return rendered;
