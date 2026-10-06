@@ -1418,12 +1418,21 @@ function renderTimeline(item, box, bound, options) {
   if(!layout)throw new OPFRenderError('missing-timeline-layout','Timeline rendering requires a coordinated core build with shared timeline geometry.',{path:item.path});
   const scale=Math.min(bound.design.dimensions.width,bound.design.dimensions.height)/720;
   const children=[tag('line',{...layout.connector,stroke:bound.design.colors.border,'stroke-width':3*scale,...traceAttrs(options,item.path)})];
-  for(const marker of layout.markers)children.push(tag('circle',{cx:marker.x,cy:marker.y,r:marker.radius,fill:bound.design.colors.primary,...traceAttrs(options,marker.path)}));
+  // FA-11: status colors come from the deck (core's timelineMarkerShapes / timelineTextColor); an older core draws plain markers.
+  const background=bound.design.backgroundColor??bound.design.colors.background;
+  const statusColors={background,primary:bound.design.colors.primary,text:bound.design.colors.text,mutedText:bound.design.colors.mutedText};
+  for(const marker of layout.markers){
+    if(typeof opfCore.timelineMarkerShapes!=='function'||!marker.status){
+      children.push(tag('circle',{cx:marker.x,cy:marker.y,r:marker.radius,fill:bound.design.colors.primary,...traceAttrs(options,marker.path)}));
+      continue;
+    }
+    for(const shape of opfCore.timelineMarkerShapes(marker,statusColors))children.push(tag('circle',{cx:shape.cx,cy:shape.cy,r:shape.radius,fill:shape.fill??'none',...(shape.stroke?{stroke:shape.stroke.color,'stroke-width':shape.stroke.width}:{}),...traceAttrs(options,marker.path),...(options.trace?{'data-opf-timeline-status':marker.status,'data-opf-timeline-shape':shape.role}:{})}));
+  }
   for(const part of layout.parts){
     if(!part.fit)throw new OPFRenderError('layout-overflow','Timeline field has no usable space; change the arrangement or paginate events.',{path:part.path,issues:layout.diagnostics});
     children.push(tag('g',options.trace?{'data-opf-timeline-role':part.role}:{},renderTextBox(part.text,part.box,bound,{
       path:part.path,fit:part.fit,textStyle:part.style,fontFamily:part.requestedStyle.fontFamily,align:part.alignment,
-      fill:bound.design.colors.text,diagnosticsHandled:true,options,
+      fill:part.status&&typeof opfCore.timelineTextColor==='function'?opfCore.timelineTextColor(part,statusColors):bound.design.colors.text,diagnosticsHandled:true,options,
     })));
   }
   return tag('g',{...traceAttrs(options,item.path),...(options.trace?{'data-opf-timeline-arrangement':layout.arrangement}:{})},children.join('\n'));
