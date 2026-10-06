@@ -754,7 +754,7 @@ function bindSlide(presentation, slide, layout, index, context) {
     const named = design.fonts[role], resolved = resolveTextStyle({fontFamily:named,fontWeight:role === "heading" ? 700 : 400},textMeasurement).fontFamily;
     design.fonts[role] = fontPolicyFor(named)?.replacement?.weight !== undefined && resolved.toLowerCase() !== named.toLowerCase() ? named : resolved;
   }
-  const geometry = composeSlide(slide, { ...design.dimensions, layout, presentation, slideIndex: index, fonts: design.fonts, contentAlignment:design.contentAlignment, titleAlignment:design.titleAlignment, textRasterPadding:context.options.textRasterPadding, contentBox:design.contentBox, darkBackground: design.darkBackground, textMeasurement, date: context.options.date, socialPlatforms: socialPlatformRecords(context) });
+  const geometry = composeSlide(slide, { ...design.dimensions, layout, presentation, slideIndex: index, fonts: design.fonts, textRasterPadding:context.options.textRasterPadding, darkBackground: design.darkBackground, textMeasurement, date: context.options.date, socialPlatforms: socialPlatformRecords(context) });
   return {
     scriptFonts,
     scriptFontsFor,
@@ -1024,10 +1024,9 @@ function renderPayload(item, box, bound, options) {
 function renderTextPayload(item, box, bound, options) {
   return (Array.isArray(item.value) ? renderRichTextBox : renderTextBox)(Array.isArray(item.value) ? item.value : flattenText(item.value), box, bound, {
     path: item.path,
-    // Core resolves one alignment per composed item for every engine. The
-    // fallback keeps cores published before item.alignment working: titles
-    // follow design.titleAlignment only (unset is left, as in core composition).
-    align: item.alignment ?? (item.field === "title" ? bound.design.titleAlignment ?? "left" : bound.design.contentAlignment),
+    // Core resolves one alignment per composed item for every engine, from the slide's design, the deck's design
+    // and the layout record's design (SlideComposition.design).
+    align: item.alignment,
     fontSize: item.field === "title" ? 54 : item.field === "tag" ? 16 : 25,
     // fontScheme.accent draws the tag; core's textStyle (item.textStyle) already carries it, this is the fallback family.
     fontFamily: item.field === "title" ? bound.design.fonts.heading : item.field === "tag" ? bound.design.fonts.accent ?? bound.design.fonts.body : bound.design.fonts.body,
@@ -1237,7 +1236,7 @@ function renderImage(item, box, bound, options) {
   const { asset, source, drawable, missingReference } = resolveImageSource(item, bound, options);
   if (drawable) {
     return tag("image", { x: box.x, y: box.y, width: box.width, height: box.height,
-      href: source, preserveAspectRatio: options.imageAnchor === "left" ? "xMinYMid meet" : options.imageAnchor === "right" ? "xMaxYMid meet" : (options.imageFit ?? (bound.design.imageFill === "crop" ? "cover" : "contain")) === "cover" ? "xMidYMid slice" : "xMidYMid meet", role: "img", "aria-label": asset.alt ?? options.imageLabel ?? "Image",
+      href: source, preserveAspectRatio: options.imageAnchor === "left" ? "xMinYMid meet" : options.imageAnchor === "right" ? "xMaxYMid meet" : (options.imageFit ?? (bound.geometry.design.imageFill === "crop" ? "cover" : "contain")) === "cover" ? "xMidYMid slice" : "xMidYMid meet", role: "img", "aria-label": asset.alt ?? options.imageLabel ?? "Image",
       ...traceAttrs(options, item.path), ...generatedAttrs(options) });
   }
   const reason=missingReference?'missing-reference':!asset.src?'missing-source':'unsupported-source';
@@ -1928,7 +1927,7 @@ function trimRichLineEdges(line,textMeasurement) {
 }
 
 function renderRichLines(value,fit,box,bound,config) {
-  const logicalAlignment=fit.placement?.alignment??config.align??bound.design.contentAlignment;
+  const logicalAlignment=fit.placement?.alignment??config.align??bound.geometry.design.contentAlignment;
   // Each line takes its paragraph's direction from core (every wrapped line shares it) and its physical edge from that.
   const lineAlignment=index=>fit.placement?.lines[index]?.alignment??physicalAlignment(logicalAlignment,fit.directions?.[index]);
   let textOffset=0;
@@ -2028,7 +2027,7 @@ function renderTextBox(text, box, bound, config) {
   const totalHeight = fit.lines.length * fit.lineHeight;
   const startY = config.verticalAlign === "middle"
     ? box.y + Math.max(0, (box.height - totalHeight) / 2) + size : box.y + size;
-  const logicalAlignment=fit.placement?.alignment??config.align??bound.design.contentAlignment;
+  const logicalAlignment=fit.placement?.alignment??config.align??bound.geometry.design.contentAlignment;
   const type = config.fontFamily === bound.design.fonts.code ? "monospace" : bound.design.fontScheme.type;
   const source = String(text ?? ""), boxRtl = paragraphRtl(bound, source);
   let cursor = 0;
