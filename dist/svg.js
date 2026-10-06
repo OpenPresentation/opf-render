@@ -794,7 +794,8 @@ function renderResolvedSlide(resolved, slideIndex, options) {
   // Only a language the document names sets lang; the renderer default does not.
   const lang = script?.languageSource === "document" || script?.languageSource === "option" ? script.bcp47 : undefined;
   const { width, height } = bound.design.dimensions;
-  const title = bound.slide.title ?? resolved.presentation.name ?? `Slide ${slideIndex + 1}`;
+  // The title may be TextRun[] (FA-10): the accessible name is its plain text.
+  const title = (Array.isArray(bound.slide.title) ? flattenText(bound.slide.title) : bound.slide.title) ?? resolved.presentation.name ?? `Slide ${slideIndex + 1}`;
   const content = [
     renderBackground(bound, width, height, options),
     renderSlideImage(bound, options),
@@ -1404,9 +1405,12 @@ function renderQuote(item, box, bound, options) {
   if (!layout) throw new OPFRenderError('missing-quote-layout', 'Quote rendering requires a coordinated core build with shared quote geometry.', {path:item.path});
   const children = layout.parts.map(part => {
     if (!part.fit) throw new OPFRenderError('layout-overflow', 'Quote content has no usable internal space; increase its cell size before rendering.', {path:part.path,issues:layout.diagnostics});
+    const fill=part.role==='footer'?bound.design.colors.mutedText:bound.design.colors.text;
+    // FA-10: a TextRun[] quote body is laid out by core's rich-text layouter; its runs (quotation marks joined to the first and last) draw like body runs.
+    if(part.runs&&part.fit.richLines)return renderRichLines(part.runs,part.fit,part.box,bound,{path:part.path,fill,fontFamily:part.requestedStyle.fontFamily,diagnosticsHandled:true,options});
     return renderTextBox(part.text,part.box,bound,{
       path:part.path,fit:part.fit,textStyle:part.style,fontFamily:part.requestedStyle.fontFamily,
-      fill:part.role==='footer'?bound.design.colors.mutedText:bound.design.colors.text,
+      fill,
       diagnosticsHandled:true,options,
     });
   });
