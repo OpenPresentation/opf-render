@@ -53,9 +53,9 @@ export const engineDefaults = Object.freeze({
     google: Object.freeze({ latin: "roboto", ea: "noto-sans-sc", cs: "noto-sans" })
   }),
   chartTypes: Object.freeze([
-    "stacked-column",
-    "stacked-area",
-    "line-with-markers"
+    "stacked-column-3x",
+    "stacked-area-3x",
+    "line-with-markers-3x"
   ])
 });
 
@@ -208,7 +208,7 @@ function resolveTemplateInput(presentation, options) {
     });
   }
   for (const entry of result.diagnostics) {
-    if (entry.code === "variable-example-used" || entry.code === "variable-builtin-missing") options.onDiagnostic?.({ code: entry.code, path: entry.path, message: entry.message, id: entry.id });
+    if (entry.code === "variable-example-used") options.onDiagnostic?.({ code: "variable-example-used", path: entry.path, message: entry.message, id: entry.id });
   }
   return result.presentation;
 }
@@ -421,14 +421,17 @@ function resolveBackgroundColor(value, design, fallback) {
   return resolveColorRefIn(value, { colorScheme: design.colorScheme, colors: { primary, secondary, accent }, variables: design.variables }, fallback);
 }
 
+// The slide's single background color, or null when there is none (a gradient, or no color the engine can read).
+// With no definition, or a picture, the scheme's default slide background (core defaultSlideBackground) is the canvas.
 function resolveBackground(background, colorScheme, design) {
-  if (!background) return colorFromScheme(colorScheme, "light1", "#FFFFFF");
-  if (typeof background === "string") return colorFromScheme(colorScheme, background, "#FFFFFF");
-  if (background.type === "theme") return colorFromScheme(colorScheme, background.slot, "#FFFFFF");
+  const canvas = opfCore.defaultSlideBackground(colorScheme);
+  if (!background) return canvas;
+  if (typeof background === "string") return colorFromScheme(colorScheme, background, canvas);
+  if (background.type === "theme") return colorFromScheme(colorScheme, background.slot, canvas);
   if (background.type === "solid") return resolveBackgroundColor(background.color, design, "#FFFFFF");
   if (background.type === "gradient") return null;
   if (background.type === "pattern") return resolveBackgroundColor(background.pattern?.backgroundColor, design, "#FFFFFF");
-  return colorFromScheme(colorScheme, "light1", "#FFFFFF");
+  return canvas;
 }
 
 
@@ -456,6 +459,8 @@ function tagFill(design) {
   return contrastRatio(design.colors.primary, background) < TAG_MIN_CONTRAST ? design.colors.text : design.colors.primary;
 }
 
+const LINK_URL = /^(https?:|mailto:)/i;
+
 function resolveDesign(presentation, slide, context, index) {
   const deckDesign = presentation.design ?? {};
   const slideDesign = slide.design ?? {};
@@ -482,14 +487,13 @@ function resolveDesign(presentation, slide, context, index) {
   );
   const dimensions = resolveDimensions(slideDesign.dimensions ?? deckDesign.dimensions ?? theme.dimensions);
   const backgroundDefinition = slideDesign.background ?? deckDesign.background ?? theme.background;
-  const primary = normalizeColor(colorScheme.primary, null) ?? colorFromScheme(colorScheme, "accent1", "#2563EB");
-  const secondary = normalizeColor(colorScheme.secondary, null) ?? colorFromScheme(colorScheme, "accent2", "#0F766E");
-  const accent = normalizeColor(colorScheme.accent, null) ?? colorFromScheme(colorScheme, "accent3", "#F59E0B");
+  const { primary, secondary, accent } = opfCore.resolveColorRoles(colorScheme);
   const variables = presentation.variables ?? {};
   // background/surface/text roles depend on the background itself, so a background reference sees only the scheme and the three accent roles.
   const backgroundColor = resolveBackground(backgroundDefinition, colorScheme, { colorScheme, colors: { primary, secondary, accent }, variables });
-  const darkBackground = colorLuminance(backgroundColor ?? "#FFFFFF") < 0.179;
-  const textColor = colorFromScheme(colorScheme, darkBackground ? "light1" : "dark1", darkBackground ? "#FFFFFF" : "#111827");
+  // One resolution for every role (core resolveColorRoles), shared with the PPTX export and the audit.
+  const roles = opfCore.resolveColorRoles(colorScheme, { background: backgroundColor });
+  const darkBackground = roles.dark;
 
   return {
     ...deckDesign,
@@ -502,13 +506,15 @@ function resolveDesign(presentation, slide, context, index) {
     background: backgroundDefinition,
     backgroundColor,
     colors: {
-      background: colorFromScheme(colorScheme, "light1", "#FFFFFF"),
-      surface: colorFromScheme(colorScheme, darkBackground ? "dark2" : "light2", darkBackground ? "#1E293B" : "#F8FAFC"),
-      text: textColor,
-      mutedText: colorFromScheme(colorScheme, darkBackground ? "light2" : "dark2", darkBackground ? "#E2E8F0" : "#334155"),
+      background: roles.background,
+      surface: roles.surface,
+      text: roles.text,
+      mutedText: roles.textSecondary,
       primary,
       secondary,
       accent,
+      hyperlink: roles.hyperlink,
+      followedHyperlink: roles.followedHyperlink,
       border: colorFromScheme(colorScheme, "accent5", "#CBD5E1")
     },
     fonts: resolveFontFamilies(fontScheme),
@@ -781,12 +787,9 @@ export function renderSvg(input, options = {}) {
   return renderResolvedSlide(resolved, slideIndex, options);
 }
 
-// One SVG per slide, in slide order. `skipHidden: true` leaves out slides marked `hidden` (the sequence the player presents);
-// the result is then shorter than `slides`, so an index no longer names the slide at that index.
 export function renderSvgDeck(input, options = {}) {
   const resolved = resolvePresentation(input, options);
-  const indexes = resolved.slides.map((_, index) => index).filter(index => !(options.skipHidden === true && resolved.presentation.slides[index]?.hidden === true));
-  return indexes.map(index => renderResolvedSlide(resolved, index, options));
+  return resolved.slides.map((_, index) => renderResolvedSlide(resolved, index, options));
 }
 
 function renderResolvedSlide(resolved, slideIndex, options) {
@@ -973,19 +976,12 @@ function reportDiagnostic(diagnostic, options) {
   options.onDiagnostic?.(diagnostic);
 }
 
-// FA-09: Chart.alt is the chart's accessible name: a role="img" group with aria-label, which also makes the drawn marks and labels
-// inside presentational. An empty alt marks the chart decorative (aria-hidden). Without alt the SVG is unchanged.
-function chartText(chart, alt) {
-  if (typeof alt !== "string" || !chart) return chart;
-  return alt === "" ? tag("g", { "aria-hidden": "true" }, chart) : tag("g", { role: "img", "aria-label": alt }, chart);
-}
-
 function renderPayload(item, box, bound, options) {
   if (!box) return "";
   if (item.field === "items" || item.field === "bullets") return renderList(item, box, bound, options);
   switch (item.type) {
     case "chart":
-      return chartText(renderChart(item, box, bound, options), item.value?.alt);
+      return renderChart(item, box, bound, options);
     case "table":
       return renderTable(item, box, bound, options);
     case "image":
@@ -1522,7 +1518,7 @@ function renderTableBorders(defaultEdges, explicitEdges, scale, bound, options) 
 }
 
 function renderChart(item, box, bound, options) {
-  // Catalog chart types preview the native
+  // Catalog chart types (kept, deprecated and aliased ids) preview the native
   // construct opf-pptx exports; other ids keep the legacy single-series preview.
   const rendered = renderCatalogChart(item, box, bound, options, { tag, traceAttrs, stableNumber, renderTextBox, reportDiagnostic });
   if (rendered) return rendered;
@@ -1911,8 +1907,10 @@ function renderRichLines(value,fit,box,bound,config) {
     // Estimated (natural-flow) lines keep logical order; the browser reorders them.
     const fragmentX=rtl&&!naturalFlow?line.width-fragment.x-fragment.width:fragment.x;
     const position=asFlow?{'baseline-shift':fragment.baselineShift?stableNumber(-fragment.baselineShift):undefined}:{x:stableNumber(originX+fragmentX),y:stableNumber(baseline+fragment.baselineShift)};
+    // A link run is drawn as PowerPoint draws one: underlined, in the scheme hyperlink color unless the run sets its own color.
+    const linked = fragment.kind !== 'marker' && typeof run.link === 'string' && LINK_URL.test(run.link);
     const runFill = run.color == null
-      ? config.fill
+      ? (linked ? bound.design.colors.hyperlink : config.fill)
       : resolveColorRef(run.color, bound, config.fill);
     let fixedAdvance=(fragment.kind==='tab'||placed)&&fragment.width>0;
     const scripted=fragment.kind==='tab'?{content:escapeText(fragment.text)}:scriptLine(fragment.text,fragment.style,bound,bound.design.fontScheme.type,{rtl:rtl&&!asFlow,
@@ -1922,8 +1920,8 @@ function renderRichLines(value,fit,box,bound,config) {
     // RR-34: a citation/footnote marker is generated text (no source range): it is traced as a marker
     // segment without text offsets, so editors never read it as part of the run, and it is not linked.
     const marker=fragment.kind==='marker';
-    const rendered=tag(asFlow?'tspan':'text',{...(config.options.trace?marker?{'data-opf-segment':'marker','data-opf-marker':fragment.text}:{'data-opf-text-start':runOffsets[fragment.runIndex]+fragment.start,'data-opf-text-end':runOffsets[fragment.runIndex]+fragment.end,'data-opf-segment':fragment.kind}:{}),...position,'xml:space':'preserve','text-rendering':asFlow?undefined:'geometricPrecision',textLength:fixedAdvance?stableNumber(fragment.width):undefined,lengthAdjust:fixedAdvance?'spacingAndGlyphs':undefined,'font-family':scripted.family??fontStack(fragment.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(adjustedFontSize(fragment.fontSize,scripted.sizeAdjust)),'font-weight':fragment.style.fontWeight,'font-style':fragment.style.italic?'italic':asFlow?'normal':undefined,'text-decoration':marker?undefined:[run.underline?'underline':'',run.strikethrough?'line-through':''].filter(Boolean).join(' ')||undefined,fill:runFill},content);
-    if(!marker&&run.link&&/^(https?:|mailto:|tel:)/i.test(run.link))return tag('a',{href:run.link,target:'_blank',rel:'noopener noreferrer'},rendered);
+    const rendered=tag(asFlow?'tspan':'text',{...(config.options.trace?marker?{'data-opf-segment':'marker','data-opf-marker':fragment.text}:{'data-opf-text-start':runOffsets[fragment.runIndex]+fragment.start,'data-opf-text-end':runOffsets[fragment.runIndex]+fragment.end,'data-opf-segment':fragment.kind}:{}),...position,'xml:space':'preserve','text-rendering':asFlow?undefined:'geometricPrecision',textLength:fixedAdvance?stableNumber(fragment.width):undefined,lengthAdjust:fixedAdvance?'spacingAndGlyphs':undefined,'font-family':scripted.family??fontStack(fragment.style.fontFamily,bound.design.fontScheme.type),'font-size':stableNumber(adjustedFontSize(fragment.fontSize,scripted.sizeAdjust)),'font-weight':fragment.style.fontWeight,'font-style':fragment.style.italic?'italic':asFlow?'normal':undefined,'text-decoration':marker?undefined:[run.underline||linked?'underline':'',run.strikethrough?'line-through':''].filter(Boolean).join(' ')||undefined,fill:runFill},content);
+    if(linked)return tag('a',{href:run.link,target:'_blank',rel:'noopener noreferrer'},rendered);
     return rendered;
     };
     if(naturalFlow&&lineHasTab) {
