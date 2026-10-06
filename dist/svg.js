@@ -1410,7 +1410,17 @@ function renderQuote(item, box, bound, options) {
       diagnosticsHandled:true,options,
     });
   });
+  // FA-12: the attributed person's headshot, cropped to fill the core circle frame (the clip is the outline the native ellipse picture uses).
+  if (layout.photo) children.push(renderQuotePhoto(layout.photo, item, bound, options));
   return tag("g", traceAttrs(options, item.path), children.join("\n"));
+}
+
+function renderQuotePhoto(photo, item, bound, options) {
+  const picture = renderImage({ value: photo.value, path: photo.path }, photo.box, bound, { ...options, imageFit: 'cover' });
+  // An unresolved source keeps the ordinary placeholder, unmasked, like the export.
+  if (!picture.startsWith('<image')) return picture;
+  const id = `opf-s${bound.index + 1}-quote-photo-${item.path.replace(/[^A-Za-z0-9]+/g, '-')}`;
+  return tag('g', {}, tag('defs', {}, tag('clipPath', { id }, tag('path', { d: photo.shape.path }))) + tag('g', { 'clip-path': `url(#${id})` }, picture));
 }
 
 function renderTimeline(item, box, bound, options) {
