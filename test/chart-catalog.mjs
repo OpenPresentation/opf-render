@@ -26,10 +26,16 @@ for (const record of kept) {
   const spec = CHART_TYPES[id];
   assert.equal(resolveChartType(id), id, `${id}: resolves to itself`);
   assert.ok(openxml?.element, `${id}: catalog carries mappings.openxml.element`);
-  // Pareto is a chartex histogram with an owned cumulative line; the catalog says so through `extension`.
-  const expectedKind = id === "pareto" ? "pareto" : kindByElement[openxml.element];
+  // Pareto is a chartex histogram with an owned cumulative line; the catalog says so through `extension`. A mixed composition
+  // (combo, FA-15) is its own construct: clustered columns (its primary element) with line series.
+  const expectedKind = id === "pareto" ? "pareto" : openxml.composition === "mixed" ? "combo" : kindByElement[openxml.element];
   assert.equal(spec.kind, expectedKind, `${id}: kind follows ${openxml.element}`);
-  if (spec.kind === "bar") {
+  if (spec.kind === "combo") {
+    assert.deepEqual(openxml.series.map((entry) => entry.element), ["barChart", "lineChart"], `${id}: a bar and a line chart`);
+    assert.equal(spec.dir, openxml.barDir, `${id}: barDir`);
+    assert.equal(spec.grouping, openxml.grouping, `${id}: grouping`);
+    assert.equal(spec.markers, openxml.series[1].marker === true, `${id}: line markers`);
+  } else if (spec.kind === "bar") {
     assert.equal(spec.dir, openxml.barDir, `${id}: barDir`);
     assert.equal(spec.grouping, grouping[openxml.grouping ?? "clustered"], `${id}: grouping`);
   } else if (spec.kind === "line") {

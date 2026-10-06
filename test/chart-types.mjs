@@ -3,9 +3,10 @@ import {renderSvg,resolvePresentation} from '../dist/svg.js';
 import {CHART_TYPES,CHART_SERIES_COLORS,chartSeriesPalette,resolveChartType,niceScale,stackCategoryValues,barGeometry,scatterSeries,squarify,scottBinCount,histogramBins,boxStatistics,mixHex} from '../dist/charts.js';
 
 // FF-22: every kept catalog chart type previews its native construct.
-const CLASSIC=['column','stacked-column','100pct-stacked-column','bar','stacked-bar','100pct-stacked-bar','line','line-with-markers','stacked-line','stacked-line-with-markers','area','stacked-area','100pct-stacked-area','pie','doughnut','scatter','radar','radar-with-markers','filled-radar'];
+// FA-15: combo (clustered columns with line series) is a classic construct too: one barChart and one lineChart per value axis.
+const CLASSIC=['combo','column','stacked-column','100pct-stacked-column','bar','stacked-bar','100pct-stacked-bar','line','line-with-markers','stacked-line','stacked-line-with-markers','area','stacked-area','100pct-stacked-area','pie','doughnut','scatter','radar','radar-with-markers','filled-radar'];
 const CHARTEX=['treemap','histogram','pareto','box-and-whisker','waterfall','funnel','world'];
-assert.deepEqual(Object.keys(CHART_TYPES).sort(),[...CLASSIC,...CHARTEX].sort(),'26 kept chart type ids');
+assert.deepEqual(Object.keys(CHART_TYPES).sort(),[...CLASSIC,...CHARTEX].sort(),'27 kept chart type ids');
 for(const id of Object.keys(CHART_TYPES))assert.equal(resolveChartType(id),id);
 assert.equal(resolveChartType('donut'),'doughnut');
 assert.equal(resolveChartType(' Stacked-Column '),'stacked-column');
