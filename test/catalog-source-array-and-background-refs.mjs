@@ -81,7 +81,7 @@ assert.equal(solid('dark1'), scheme.dark1.toUpperCase());
 assert.equal(solid('var:missing'), '#FFFFFF');
 // A value outside ColorRef is a schema error (FA-07); with validation off the preview still falls back the same way.
 assert.throws(() => solid('not-a-colour'), error => error.code === 'invalid-opf');
-assert.equal(firstRect(renderSvg(withBackground({type: 'solid', color: 'not-a-colour'}), {validate: false})), '#FFFFFF');
+assert.equal(firstRect(renderSlideSvg(withBackground({type: 'solid', color: 'not-a-colour'}), 0, {validate: false})), '#FFFFFF');
 // The resolved fill also decides light/dark text defaults.
 const darkText = renderSlideSvg(withBackground({type: 'solid', color: 'var:brand'}, {variables: {brand: '#000000'}}), 0);
 assert.equal(firstRect(darkText), '#000000');
