@@ -49,5 +49,5 @@ for(const fixture of cases)for(const type of ['column','bar','line','area','pie'
 }
 // Unresolved data (a data source by asset, which the format no longer has, drawn with validation off) uses the same themed panel without inventing chart data.
 const missing={design:{background:'#000000',colorScheme:{id:'cool-horizon',dark2:'#334155',light1:'#FFFFFF'}},slides:[{chart:{type:'column',data:{src:'asset:missing'}}}]};
-const svg=renderSlideSvg(missing, 0, {validate:false});assert.ok(svg.includes('No chart data'));assert.ok(/<text[^>]*fill="#FFFFFF"[^>]*>No chart data</text>/.test(svg));
+const svg=renderSlideSvg(missing, 0, {validate:false});assert.ok(svg.includes('No chart data'));assert.ok(/<text[^>]*fill="#FFFFFF"[^>]*>No chart data<\/text>/.test(svg));
 console.log(`Chart colors passed: ${checked} simple/catalog paths, light/dark/opposite surfaces, retained alpha and unresolved data; no source mutation.`);

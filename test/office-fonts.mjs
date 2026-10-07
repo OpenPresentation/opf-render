@@ -91,7 +91,7 @@ assert.match(flowText,/<tspan[^>]*font-family="Gelasio[^"]*"[^>]*font-variant-li
 assert.match(flowText,/<tspan(?![^>]*font-variant-ligatures)[^>]*font-family="Cousine[^"]*"[^>]*>code ff/);
 // Nested script runs inside a Gelasio run go back to default shaping.
 {const scripts=await loadFonts({pack:'office',scripts:['Arab'],substitutionPolicy:'metric'});
-const mixed=renderSlideSvg({design:{fontScheme:{major:'Gelasio',minor:'Gelasio',code: 'Cousine'}},slides:[{title:'Mixed',text:'office fluffy سلام fi'}]}, 0, {fonts: scripts});
+const mixed=renderSlideSvg({design:{fontScheme:{major:'Gelasio',minor:'Gelasio',code: 'Cousine'}},slides:[{title:'Mixed',text:'office fluffy \u0633\u0644\u0627\u0645 fi'}]}, 0, {fonts: scripts});
 assert.match(mixed,/<text[^>]*font-variant-ligatures:none[^>]*>/);
 assert.match(mixed,/<tspan[^>]*font-family="[^"]*"[^>]*style="font-variant-ligatures:normal;font-feature-settings:normal"[^>]*>\u0633\u0644\u0627\u0645/);}}
 // Raster: resvg ignores the SVG properties, so the rasterizer separates the letters a ligature would join
