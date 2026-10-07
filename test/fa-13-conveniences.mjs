@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {colorContrast, codeHighlightColors} from '@openpresentation/opf';
+import {colorContrast, codeHighlightColors} from '@openpresentation/opf/composition';
 import { renderSlideSvg } from '../dist/svg.js';
 
 // FA-13: code.highlight, Watermark.text, TextRun.code, TextRun.lang and the 1:1, 4:5 and 9:16 presets in the SVG preview.

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { renderSlideSvg } from '../dist/svg.js';
-import {colorContrast, metricTrendColor} from '@openpresentation/opf';
+import {colorContrast, metricTrendColor} from '@openpresentation/opf/composition';
 
 // FA-06: metric.sentiment says whether a change is good news. The preview draws the arrow in the trend's
 // direction and colours the arrow, the trend word and the delta text by the sentiment (core metricTrendMark).

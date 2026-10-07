@@ -1,7 +1,8 @@
 // FA-05: the preview resolves the color-scheme roles and link colors through core resolveColorRoles, the definition opf-pptx
 // and the audit share (the cross-engine comparison is test/color-roles.mjs in opf-pptx).
 import assert from 'node:assert/strict';
-import { catalogs, resolveColorRoles } from '@openpresentation/opf';
+import { catalogs } from '@openpresentation/opf';
+import { resolveColorRoles } from '@openpresentation/opf/composition';
 import { renderSlideSvg } from '../dist/index.js';
 
 const cool = catalogs.colorSchemes.find(record => record.id === 'cool-horizon');

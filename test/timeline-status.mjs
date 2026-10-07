@@ -1,7 +1,7 @@
 // FA-11: TimelineEvent.status in the SVG preview. Absent status is byte-identical to the plain marker; done, current
 // and planned are drawn from the deck's colors and agree with core's timelineMarkerShapes / timelineTextColor.
 import assert from 'node:assert/strict';
-import { colorContrast, timelineMarkerShapes, timelineTextColor } from '@openpresentation/opf';
+import { colorContrast, timelineMarkerShapes, timelineTextColor } from '@openpresentation/opf/composition';
 import { resolvePresentation, renderSlideSvg } from '../dist/svg.js';
 import { loadFonts } from '../dist/fonts-node.js';
 
