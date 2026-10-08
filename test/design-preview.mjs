@@ -12,7 +12,7 @@ const stripe=preset=>renderSlideSvg({design:{background:{type:'pattern',pattern:
 assert.equal(stripe('wdUpDiag'),stripe('diagStripe'),'PPTX export writes diagStripe as wdUpDiag; the preview draws both alike');
 const unknown=[];renderSlideSvg({design:{background:{type:'pattern',pattern:{preset:'engineDots'}}},slides:[{}]}, 0,{onDiagnostic:d=>unknown.push(d.code)});assert.deepEqual(unknown,['unsupported-pattern']);
 const raster='data:image/png;base64,iVBORw0KGgo=';
-assert.match(renderSlideSvg({design:{background:{type:'image',image:{src:raster}},watermark:{src:raster,opacity:.12}},slides:[{}]}, 0),/xMidYMid slice/);
+assert.match(renderSlideSvg({design:{background:{type:'image',src:raster},watermark:{src:raster,opacity:.12}},slides:[{}]}, 0),/xMidYMid slice/);
 console.log('Design preview: header/footer zones, inheritance suppression, angles, opacity, patterns, image background and watermark passed.');
 
 assert.match(renderSlideSvg({design:{titleAlignment:'right',contentAlignment:'center',contentBox:true},slides:[{title:'Right',text:'Center'}]}, 0),/text-anchor="end"/);
