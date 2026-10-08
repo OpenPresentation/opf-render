@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { defaultCatalog } from '@openpresentation/opf/catalog';
 import { renderSlideSvg, renderSvg, resolvePresentation, engineDefaults, OPFRenderError } from '../dist/index.js';
-import { presentationFamilies } from '../dist/fonts.js';
+import { presentationFamilies } from '../dist/fonts-browser.js';
 import { ENGINE_DEFAULT_COLOR_SCHEME, ENGINE_DEFAULT_FONT_SCHEME, ENGINE_DEFAULT_THEME } from '@openpresentation/opf/composition';
 
 let checked = 0;
@@ -13,23 +13,13 @@ let checked = 0;
 for (const directory of ['../src/', '../dist/']) {
   const url = new URL(directory, import.meta.url);
   for (const name of readdirSync(url).filter(file => /\.(?:js|d\.ts)$/.test(file))) {
-    const text = readFileSync(new URL(name, url), 'utf8');
-    assert.doesNotMatch(text, /@openpresentation\/opf\/catalogs?["']/, `${directory}${name} imports a catalog`);
+    // Code lines only: the JSDoc that tells hosts how to register a catalog may name the subpath.
+    const text = readFileSync(new URL(name, url), 'utf8').split('\n').filter(line => !/^\s*(?:\*|\/\/|\/\*)/.test(line)).join('\n');
+    assert.doesNotMatch(text, /(?:\bfrom\s*|\bimport\s*\(\s*)["']@openpresentation\/opf\/catalogs?["']/, `${directory}${name} imports a catalog`);
     assert.doesNotMatch(text, /catalogSources/, `${directory}${name} still reads catalogSources`);
   }
   checked++;
 }
-// The browser bundle of the SVG entry carries no catalog records: no layout or narrative description from the gallery snapshot.
-{
-  const { build } = await import('esbuild');
-  const result = await build({ stdin: { contents: "export { renderSlideSvg } from './dist/svg.js';", resolveDir: new URL('../', import.meta.url).pathname, loader: 'js' }, bundle: true, platform: 'browser', format: 'esm', write: false, logLevel: 'error' });
-  const code = result.outputFiles[0].text;
-  const samples = [...Object.values(defaultCatalog.layouts), ...Object.values(defaultCatalog.narratives ?? {})].map(record => record.description).filter(text => typeof text === 'string' && text.length > 40).slice(0, 40);
-  assert.ok(samples.length >= 10, 'enough catalog descriptions to probe');
-  for (const text of samples) assert.ok(!code.includes(JSON.stringify(text).slice(1, -1)), `the renderer bundle contains catalog data: ${text.slice(0, 60)}`);
-  checked++;
-}
-
 // Engine defaults are core's.
 assert.equal(engineDefaults.theme, ENGINE_DEFAULT_THEME);
 assert.equal(engineDefaults.colorScheme, ENGINE_DEFAULT_COLOR_SCHEME);
@@ -89,4 +79,15 @@ const deck = { name: 'Catalogs', design: { theme: 'classic' }, slides: [{ ...sli
   assert.ok(renderSlideSvg(deck, 0, { strictReferences: true, catalogs: [defaultCatalog] }).startsWith('<svg'));
   checked++;
 }
+// The browser bundle of the SVG entry carries no catalog records: no layout or narrative description from the gallery snapshot.
+{
+  const { build } = await import('esbuild');
+  const result = await build({ stdin: { contents: "export { renderSlideSvg } from './dist/svg.js';", resolveDir: new URL('../', import.meta.url).pathname, loader: 'js' }, bundle: true, platform: 'browser', format: 'esm', write: false, logLevel: 'error' });
+  const code = result.outputFiles[0].text;
+  const samples = [...Object.values(defaultCatalog.layouts), ...Object.values(defaultCatalog.narratives ?? {})].map(record => record.description).filter(text => typeof text === 'string' && text.length > 40).slice(0, 40);
+  assert.ok(samples.length >= 10, 'enough catalog descriptions to probe');
+  for (const text of samples) assert.ok(!code.includes(JSON.stringify(text).slice(1, -1)), `the renderer bundle contains catalog data (core's main entry must import none, FA-21): ${text.slice(0, 60)}`);
+  checked++;
+}
+
 console.log(`catalogs: ${checked} checks passed`);

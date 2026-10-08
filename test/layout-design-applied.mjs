@@ -1,11 +1,12 @@
 // FA-17: a layout record's `design` is the lowest-precedence default of one merge (slide design, deck design,
 // layout design, engine default) that core resolves once (SlideComposition.design). The preview draws that
 // result: text alignment, content cards, image fill and picture bullets follow the layout when nothing above it
-// sets the key, and the deck and the slide override it per key.
+// sets the key, and the deck and the slide override it per key. OPF 0.15: the layout record is embedded in the document's
+// `custom` catalog group; the deck names the gallery's `roboto` font scheme, so the host catalog is registered.
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
 import * as composition from '@openpresentation/opf/composition';
-import { resolvePresentation, renderSlideSvg } from '../dist/index.js';
+import { resolvePresentation, renderSlideSvg } from './catalog-harness.mjs';
 
 if (typeof composition.resolveDesignHints !== 'function') {
   console.log('Layout design applied skipped: the linked @openpresentation/opf has no resolveDesignHints (core before FA-17).');
@@ -14,8 +15,8 @@ if (typeof composition.resolveDesignHints !== 'function') {
 
 const attr = (element, name) => element.match(new RegExp(' ' + name + '="([^"]*)"'))?.[1];
 const anchors = { left: 'start', center: 'middle', right: 'end' };
-const layout = (design, placeholders = [{ type: 'title' }, { type: 'subtitle' }, { type: 'text' }]) => ({ $schema: 'https://openpresentation.org/schema/opf-layout/v1', id: 'design-layout', name: 'Design layout', design, placeholders });
-const deckOf = (record, slide = {}, deckDesign = {}) => ({ design: { fontScheme: 'roboto', ...deckDesign }, catalogs: { layouts: { records: [record] } }, slides: [{ layout: 'design-layout', title: 'Layout title', subtitle: 'Layout subtitle', text: 'Layout body text', ...slide }] });
+const layout = (design, placeholders = [{ type: 'title' }, { type: 'subtitle' }, { type: 'text' }]) => ({ name: 'Design layout', design, placeholders });
+const deckOf = (record, slide = {}, deckDesign = {}) => ({ design: { fontScheme: 'roboto', ...deckDesign }, catalogs: { custom: { layouts: { 'design-layout': record } } }, slides: [{ layout: 'design-layout', title: 'Layout title', subtitle: 'Layout subtitle', text: 'Layout body text', ...slide }] });
 const texts = (svg, path) => [...svg.matchAll(/<text\b[^>]*>/g)].map(match => match[0]).filter(tag => attr(tag, 'data-opf-path') === path);
 
 // Alignment: layout only, deck over layout, slide over deck, per key.

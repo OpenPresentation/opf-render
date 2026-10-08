@@ -22,7 +22,7 @@ export declare const engineDefaults: Readonly<{
   theme: typeof import("@openpresentation/opf/composition").ENGINE_DEFAULT_THEME;
   colorScheme: typeof import("@openpresentation/opf/composition").ENGINE_DEFAULT_COLOR_SCHEME;
   fontScheme: typeof import("@openpresentation/opf/composition").ENGINE_DEFAULT_FONT_SCHEME;
-  chartType: "stacked-column";
+  chartType: string;
 }>;
 
 export type RenderDiagnostic = LayoutDiagnostic | {

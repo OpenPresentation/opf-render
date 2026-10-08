@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import {renderSlideSvg} from '../src/svg.js';
+// The alignment decks below name the gallery's roboto font scheme, so they pass the host catalog (core Catalog[]) explicitly.
+import {defaultCatalog} from '@openpresentation/opf/catalog';
+const catalogs=[defaultCatalog];
 const deck={organization:{id:'acme',name:'Acme'},design:{header:{left:{text:'Confidential'},center:{section:true},right:{organization:true}},footer:{left:{slideNumber:true},center:{date:'2026-09-07'},right:{text:'Review'}}},slides:[{title:'Slide',section:'Results'}]};
 const svg=renderSlideSvg(deck, 0,{trace:true});for(const text of ['Confidential','Results','Acme','2026-09-07','Review','design.header.left'])assert.ok(svg.includes(text),text);
 const hidden=renderSlideSvg({...deck,slides:[{title:'Slide',design:{header:false,footer:false}}]}, 0);assert.ok(!hidden.includes('Confidential'));assert.ok(!hidden.includes('Review'));
@@ -26,8 +29,8 @@ assert.match(renderSlideSvg({design:{titleAlignment:'right',contentAlignment:'ce
   const anchors=svg=>Object.fromEntries([...svg.matchAll(/<text\b[^>]*>/g)].map(m=>m[0]).filter(tag=>/data-opf-path="slides\.0\.(title|subtitle|tag|text)"/.test(tag)).map(tag=>[tag.match(/data-opf-path="slides\.0\.(\w+)"/)[1],tag.match(/text-anchor="(\w+)"/)?.[1]??'start']));
   const slide={tag:'Tag',title:'Title',subtitle:'Subtitle',text:'Body'};
   for(const options of [{},{fonts: prepared}]){
-    assert.deepEqual(anchors(renderSlideSvg({design:{fontScheme:'roboto',contentAlignment:'center'},slides:[slide]}, 0,{...options,trace:true})),{tag:'middle',title:'start',subtitle:'middle',text:'middle'});
-    assert.deepEqual(anchors(renderSlideSvg({design:{fontScheme:'roboto',contentAlignment:'right',titleAlignment:'center'},slides:[{...slide,design:{titleAlignment:'right',contentAlignment:'left'}}]}, 0,{...options,trace:true})),{tag:'start',title:'end',subtitle:'start',text:'start'});
+    assert.deepEqual(anchors(renderSlideSvg({design:{fontScheme:'roboto',contentAlignment:'center'},slides:[slide]}, 0,{...options,trace:true,catalogs})),{tag:'middle',title:'start',subtitle:'middle',text:'middle'});
+    assert.deepEqual(anchors(renderSlideSvg({design:{fontScheme:'roboto',contentAlignment:'right',titleAlignment:'center'},slides:[{...slide,design:{titleAlignment:'right',contentAlignment:'left'}}]}, 0,{...options,trace:true,catalogs})),{tag:'start',title:'end',subtitle:'start',text:'start'});
   }
   console.log('Design preview alignment: titles use titleAlignment (default left) and headings/body use contentAlignment with estimated and outline measurement.');
 }

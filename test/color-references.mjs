@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { colorSchemes } from '@openpresentation/opf';
-import {renderSlideSvg} from '../dist/index.js';
+// The fixture and the decks below name gallery records (the forest-green and cool-horizon colour schemes, the classic theme), so
+// they render with the host catalog registered (./catalog-harness.mjs).
+import { defaultCatalog, renderSlideSvg } from './catalog-harness.mjs';
 
 const fixture = JSON.parse(
   readFileSync(new URL('fixtures/color-references.opf.json', import.meta.url), 'utf8'),
 );
-const forest = colorSchemes.find((scheme) => scheme.id === 'forest-green');
+const forest = defaultCatalog.colorSchemes['forest-green'];
 assert.ok(forest, 'forest-green color scheme');
 
 const svgDeck = fixture.slides.slice(0, 3).map((_, index) =>

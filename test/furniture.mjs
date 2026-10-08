@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {resolvePresentation, renderSlideSvg} from '../dist/svg.js';
+// The decks name the gallery's roboto font scheme, so the host catalog is registered (./catalog-harness.mjs).
+import {resolvePresentation, renderSlideSvg} from './catalog-harness.mjs';
 import {loadFonts} from '../dist/fonts-node.js';
 const prepared = await loadFonts();
 const bytes=await readFile(new URL('fixtures/jpeg/expected-1.png',import.meta.url));

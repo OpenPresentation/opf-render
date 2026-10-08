@@ -6,7 +6,7 @@ import {
   metricTrendMark as coreMetricTrendMark, tokenizeCode, codeLineRuns, codeSyntaxPaletteForScheme, resolveChartData,
   resolveColorRoles, defaultSlideBackground, timelineMarkerShapes, timelineTextColor, layoutWatermark,
   codeHighlightLines, codeLineNumbers, codeHighlightBands, codeHighlightColors, fitImage,
-  ENGINE_DEFAULT_THEME, ENGINE_DEFAULT_COLOR_SCHEME, ENGINE_DEFAULT_FONT_SCHEME
+  ENGINE_DEFAULT_THEME, ENGINE_DEFAULT_COLOR_SCHEME, ENGINE_DEFAULT_FONT_SCHEME, ENGINE_DEFAULT_CHART_TYPES
 } from "@openpresentation/opf/composition";
 // The renderer is a library: it never imports a catalog. Hosts register theirs (`options.catalogs`, core `Catalog[]`, for
 // example `defaultCatalog` from `@openpresentation/opf/catalog`) and core resolves every reference against them.
@@ -45,7 +45,7 @@ export const engineDefaults = Object.freeze({
   theme: ENGINE_DEFAULT_THEME,
   colorScheme: ENGINE_DEFAULT_COLOR_SCHEME,
   fontScheme: ENGINE_DEFAULT_FONT_SCHEME,
-  chartType: "stacked-column"
+  chartType: ENGINE_DEFAULT_CHART_TYPES[0]
 });
 
 /**
@@ -791,7 +791,6 @@ function renderBackground(bound, width, height, options) {
 // or an edge band). cover, contain
 // and stretch use the shared fit math with the focus point; tile repeats the picture at its intrinsic size (1 picture px = 1
 // reference px) from the canvas top-left. alt is the picture's accessible name; without alt the picture is decorative.
-// An unresolved source keeps the ordinary placeholder over the canvas, without opacity or overlay, like the export.
 function renderBackgroundImage(background, bound, width, height, options) {
   const canvas = tag("rect", { x: 0, y: 0, width, height, fill: bound.design.backgroundColor ?? bound.design.colors.background, ...traceAttrs(options, `${bound.path}.design.background`) });
   const item = { value: background.alt === undefined ? background.src : { src: background.src, alt: background.alt }, path: background.path };
@@ -799,7 +798,8 @@ function renderBackgroundImage(background, bound, width, height, options) {
   const picture = background.fit === "tile"
     ? renderTiledImage(item, background.box, bound, drawOptions)
     : renderImage(item, background.box, bound, { ...drawOptions, imageFit: background.fit, imageFocus: background.focus, imagePicture: background.picture });
-  if (isImagePlaceholder(picture)) return [canvas, picture].join("\n");
+  // An unresolved source draws the ordinary placeholder at the background's opacity (as 0.14 did), without recolor or overlay.
+  if (isImagePlaceholder(picture)) return [canvas, background.opacity !== undefined ? tag("g", { opacity: background.opacity }, picture) : picture].join("\n");
   const id = `opf-s${bound.index + 1}-background`, matrix = imageRecolorMatrix(background.recolor, bound);
   const defs = matrix ? tag("defs", {}, tag("filter", { id: `${id}-recolor`, "color-interpolation-filters": "sRGB" }, tag("feColorMatrix", { type: "matrix", values: matrix }))) : "";
   const pixels = matrix || background.opacity !== undefined ? tag("g", { filter: matrix ? `url(#${id}-recolor)` : undefined, opacity: background.opacity === undefined ? undefined : preciseNumber(background.opacity) }, picture) : picture;

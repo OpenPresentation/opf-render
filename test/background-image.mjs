@@ -136,11 +136,12 @@ for (const [background, aspect] of [[{ type: 'image', src: strip }, 'xMidYMid sl
   checked++;
 }
 
-// Unresolved sources keep the ordinary placeholder without opacity or overlay.
+// Unresolved sources keep the ordinary placeholder at the background's opacity, without recolor or overlay.
 {
   const diagnostics = [];
-  const svg = renderSlideSvg(deckWith({ type: 'image', src: 'asset:missing', opacity: 0.4, overlay: { color: '#000000', opacity: 0.5 } }), 0, { onDiagnostic: entry => diagnostics.push(entry) });
-  assert.doesNotMatch(svg, /fill-opacity|<g opacity="0\.4"/);
+  const svg = renderSlideSvg(deckWith({ type: 'image', src: 'asset:missing', opacity: 0.4, recolor: 'grayscale', overlay: { color: '#000000', opacity: 0.5 } }), 0, { onDiagnostic: entry => diagnostics.push(entry) });
+  assert.doesNotMatch(svg, /fill-opacity|feColorMatrix/);
+  assert.match(svg, /<g opacity="0\.4"><g [^>]*data-opf-asset-status="unresolved"/);
   assert.ok(diagnostics.some(entry => entry.code === 'unresolved-asset' && entry.path === 'slides.0.design.background'), JSON.stringify(diagnostics));
   checked++;
 }
