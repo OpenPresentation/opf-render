@@ -900,11 +900,11 @@ function reportDiagnostic(diagnostic, options) {
   options.onDiagnostic?.(diagnostic);
 }
 
-// FA-09: Chart.alt is the chart's accessible name: a role="img" group with aria-label, which also makes the drawn marks and labels
-// inside presentational. An empty alt marks the chart decorative (aria-hidden). Without alt the SVG is unchanged.
-function chartText(chart, alt) {
-  if (typeof alt !== "string" || !chart) return chart;
-  return alt === "" ? tag("g", { "aria-hidden": "true" }, chart) : tag("g", { role: "img", "aria-label": alt }, chart);
+// FA-09, FA-27: Chart.alt and Table.alt are the accessible name: a role="img" group with aria-label, which also makes the drawn marks and labels
+// inside presentational. An empty alt marks it decorative (aria-hidden). Without alt the SVG is unchanged.
+function altText(drawn, alt) {
+  if (typeof alt !== "string" || !drawn) return drawn;
+  return alt === "" ? tag("g", { "aria-hidden": "true" }, drawn) : tag("g", { role: "img", "aria-label": alt }, drawn);
 }
 
 function renderPayload(item, box, bound, options) {
@@ -912,9 +912,9 @@ function renderPayload(item, box, bound, options) {
   if (item.field === "items" || item.field === "bullets") return renderList(item, box, bound, options);
   switch (item.type) {
     case "chart":
-      return chartText(renderChart(item, box, bound, options), item.value?.alt);
+      return altText(renderChart(item, box, bound, options), item.value?.alt);
     case "table":
-      return renderTable(item, box, bound, options);
+      return altText(renderTable(item, box, bound, options), item.value?.alt);
     case "image":
       return renderImageBlock(item, bound, options);
     case "video":
