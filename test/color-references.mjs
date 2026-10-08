@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-// The fixture and the decks below name gallery records (the forest-green and cool-horizon colour schemes, the classic theme), so
-// they render with the host catalog registered (./catalog-harness.mjs).
-import { defaultCatalog, renderSlideSvg } from './catalog-harness.mjs';
+// FA-23: the documents name gallery records, so they render with the gallery snapshot registered, as a host does. Core's
+// packed-ecosystem checks copy this file and rewrite its relative imports, so it registers the catalog itself.
+import {defaultCatalog} from '@openpresentation/opf/catalog';
+import {renderSlideSvg as renderSlideSvgUnregistered} from '../dist/index.js';
+const catalogs = [defaultCatalog];
+const renderSlideSvg = (deck, index, options = {}) => renderSlideSvgUnregistered(deck, index, {catalogs, ...options});
 
 const fixture = JSON.parse(
   readFileSync(new URL('fixtures/color-references.opf.json', import.meta.url), 'utf8'),

@@ -1,5 +1,11 @@
 import assert from 'node:assert/strict';
-import {resolvePresentation, renderSlideSvg, catalogs} from './catalog-harness.mjs'; // FA-23: registers the gallery snapshot (the documents name gallery records)
+// FA-23: the documents name gallery records, so they render with the gallery snapshot registered, as a host does. Core's
+// packed-ecosystem checks copy this file and rewrite its relative imports, so it registers the catalog itself.
+import {defaultCatalog} from '@openpresentation/opf/catalog';
+import {resolvePresentation as resolvePresentationUnregistered, renderSlideSvg as renderSlideSvgUnregistered} from '../dist/svg.js';
+const catalogs = [defaultCatalog];
+const resolvePresentation = (deck, options = {}) => resolvePresentationUnregistered(deck, {catalogs, ...options});
+const renderSlideSvg = (deck, index, options = {}) => renderSlideSvgUnregistered(deck, index, {catalogs, ...options});
 import {loadFonts} from '../dist/fonts-node.js';
 import {validate} from '@openpresentation/opf';
 const fonts=(await loadFonts({pack: 'office'})).registry;
