@@ -3,7 +3,7 @@
 // A document that is not an SVG with a namespace and an intrinsic size keeps the "Image unavailable" placeholder.
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
-import {renderSvg, svgToPng, renderSlideSvg} from '../dist/index.js';
+import {renderSvg, svgToPng, renderSlideSvg} from './catalog-harness.mjs'; // FA-23: registers the gallery snapshot (the documents name gallery records)
 
 const NS = 'xmlns="http://www.w3.org/2000/svg"';
 const rect = `<svg ${NS} width="120" height="60"><rect width="120" height="60" fill="#00cc00"/></svg>`;

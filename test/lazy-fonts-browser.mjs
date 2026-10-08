@@ -147,7 +147,7 @@ try {
   for (const run of italic.runs) { assert.ok(run.painted, `${run.family} is loaded`); assert.ok(Math.abs(run.natural - run.accepted) < 0.1, `italic: ${run.family} advance ${run.natural} differs from accepted ${run.accepted}`); }
   // FF-41: a layout id that only the host's catalogs know resolves through renderOptions; without them the slide composes with no layout and the same faces are needed.
   assert.deepEqual(await page.evaluate(name => window.registry.pendingLazyFonts(window.decks[name]).map(face => face.file), 'hostLayout'), [], 'the Intos faces the host-layout deck draws are already loaded');
-  const withoutCatalogs = await page.evaluate(name => { try { return window.registry.pendingLazyFonts(window.decks[name], {catalogs: {}}).map(face => face.file); } catch (error) { return error.code; } }, 'hostLayout');
+  const withoutCatalogs = await page.evaluate(name => { try { return window.registry.pendingLazyFonts(window.decks[name], {catalogs: []}).map(face => face.file); } catch (error) { return error.code; } }, 'hostLayout');
   assert.deepEqual(withoutCatalogs, [], 'without the host catalogs the slide composes with no layout and nothing more is pending');
   // FF-43: each replacement pair loads exactly its vendored families' files, and the document paints what the registry measured.
   const pairReport = [];
