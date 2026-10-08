@@ -13,6 +13,10 @@
           "command": "npm run test:player-browser"
         },
         {
+          "id": "browser:preview-a11y-browser",
+          "command": "npm run test:preview-a11y-browser"
+        },
+        {
           "id": "browser:export-browser",
           "command": "npm run test:export-browser"
         },
