@@ -1,6 +1,6 @@
 // FA-23: image blocks draw from core's ComposedItem.image (FA-22): the picture in the frame with the block's fit and focus,
 // the shape mask (core imageShape outline), Rec. 601 recolor and pixel-only opacity, the centered border, then the overlay,
-// in the paint order 0.14's design.slideImage used; a placed block at its edge band.
+// in the paint order of 0.14's slide-level image; a placed block at its edge band.
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
 import { resolveSlideContext } from '@openpresentation/opf';

@@ -1,6 +1,6 @@
 // The 15 pptx.gallery image treatments as OPF 0.15 documents (FA-23): a full-slide photo is an image background, every
 // other picture is an image block, placed at an edge band. test/image-treatments.mjs renders each one and compares it with
-// the reference the 0.14 renderer drew from the same treatment written as design.slideImage
+// the reference the 0.14 renderer drew from the same treatment written as its 0.14 slide-level image
 // (test/fixtures/image-treatments-0.14/, see its README for how it was made).
 import sharp from 'sharp';
 
@@ -21,7 +21,7 @@ export const TREATMENTS = Object.freeze([
   { slug: 'masked-shape', block: { shape: 'hexagon' }, placement: { edge: 'right', size: 0.45, inset: true } },
   { slug: 'circular-crop', block: { shape: 'circle', border: { color: 'accent1', width: 4 } }, placement: { edge: 'left', size: 0.4, inset: true } },
   { slug: 'rounded-card', block: { shape: 'rounded', cornerRadius: 0.08, border: { color: '#10182080', width: 3 } }, placement: { edge: 'right', size: 0.5, inset: true } },
-  { slug: 'duotone', block: { recolor: { dark: 'accent1', light: 'light1' } }, placement: { edge: 'left', size: 0.5 } },
+  { slug: 'duotone', background: { recolor: { dark: 'accent1', light: 'light1' } } },
   { slug: 'background-blur', background: { opacity: 0.35 } },
   { slug: 'image-strip', block: { recolor: 'grayscale' }, placement: { edge: 'top', size: 0.3 } },
   { slug: 'collage-grid', block: { overlay: { color: 'accent1', opacity: 0.3 } }, placement: { edge: 'bottom', size: 0.35 } },

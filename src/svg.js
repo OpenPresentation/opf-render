@@ -787,7 +787,8 @@ function renderBackground(bound, width, height, options) {
 }
 
 // FA-22 image background, in the paint order of the geometry contract: the canvas colour (the colour scheme's default slide
-// background), the picture (opacity on its pixels only), then the overlay (the whole canvas or an edge band). cover, contain
+// background), the picture (recolor and opacity on its pixels only, as for an image block), then the overlay (the whole canvas
+// or an edge band). cover, contain
 // and stretch use the shared fit math with the focus point; tile repeats the picture at its intrinsic size (1 picture px = 1
 // reference px) from the canvas top-left. alt is the picture's accessible name; without alt the picture is decorative.
 // An unresolved source keeps the ordinary placeholder over the canvas, without opacity or overlay, like the export.
@@ -799,8 +800,10 @@ function renderBackgroundImage(background, bound, width, height, options) {
     ? renderTiledImage(item, background.box, bound, drawOptions)
     : renderImage(item, background.box, bound, { ...drawOptions, imageFit: background.fit, imageFocus: background.focus, imagePicture: background.picture });
   if (isImagePlaceholder(picture)) return [canvas, picture].join("\n");
-  const pixels = background.opacity !== undefined ? tag("g", { opacity: preciseNumber(background.opacity) }, picture) : picture;
-  return [canvas, pixels, background.overlay ? renderImageOverlay(background.overlay, bound, options) : ""].filter(Boolean).join("\n");
+  const id = `opf-s${bound.index + 1}-background`, matrix = imageRecolorMatrix(background.recolor, bound);
+  const defs = matrix ? tag("defs", {}, tag("filter", { id: `${id}-recolor`, "color-interpolation-filters": "sRGB" }, tag("feColorMatrix", { type: "matrix", values: matrix }))) : "";
+  const pixels = matrix || background.opacity !== undefined ? tag("g", { filter: matrix ? `url(#${id}-recolor)` : undefined, opacity: background.opacity === undefined ? undefined : preciseNumber(background.opacity) }, picture) : picture;
+  return [canvas, defs, pixels, background.overlay ? renderImageOverlay(background.overlay, bound, options) : ""].filter(Boolean).join("\n");
 }
 
 // tile: a pattern cell of the picture's intrinsic size, anchored at the canvas origin.

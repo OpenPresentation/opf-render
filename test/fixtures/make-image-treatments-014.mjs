@@ -1,3 +1,4 @@
+// fa-stale-refs: history (a 0.14 generator; OPF 0.15 is docs/programs/format-audit/0.15-design.md in core).
 // Run once with opf-render 0.14.0 on core 0.14.0 (the last renderer with design.slideImage) to write the FA-23 reference
 // renders: node test/fixtures/make-image-treatments-014.mjs. Each 0.15 treatment is written back as the 0.14 slideImage
 // it replaces. Kept for provenance; the 0.15 renderer cannot run it.
@@ -34,7 +35,7 @@ for (const treatment of TREATMENTS) {
   writeFileSync(new URL(`${treatment.slug}.png`, out), png);
   const image = geometry.slideImage;
   reference.treatments[treatment.slug] = {
-    slideImage: deck.slides[0].design?.slideImage ?? null,
+    written014: deck.slides[0].design?.slideImage ?? null,
     items: geometry.items.map(item => ({ path: item.path, box: item.box })),
     ...(image ? { frame: { region: image.region, box: image.box, shape: image.shape.path, ...(image.overlay ? { overlay: image.overlay.shape.path } : {}) } } : {})
   };

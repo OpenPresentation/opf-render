@@ -4,7 +4,7 @@
   "scale": 0.5,
   "treatments": {
     "full-bleed": {
-      "slideImage": {
+      "written014": {
         "src": "asset:photo",
         "position": "background"
       },
@@ -45,7 +45,7 @@
       }
     },
     "text-overlay": {
-      "slideImage": {
+      "written014": {
         "src": "asset:photo",
         "position": "background",
         "overlay": {
@@ -91,7 +91,7 @@
       }
     },
     "caption-overlay": {
-      "slideImage": {
+      "written014": {
         "src": "asset:photo",
         "position": "background",
         "overlay": {
@@ -139,7 +139,7 @@
       }
     },
     "side-by-side": {
-      "slideImage": {
+      "written014": {
         "src": "asset:photo",
         "position": "left",
         "size": 0.5
@@ -181,7 +181,7 @@
       }
     },
     "masked-shape": {
-      "slideImage": {
+      "written014": {
         "src": "asset:photo",
         "position": "right",
         "size": 0.45,
@@ -225,7 +225,7 @@
       }
     },
     "circular-crop": {
-      "slideImage": {
+      "written014": {
         "src": "asset:photo",
         "position": "left",
         "size": 0.4,
@@ -273,7 +273,7 @@
       }
     },
     "rounded-card": {
-      "slideImage": {
+      "written014": {
         "src": "asset:photo",
         "position": "right",
         "size": 0.5,
@@ -322,10 +322,9 @@
       }
     },
     "duotone": {
-      "slideImage": {
+      "written014": {
         "src": "asset:photo",
-        "position": "left",
-        "size": 0.5,
+        "position": "background",
         "recolor": {
           "dark": "accent1",
           "light": "light1"
@@ -335,18 +334,18 @@
         {
           "path": "slides.0.title",
           "box": {
-            "x": 697.6,
+            "x": 57.6,
             "y": 57.6,
-            "width": 524.8,
+            "width": 1164.8,
             "height": 65.88
           }
         },
         {
           "path": "slides.0.blocks.0.text",
           "box": {
-            "x": 697.6,
+            "x": 57.6,
             "y": 147.48,
-            "width": 524.8,
+            "width": 1164.8,
             "height": 514.92
           }
         }
@@ -355,20 +354,20 @@
         "region": {
           "x": 0,
           "y": 0,
-          "width": 640,
+          "width": 1280,
           "height": 720
         },
         "box": {
           "x": 0,
           "y": 0,
-          "width": 640,
+          "width": 1280,
           "height": 720
         },
-        "shape": "M0 0H640V720H0Z"
+        "shape": "M0 0H1280V720H0Z"
       }
     },
     "background-blur": {
-      "slideImage": {
+      "written014": {
         "src": "asset:photo",
         "position": "background",
         "opacity": 0.35
@@ -410,7 +409,7 @@
       }
     },
     "image-strip": {
-      "slideImage": {
+      "written014": {
         "src": "asset:photo",
         "position": "top",
         "size": 0.3,
@@ -453,7 +452,7 @@
       }
     },
     "collage-grid": {
-      "slideImage": {
+      "written014": {
         "src": "asset:photo",
         "position": "bottom",
         "size": 0.35,
@@ -500,7 +499,7 @@
       }
     },
     "device-frame": {
-      "slideImage": {
+      "written014": {
         "src": "asset:photo",
         "position": "right",
         "size": 0.55,
@@ -549,7 +548,7 @@
       }
     },
     "cutout-subject": {
-      "slideImage": {
+      "written014": {
         "src": "asset:photo",
         "position": "right",
         "size": 0.4,
@@ -592,7 +591,7 @@
       }
     },
     "watermark": {
-      "slideImage": null,
+      "written014": null,
       "items": [
         {
           "path": "slides.0.title",
@@ -615,7 +614,7 @@
       ]
     },
     "cinematic-crop": {
-      "slideImage": {
+      "written014": {
         "src": "asset:photo",
         "position": "top",
         "size": 0.7,

@@ -106,6 +106,19 @@ for (const [background, aspect] of [[{ type: 'image', src: strip }, 'xMidYMid sl
   checked += 2;
 }
 
+// Recolor (draft 3): grayscale on the picture pixels only, before the overlay, like an image block.
+{
+  const deck = deckWith({ type: 'image', src: strip, fit: 'stretch', recolor: 'grayscale', overlay: { color: '#1F5AA6', opacity: 0.5, edge: 'top', size: 0.2 } });
+  const svg = renderSlideSvg(deck, 0);
+  assert.match(svg, /<g filter="url\(#opf-s1-background-recolor\)"><image /);
+  const at = await raster(deck);
+  const luma = Math.round(0.299 * 220 + 0.587 * 30 + 0.114 * 30);
+  assert.ok(near(at(50, 400), [luma, luma, luma], 2), `grayscale red quarter: ${at(50, 400)}`);
+  const band = at(50, 40);
+  assert.ok(band[2] > band[0] + 20, `the overlay keeps its colour over the grey picture: ${band}`);
+  checked += 2;
+}
+
 // The background moves nothing: headings compose exactly as on a slide with a solid background.
 {
   const withImage = geometryOf(deckWith({ type: 'image', src: strip }));

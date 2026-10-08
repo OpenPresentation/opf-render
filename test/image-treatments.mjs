@@ -1,5 +1,5 @@
 // FA-23: the 15 pptx.gallery image treatments, written as 0.15 image backgrounds and image blocks, draw the same frames,
-// outlines and pixels as the 0.14 renderer drew them from design.slideImage (test/fixtures/image-treatments-0.14). Each
+// outlines and pixels as the 0.14 renderer drew them as slide-level images (test/fixtures/image-treatments-0.14). Each
 // document is self-contained (inline colour scheme, embedded asset), so no catalog is registered and none may be missing.
 import assert from 'node:assert/strict';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -65,5 +65,5 @@ for (const treatment of TREATMENTS) {
   }
   checked++;
 }
-assert.deepEqual(failures, [], `0.15 treatments differ from their 0.14 slideImage renders (see artifacts/image-treatments):\n${failures.join('\n')}`);
-console.log(`image treatments: ${checked} treatments match their 0.14 slideImage frames and pixels`);
+assert.deepEqual(failures, [], `0.15 treatments differ from their 0.14 renders (see artifacts/image-treatments):\n${failures.join('\n')}`);
+console.log(`image treatments: ${checked} treatments match their 0.14 frames and pixels`);
