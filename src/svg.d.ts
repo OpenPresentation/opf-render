@@ -87,6 +87,8 @@ export interface RenderSvgOptions {
    * when the document omits `catalogs.default`. The renderer bundles and fetches no catalog; register the gallery snapshot with
    * `import { defaultCatalog } from "@openpresentation/opf/catalog"` and `catalogs: [defaultCatalog]`. Omitted: only embedded
    * records resolve, and anything else draws with core's engine defaults (reported as `unresolved-reference`).
+   * A malformed value throws core's `OPFCatalogsOptionError` (`code: "invalid-catalogs"`); a reference with an undeclared prefix
+   * (`foo:id` without `catalogs.foo`) fails the boundary check (`invalid-opf`, finding `opf/undeclared-catalog`).
    */
   catalogs?: readonly Catalog[];
   /** Fail with `unresolved-reference` (an OPFRenderError whose `details.diagnostics` list the references) instead of falling back when a reference resolves nowhere. Default false. */

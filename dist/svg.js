@@ -5,7 +5,7 @@ import {
   resolveColorRef as resolveCoreColorRef, resolveScriptFonts, paragraphDirection, physicalAlignment, patternRuns,
   metricTrendMark as coreMetricTrendMark, tokenizeCode, codeLineRuns, codeSyntaxPaletteForScheme, resolveChartData,
   resolveColorRoles, defaultSlideBackground, timelineMarkerShapes, timelineTextColor, layoutWatermark,
-  codeHighlightLines, codeLineNumbers, codeHighlightBands, codeHighlightColors, fitImage,
+  codeHighlightLines, codeLineNumbers, codeHighlightBands, codeHighlightColors, fitImage, intrinsicImageAspect, intrinsicImageSize,
   ENGINE_DEFAULT_THEME, ENGINE_DEFAULT_COLOR_SCHEME, ENGINE_DEFAULT_FONT_SCHEME, ENGINE_DEFAULT_CHART_TYPES
 } from "@openpresentation/opf/composition";
 // The renderer is a library: it never imports a catalog. Hosts register theirs (`options.catalogs`, core `Catalog[]`, for
@@ -810,7 +810,7 @@ function renderBackgroundImage(background, bound, width, height, options) {
 function renderTiledImage(item, box, bound, options) {
   const { source, drawable } = resolveImageSource(item, bound, options);
   if (!drawable) return renderImage(item, box, bound, options);
-  const size = dataImageSize(source) ?? { width: Math.min(box.width, box.height) / 4, height: Math.min(box.width, box.height) / 4 };
+  const size = intrinsicImageSize(source) ?? { width: Math.min(box.width, box.height) / 4, height: Math.min(box.width, box.height) / 4 };
   const id = `opf-s${bound.index + 1}-background-tile`;
   const cell = tag("image", { x: 0, y: 0, width: stableNumber(size.width), height: stableNumber(size.height), href: source, preserveAspectRatio: "none" });
   return tag("defs", {}, tag("pattern", { id, x: 0, y: 0, width: stableNumber(size.width), height: stableNumber(size.height), patternUnits: "userSpaceOnUse" }, cell))
@@ -1006,52 +1006,6 @@ function imageAccessibility(asset, options) {
   return { role: "img", "aria-label": asset.alt ?? options.imageLabel ?? "Image" };
 }
 
-// Pixel size of a drawable data URI (PNG, GIF, WebP, JPEG, or an SVG's user-unit size), or undefined. Core reports the fit
-// placement itself when it can read the picture (ImageFitPlacement); this covers sources a host imageResolver supplies.
-function dataImageSize(uri) {
-  const comma = typeof uri === "string" ? uri.indexOf(",") : -1;
-  if (comma < 0 || !/;base64$/i.test(uri.slice(0, comma))) return undefined;
-  let bytes;
-  try {
-    const payload = uri.slice(comma + 1, comma + 1 + 87384).replace(/\s+/g, "");
-    bytes = Uint8Array.from(atob(payload.slice(0, payload.length - payload.length % 4)), char => char.charCodeAt(0));
-  } catch { return undefined; }
-  const at = (index, length, little) => { let value = 0; for (let i = 0; i < length; i++) value += bytes[index + i] * 256 ** (little ? i : length - 1 - i); return value; };
-  const sized = (width, height) => width > 0 && height > 0 ? { width, height } : undefined;
-  if (/^data:image\/svg\+xml/i.test(uri)) {
-    let text;
-    try { text = new TextDecoder().decode(Uint8Array.from(atob(uri.slice(comma + 1)), char => char.charCodeAt(0))); } catch { return undefined; }
-    const root = svgRootAttributes(text);
-    if (!root) return undefined;
-    const length = value => { const match = value && /^\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*(px)?\s*$/i.exec(value); return match ? Number(match[1]) : undefined; };
-    const view = (root.viewBox ?? "").trim().split(/[\s,]+/).map(Number);
-    return sized(length(root.width) ?? (view.length === 4 ? view[2] : undefined), length(root.height) ?? (view.length === 4 ? view[3] : undefined));
-  }
-  if (bytes.length >= 24 && bytes[0] === 0x89 && bytes[1] === 0x50) return sized(at(16, 4), at(20, 4));
-  if (bytes.length >= 10 && bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) return sized(at(6, 2, true), at(8, 2, true));
-  if (bytes.length >= 30 && at(0, 4) === 0x52494646 && at(8, 4) === 0x57454250) {
-    const chunk = String.fromCharCode(...bytes.subarray(12, 16));
-    if (chunk === "VP8 ") return sized(at(26, 2, true) & 0x3fff, at(28, 2, true) & 0x3fff);
-    if (chunk === "VP8L") { const bits = at(21, 4, true); return sized((bits & 0x3fff) + 1, ((bits >> 14) & 0x3fff) + 1); }
-    if (chunk === "VP8X") return sized(at(24, 3, true) + 1, at(27, 3, true) + 1);
-    return undefined;
-  }
-  if (bytes[0] === 0xff && bytes[1] === 0xd8) {
-    for (let index = 2; index + 9 < bytes.length;) {
-      if (bytes[index] !== 0xff) return undefined;
-      const marker = bytes[index + 1];
-      if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) return sized(at(index + 7, 2), at(index + 5, 2));
-      index += 2 + at(index + 2, 2);
-    }
-  }
-  return undefined;
-}
-
-function dataImageAspect(uri) {
-  const size = dataImageSize(uri);
-  return size ? size.width / size.height : undefined;
-}
-
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
 // The base64 data URI of a drawable SVG, else null. Drawable: a data URI whose type is image/svg+xml, whose text is
@@ -1200,7 +1154,8 @@ function resolveBulletImage(bulletImage, bound, options) {
 
 // A drawable picture in `box` with `options.imageFit`: cover (the default for content), contain or stretch. cover takes
 // `options.imageFocus`: centered, it is the native center crop; anywhere else the picture is placed by core's fit math
-// (`options.imagePicture`, core's ImageFitPlacement when core read the aspect, else fitImage on the aspect read here) and
+// (`options.imagePicture`, core's ImageFitPlacement when core read the aspect, else fitImage on core's intrinsicImageAspect
+// of the resolved source, for pictures a host imageResolver supplies) and
 // clipped to the box by a nested viewport. A logo keeps its anchor (`options.imageAnchor`).
 function renderImage(item, box, bound, options) {
   const { asset, source, drawable, missingReference } = resolveImageSource(item, bound, options);
@@ -1208,7 +1163,8 @@ function renderImage(item, box, bound, options) {
     const fit = options.imageFit ?? "contain", focus = options.imageFocus;
     const attrs = { href: source, ...imageAccessibility(asset, options), ...traceAttrs(options, item.path), ...generatedAttrs(options) };
     if (fit === "cover" && focus && !options.imageAnchor && (focus.x !== 0.5 || focus.y !== 0.5)) {
-      const aspect = options.imagePicture ? undefined : dataImageAspect(source);
+      // The drawable source (after asset references and the host imageResolver): core reads its size (intrinsicImageAspect).
+      const aspect = options.imagePicture ? undefined : intrinsicImageAspect(source);
       const placement = options.imagePicture ?? (aspect ? fitImage(box, "cover", aspect, focus) : undefined);
       if (placement) {
         const picture = placement.image;

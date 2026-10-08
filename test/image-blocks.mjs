@@ -77,6 +77,20 @@ checked++;
   checked++;
 }
 
+// A picture the host's imageResolver supplies: core cannot read it at compose time (no item.image.picture), so the renderer
+// places it with core's intrinsicImageAspect of the resolved source and the same fit math.
+{
+  const deck = deckWith({ image: './split.png', focus: { x: 0, y: 0.5 } });
+  const item = imageOf(deck);
+  assert.equal(item.image.picture, undefined, 'core reads no aspect from a relative path');
+  const tag = imageTag(renderSlideSvg(deck, 0, { imageResolver: src => src === './split.png' ? split : undefined }));
+  const placement = fitImage(item.image.box, 'cover', 2, { x: 0, y: 0.5 });
+  assert.equal(attr(tag, 'preserveAspectRatio'), 'none');
+  assert.equal(Number(attr(tag, 'width')), Number(placement.image.width.toFixed(3)));
+  assert.equal(Number(attr(tag, 'x')), Number((placement.image.x - item.image.box.x).toFixed(3)));
+  checked++;
+}
+
 // Masks use exactly the core outline in a clipPath around the picture; rectangles need none.
 for (const shape of ['rounded', 'circle', 'hexagon']) {
   const deck = deckWith({ shape });

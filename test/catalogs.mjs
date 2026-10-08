@@ -79,6 +79,21 @@ const deck = { name: 'Catalogs', design: { theme: 'classic' }, slides: [{ ...sli
   assert.ok(renderSlideSvg(deck, 0, { strictReferences: true, catalogs: [defaultCatalog] }).startsWith('<svg'));
   checked++;
 }
+// An undeclared prefix (no catalogs.foo) is a format error: the boundary check rejects the document.
+{
+  assert.throws(() => renderSlideSvg({ design: { fontScheme: 'foo:serif' }, slides: [slide] }, 0, { catalogs: [defaultCatalog] }),
+    error => error instanceof OPFRenderError && error.code === 'invalid-opf' && error.findings.some(finding => finding.ruleId === 'opf/undeclared-catalog' && finding.path === '/design/fontScheme'));
+  checked++;
+}
+
+// A malformed catalogs option is core's error (invalid-catalogs), passed through unchanged from every entry point.
+for (const bad of [{}, [{ layouts: {} }], 'https://www.pptx.gallery']) {
+  for (const call of [() => renderSlideSvg(deck, 0, { catalogs: bad }), () => renderSvg(deck, { catalogs: bad }), () => resolvePresentation(deck, { catalogs: bad })]) {
+    assert.throws(call, error => error.code === 'invalid-catalogs' && error.name === 'OPFCatalogsOptionError', JSON.stringify(bad));
+  }
+  checked++;
+}
+
 // The browser bundle of the SVG entry carries no catalog records: no layout or narrative description from the gallery snapshot.
 {
   const { build } = await import('esbuild');
