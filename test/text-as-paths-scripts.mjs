@@ -81,7 +81,7 @@ assert.ok(divergent >= 5, `fontkit picks other glyphs than HarfBuzz on ${diverge
   assert.match(free.markup, /<text [^>]*textLength="[\d.]+" lengthAdjust="spacingAndGlyphs"[^>]*>/, 'the unpinned Myanmar run stays text, pinned to the measured width');
   assert.deepEqual(free.diagnostics.map((diagnostic) => [diagnostic.code, diagnostic.reason]), [['text-as-paths-fallback', 'shaping']]);
   const pinned = outline(face.family, text, 'my', false, ' textLength="420" lengthAdjust="spacingAndGlyphs"');
-  assert.doesNotMatch(pinned.markup, /<text/, 'inside a textLength the run is outlined');
+  assert.ok(/<use href="#opf-g-/.test(pinned.markup) && [...pinned.markup.matchAll(/<text\b[^>]*>/g)].every(([tag]) => / fill="none"/.test(tag)), 'inside a textLength the run is outlined (only the invisible readable line is text)');
   assert.deepEqual(pinned.diagnostics, []);
 }
 
