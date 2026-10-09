@@ -138,6 +138,9 @@
     "test:player-browser": "node test/player-browser.mjs artifacts/player",
     "test:preview-a11y-browser": "node test/preview-a11y-browser.mjs"
   },
+  "opf": {
+    "requiresUnreleasedCore": "0.18.0"
+  },
   "dependencies": {
     "@openpresentation/opf": "^0.17.0",
     "bidi-js": "1.1.0",

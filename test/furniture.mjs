@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 // The decks name the gallery's roboto font scheme, so the host catalog is registered (./catalog-harness.mjs).
 import {resolvePresentation, renderSlideSvg} from './catalog-harness.mjs';
+import {FURNITURE_GAP} from '@openpresentation/opf/composition';
 import {loadFonts} from '../dist/fonts-node.js';
 const prepared = await loadFonts();
 const bytes=await readFile(new URL('fixtures/jpeg/expected-1.png',import.meta.url));
@@ -10,8 +11,11 @@ for(const measured of [false,true])for(const floor of [16,32])for(const [width,h
  const deck={organization:{id:'opf',name:'Organization'},design:{fontScheme:'roboto',imageFit:'cover',dimensions:{widthInches:width/96,heightInches:height/96},header:{left:{image,text:'Keep both'},center:{text:'{{organization.name}}'},right:{text:'{{slide.section}}'}},footer:{left:{date:'Literal date'},right:{text:'{{slide.number}}'}}},slides:[{section:'Section',title:'Furniture',text:'Body',composition:{minFontSize:floor,overflow:'error'}}]};
  const before=structuredClone(deck),config={...(measured?{fonts:prepared}:{}),trace:true},geometry=resolvePresentation(deck,config).slides[0].geometry,svg=renderSlideSvg(deck, 0,config);
  assert.deepEqual(geometry.diagnostics,[]);assert.deepEqual(deck,before);
- assert.ok(svg.includes('Visible furniture logo'));assert.ok(svg.includes('xMidYMid meet'));assert.ok(svg.includes('Keep both'));
+ assert.ok(svg.includes('Visible furniture logo'));assert.ok(svg.includes('xMidYMid meet'));
+ // RR-71: the zone is a row, so a narrow portrait zone leaves the text little room and it wraps beside the image.
+ assert.equal([...svg.matchAll(/<text\b[^>]*data-opf-path="design\.header\.left\.text"[^>]*>([^<]*)<\/text>/g)].map(match=>match[1]).join('').replace(/\s/g,''),'Keepboth');
  assert.equal((svg.match(/data-opf-furniture-field=/g)??[]).length,geometry.furniture.parts.length);
+ {const [picture,label]=geometry.furniture.parts.filter(part=>part.kind==='header'&&part.zone==='left');assert.deepEqual([picture.type,label.type],['image','text'],'image, then text');assert.ok(Math.abs(label.box.x-(picture.box.x+picture.box.width+FURNITURE_GAP*Math.min(width,height)/720))<.01,'text beside the image after the furniture gap');}
  for(const match of svg.matchAll(/<text\b([^>]*)data-opf-path="design\.(header|footer)\.[^"]+"([^>]*)>/g))assert.ok(Number(/font-size="([^"]+)"/.exec(match[0])[1])>=floor);
  const disabled=structuredClone(deck);disabled.slides[0].design={header:false,footer:false};const plain=renderSlideSvg(disabled, 0,config);assert.ok(!plain.includes('data-opf-furniture-field'));
  const empty=structuredClone(deck);empty.slides[0].design={header:{},footer:{}};assert.ok(!renderSlideSvg(empty, 0,config).includes('data-opf-furniture-field'));
