@@ -201,7 +201,7 @@ export interface PdfMetadata {
   modificationDate?: Date | string;
 }
 
-export interface ToPdfOptions extends ToPngOptions {
+export interface ToPdfOptions extends Omit<ToPngOptions, "onDiagnostic"> {
   /**
    * `true` draws each slide as an image (`scale`). Default false, a vector PDF: shapes, gradients and patterns as PDF vector graphics,
    * pictures as images, text as real text with embedded font subsets (selectable, searchable, correct copy and paste); the fonts are
@@ -222,8 +222,8 @@ export interface ToPdfOptions extends ToPngOptions {
   strict?: boolean;
   /** Vector only. Pixel density of the rare element rasterized because it has no vector form; default 2. */
   rasterFallbackScale?: number;
-  /** Vector only. Receives font embedding reports, substitutions, fallbacks and unsupported features. */
-  onDiagnostic?: (diagnostic: PdfDiagnostic) => void;
+  /** Vector only: font embedding reports, substitutions, fallbacks and unsupported features; given a deck, also the diagnostics of drawing it. */
+  onDiagnostic?: (diagnostic: PdfDiagnostic | RenderDiagnostic) => void;
   /** Vector only. Checked between pages; an abort rejects with the signal's reason. */
   signal?: AbortSignal;
   /** Vector only. Called after each page is written. */
