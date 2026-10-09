@@ -23,6 +23,8 @@ import { fontPolicyFor } from "@openpresentation/opf/font-policy";
 import { isDatasetChart, isDatasetTable, renderCatalogChart } from "./charts.js";
 import { renderCaption, renderFootnotes } from "./annotations.js";
 import { drawnFaces } from "./drawn-faces.js";
+import { dataUrlFsType, embeddingAllowed } from "./font-fstype.js";
+import { rejectRenamedOptions, selectSlides } from "./slide-sources.js";
 
 export const packageName = "@openpresentation/opf-render";
 
@@ -639,22 +641,24 @@ function bindSlide(presentation, index, context) {
 }
 
 // `options.fonts` is the handle `loadFonts()` returns (or any object with a `textMeasurement` and, to embed faces in the SVG, an
-// `embeddedFonts` list). The renderer reads the two as plain options from here on. `embedFonts: false` (RR-61) keeps the
-// measurement and drops the faces, for a host whose page already holds them.
-// `textAsPaths: true` (RR-64) draws text as glyph outlines with the handle's `outlines` engine (a `loadFonts` handle carries one).
-// `subsetFonts: false` (RR-65) embeds whole faces; by default a handle with a subset engine (`fonts.subsets`) cuts each embedded
-// face to the characters the slide draws.
+// `embeddedFonts` list). The renderer reads the two as plain options from here on. `text` (RR-74) says how the SVG draws text:
+// `"fonts"` (default) embeds the faces the slide draws, cut to its glyphs when the handle carries `subsets` (RR-61, RR-65);
+// `"system"` embeds no face and names the families, for a host whose page already holds them; `"paths"` draws glyph outlines with
+// the handle's `outlines` engine, so the SVG needs no font (RR-64). `subsetFonts: false` embeds whole faces.
+const TEXT_MODES = ["fonts", "system", "paths"];
 function normalizeOptions(options) {
-  const { fonts, embedFonts, textAsPaths, subsetFonts, ...rest } = options ?? {};
+  rejectRenamedOptions(options, "invalid-render-options");
+  const { fonts, text = "fonts", subsetFonts, ...rest } = options ?? {};
+  if (!TEXT_MODES.includes(text)) throw new OPFRenderError("invalid-render-options", 'text must be "fonts", "system" or "paths".', { option: "text", value: text });
   if (subsetFonts !== undefined && typeof subsetFonts !== "boolean") throw new OPFRenderError("invalid-render-options", "subsetFonts must be true or false.", { option: "subsetFonts" });
-  if (textAsPaths !== undefined && typeof textAsPaths !== "boolean") throw new OPFRenderError("invalid-render-options", "textAsPaths must be true or false.", { option: "textAsPaths" });
-  if (textAsPaths && typeof fonts?.outlines?.outlineSlideText !== "function") throw new OPFRenderError("text-as-paths-needs-fonts", "textAsPaths needs the fonts handle loadFonts() returns (from /fonts-node or /fonts-browser), passed as `fonts`.", { option: "textAsPaths" });
-  return { ...rest, textMeasurement: fonts?.textMeasurement, embeddedFonts: embedFonts === false ? undefined : fonts?.embeddedFonts, ...(textAsPaths ? { outlines: fonts.outlines } : {}), ...(subsetFonts !== false && fonts?.subsets ? { subsets: fonts.subsets } : {}) };
+  if (typeof fonts === "string" || Array.isArray(fonts)) throw new OPFRenderError("invalid-render-options", "Drawing a deck needs the fonts handle loadFonts() returns (from /fonts-node or /fonts-browser): it measures the text. Font folders are read by toPng and toPdf for SVG input.", { option: "fonts" });
+  if (text === "paths" && typeof fonts?.outlines?.outlineSlideText !== "function") throw new OPFRenderError("text-as-paths-needs-fonts", 'text: "paths" needs the fonts handle loadFonts() returns (from /fonts-node or /fonts-browser), passed as `fonts`.', { option: "text" });
+  return { ...rest, textMeasurement: fonts?.textMeasurement, embeddedFonts: text === "system" ? undefined : fonts?.embeddedFonts, ...(text === "paths" ? { outlines: fonts.outlines } : {}), ...(subsetFonts !== false && fonts?.subsets ? { subsets: fonts.subsets } : {}) };
 }
 
 /**
  * Resolve a presentation for drawing: template variables filled, the boundary check passed, and every slide bound to its
- * layout, design, script fonts and composed geometry. `renderSvg` and `renderSlideSvg` draw from this.
+ * layout, design, script fonts and composed geometry. `toSvg` draws from this.
  */
 export function resolvePresentation(input, options = {}) {
   return resolveDeck(input, normalizeOptions(options));
@@ -677,27 +681,24 @@ function resolveDeck(input, options) {
 }
 
 /**
- * The SVG of every slide of the deck, in order. `skipHidden: true` leaves out slides marked `hidden` (the sequence the player
- * presents); the result is then shorter than the deck, so an index no longer names the slide at that index.
+ * The deck as SVG (RR-73): `toSvg(deck)` gives every slide, in order, as an array; `toSvg(deck, 3)` the third slide as one string
+ * (slides count from 1); `toSvg(deck, "1-3")` (`"2,4"`, `"5-"`, the CLI's --slides syntax, or a list such as `[1, 3]`) the selected slides as an array. The
+ * second argument may be the options instead, told apart by type. `skipHidden: true` leaves slides marked `hidden` out of the
+ * whole deck (the sequence the player presents); a selection draws exactly the slides it names.
  */
-export function renderSvg(input, options = {}) {
-  const drawn = normalizeOptions(options);
+export function toSvg(input, slides, options) {
+  if (slides !== null && typeof slides === "object" && !Array.isArray(slides)) { options = slides; slides = undefined; }
+  const drawn = normalizeOptions(options ?? {});
   const resolved = resolveDeck(input, drawn);
-  const indexes = resolved.slides.map((_, index) => index).filter(index => !(options.skipHidden === true && resolved.presentation.slides[index]?.hidden === true));
-  return indexes.map(index => renderResolvedSlide(resolved, index, drawn));
-}
-
-/** The SVG of one slide of the deck (a zero-based index). */
-export function renderSlideSvg(input, index, options = {}) {
-  const drawn = normalizeOptions(options);
-  const resolved = resolveDeck(input, drawn);
-  if (!Number.isInteger(index) || index < 0 || index >= resolved.slides.length) {
-    throw new OPFRenderError("slide-index-out-of-range", `Slide index ${index} is out of range.`, {
-      slideIndex: index,
-      slideCount: resolved.slides.length
-    });
+  const count = resolved.slides.length;
+  if (typeof slides === "number") {
+    if (!Number.isInteger(slides) || slides < 1 || slides > count) throw new OPFRenderError("slide-out-of-range", `Slide ${slides} is not in the presentation, which has ${count} slide${count === 1 ? "" : "s"} (slides count from 1).`, { slide: slides, slideCount: count });
+    return renderResolvedSlide(resolved, slides - 1, drawn);
   }
-  return renderResolvedSlide(resolved, index, drawn);
+  const numbers = slides === undefined
+    ? resolved.slides.map((_, index) => index + 1).filter(number => !(options?.skipHidden === true && resolved.presentation.slides[number - 1]?.hidden === true))
+    : selectSlides(slides, count);
+  return numbers.map(number => renderResolvedSlide(resolved, number - 1, drawn));
 }
 
 function renderResolvedSlide(resolved, slideIndex, options) {
@@ -726,7 +727,7 @@ function renderResolvedSlide(resolved, slideIndex, options) {
     content = outlined.content;
     glyphs = outlined.defs;
   }
-  const children = [glyphs, renderEmbeddedFonts(embeddedFontsFor(options.embeddedFonts, content, options.subsets)), ...content].filter(Boolean);
+  const children = [glyphs, renderEmbeddedFonts(embeddedFontsFor(options.embeddedFonts, content, options.subsets, diagnostic => reportDiagnostic(diagnostic, options))), ...content].filter(Boolean);
   // FF-44: Chromium (123+) trims adjacent fullwidth punctuation by default (CSS text-spacing-trim: normal; a sequence such as
   // 「」。 is up to 10 percent narrower), but measurement and PowerPoint advance every such character by its full width, so the browser
   // would stretch the glyphs back to the pinned textLength. space-all keeps the drawn advances equal to the measured ones. Only slides
@@ -1880,7 +1881,7 @@ function codeSyntax(item, layout, bound, options) {
 // the SVG names is one the browser can never select, so leaving it out changes no pixel. Only a face flagged embed:"always" is
 // embedded in every SVG. RR-59: each drawn style is checked on its own, so a family keeps an exactly matched face and, for
 // a drawn style none of its faces matches (a weight the family lacks), every face the browser could choose from.
-function embeddedFontsFor(fonts = [], content, subsets) {
+function embeddedFontsFor(fonts = [], content, subsets, report = () => {}) {
   if (!fonts.length) return fonts;
   fonts.forEach(assertEmbeddableFont);
   const characters = subsets ? new Map() : undefined;
@@ -1894,7 +1895,11 @@ function embeddedFontsFor(fonts = [], content, subsets) {
       return matching.length ? matching.includes(font) : true;
     });
   };
-  const used = fonts.filter(font => font?.embed === "always" || wanted(font));
+  const drawnOrAlways = fonts.filter(font => font?.embed === "always" || wanted(font));
+  const used = drawnOrAlways.filter(embeddable);
+  const refused = drawnOrAlways.filter(font => !embeddable(font));
+  if (refused.length) report({ code: "font-embedding-restricted", faces: refused.map(font => ({ fontFamily: font.family, weight: font.weight, italic: Boolean(font.italic), fsType: embeddingChecked.get(font).fsType })),
+    message: `${[...new Set(refused.map(font => `'${font.family}'`))].join(", ")} forbid${refused.length === 1 ? "s" : ""} embedding (OS/2 fsType), so the SVG names ${refused.length === 1 ? "it" : "them"} without the font data; a viewer without the font draws the generic family.` });
   // RR-65: each face cut to the characters the slide draws in its family (the handle's subset engine decides whether the face
   // may be subset at all). A face no text draws (embed: "always") stays whole.
   if (!subsets) return used;
@@ -1902,6 +1907,16 @@ function embeddedFontsFor(fonts = [], content, subsets) {
     const points = characters.get(String(font.family).toLowerCase());
     return points?.size ? { ...font, dataUrl: subsets.subsetDataUrl(font, points) } : font;
   });
+}
+
+// RR-76: a face whose OS/2 fsType forbids embedding (restricted, or bitmap-only: an SVG carries outlines) is never written as
+// @font-face data. The SVG still names its family, so a viewer without the font draws the generic family; a diagnostic says
+// why. The check reads only the font's table directory and its fsType bytes, once per face object and data URL.
+const embeddingChecked = new WeakMap();
+function embeddable(font) {
+  let checked = embeddingChecked.get(font);
+  if (!checked || checked.dataUrl !== font.dataUrl) { const fsType = dataUrlFsType(font.dataUrl); checked = { dataUrl: font.dataUrl, fsType, allowed: embeddingAllowed(fsType) }; embeddingChecked.set(font, checked); }
+  return checked.allowed;
 }
 
 // Every supplied face is checked, drawn or not, so a bad entry fails on any slide. The data URI check is remembered per face

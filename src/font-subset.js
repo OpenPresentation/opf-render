@@ -2,7 +2,7 @@
 // `harfbuzz-subset.wasm` of the pinned harfbuzzjs package, MIT) keeps the glyphs a slide's characters reach through the
 // font's layout tables (every GSUB and GPOS feature is kept, so the browser shapes the subset exactly as the whole face),
 // renumbers them and trims cmap, hmtx, GPOS and the rest to them. The module has no imports, so it is instantiated
-// synchronously from its bytes and `renderSvg` stays synchronous; the same input always gives the same bytes.
+// synchronously from its bytes and `toSvg` stays synchronous; the same input always gives the same bytes.
 //
 // Only a face whose license allows it is subset: a bundled face (matched by the sha256 of its bytes against the pinned
 // manifest) under an allowed license, whose family and file names do not contain one of its package's Reserved Font Names
@@ -11,6 +11,7 @@
 
 import { BUNDLED_FONT_MANIFEST } from "./font-manifest.js";
 import { sha256Bytes } from "./sha256.js";
+import { fsTypeOf, subsettingAllowed } from "./font-fstype.js";
 
 const SUBSET_LICENSES = new Set(["OFL-1.1", "Apache-2.0", "MIT", "UFL-1.0"]);
 const HB_MEMORY_MODE_READONLY = 1;
@@ -38,27 +39,11 @@ export function subsetPermitted(data) {
 
 /** Whether the OS/2 fsType allows embedding a subset: not restricted (0x0002), not "no subsetting" (0x0100), not bitmap-only (0x0200). */
 export function fsTypeAllowsSubset(data) {
-  const fsType = os2FsType(data);
-  return fsType !== null && (fsType & 0x0002) === 0 && (fsType & 0x0100) === 0 && (fsType & 0x0200) === 0;
+  return subsettingAllowed(fsTypeOf(data));
 }
 
 function hexDigest(data) {
   return [...sha256Bytes(data)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-
-// The OS/2 table's fsType (offset 8), or null when the font has none.
-function os2FsType(data) {
-  if (data.length < 12) return null;
-  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
-  const count = view.getUint16(4);
-  for (let index = 0; index < count; index++) {
-    const at = 12 + index * 16;
-    if (at + 16 > data.length) return null;
-    if (String.fromCharCode(data[at], data[at + 1], data[at + 2], data[at + 3]) !== "OS/2") continue;
-    const offset = view.getUint32(at + 8);
-    return offset + 10 <= data.length ? view.getUint16(offset + 8) : null;
-  }
-  return null;
 }
 
 /**
