@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import sharp from 'sharp';
 import { examples } from '@openpresentation/opf/examples';
 import { loadFonts } from '../dist/fonts-node.js';
-import { OPFRenderError, renderSlideSvg, renderSvg, svgToPng } from './catalog-harness.mjs'; // FA-23: registers the gallery snapshot (the examples name gallery records)
+import { OPFRenderError, renderSlideSvg, renderSvg, svgToPdf, svgToPng } from './catalog-harness.mjs'; // FA-23: registers the gallery snapshot (the examples name gallery records)
 
 const fonts = await loadFonts({ pack: 'office', substitutionPolicy: 'visual', scripts: 'all' });
 const count = (svg, pattern) => (svg.match(pattern) ?? []).length;
@@ -45,6 +45,16 @@ assert.ok(paths.length < 40_000 && paths.length * 10 < whole.length && paths.len
   assert.ok(content[1].startsWith(before) && content[1].endsWith(after), 'only the <text> element is replaced');
   assert.match(content[1], /<g><g fill="#FF0000" aria-hidden="true"><g transform="matrix\(0\.00976563 0 0 -0\.00976563 5 30\)"><use href="#opf-g-[0-9A-F]{12}-\d+"\/><use href="#opf-g-[0-9A-F]{12}-\d+" x="[\d.]+"\/><\/g><\/g><text x="5" y="30" font-family="sans-serif" font-size="20" fill="none" xml:space="preserve" textLength="[\d.]+" lengthAdjust="spacingAndGlyphs">Hi<\/text><\/g>/, 'Roboto 20 px (2048 units) inherited from the group, in its fill, hidden, then the readable word');
   assert.equal(count(defs, /<path id=/g), 2);
+}
+
+// The invisible readable layer draws no ink and adds nothing to a PDF: the PNG is the same without it, and a vector PDF of the
+// outlined slide embeds no font and has no text (the PDF of a slide is made from its <text> SVG).
+{
+  const bare = paths.replace(/<text [^>]*fill="none"[^>]*>[^<]*<\/text>/g, '');
+  assert.ok(Buffer.from(await svgToPng(paths, { fonts })).equals(Buffer.from(await svgToPng(bare, { fonts }))), 'the readable layer paints nothing in resvg');
+  const embedded = [];
+  await svgToPdf([paths], { fonts, onDiagnostic: (diagnostic) => { if (diagnostic.code === 'pdf-font-embedded') embedded.push(diagnostic.family); } });
+  assert.deepEqual(embedded, [], 'the vector PDF embeds no font for the readable layer');
 }
 
 // Links stay links around their glyphs; underline and line-through are rectangles in the text colour.
