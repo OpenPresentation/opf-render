@@ -66,6 +66,21 @@ const pdf = await svgToPdf([cut], { fonts: { fontFiles: [], useBundledFonts: fal
 assert.equal(Buffer.from(pdf.subarray(0, 4)).toString(), '%PDF');
 assert.equal(faces.length, cutFaces.length, `the PDF embeds the ${cutFaces.length} subset faces: ${faces}`);
 
+// SSR shared fonts (renderDeckHtml fontMode "shared"): one rule per face for the page, cut to the characters every slide draws.
+{
+  const { renderDeckHtml } = await import('../dist/element.js');
+  const titles = ['One', 'Two', 'Three'], bodies = ['Measured body', 'Other words here', 'Zebra quiz 42%'];
+  const page = { name: 'Shared', design: { fontScheme: 'roboto' }, slides: titles.map((title, index) => ({ title, text: bodies[index] })) };
+  const shared = renderDeckHtml(page, { slides: 'all', fonts, fontMode: 'shared' }), whole = renderDeckHtml(page, { slides: 'all', fonts, fontMode: 'shared', renderOptions: { subsetFonts: false } });
+  const sharedFaces = embedded(shared);
+  assert.deepEqual(sharedFaces.map((face) => face.weight).sort(), [400, 700], 'Roboto regular and bold, once for the page');
+  assert.ok(shared.length * 4 < whole.length, `shared subsets ${shared.length} bytes against ${whole.length} with whole faces`);
+  for (const face of sharedFaces) {
+    const font = create(Buffer.from(face.data)), drawn = new Set((face.weight === 700 ? titles : bodies).join('').replace(/\s/g, ''));
+    assert.deepEqual([...drawn].filter((character) => !font.hasGlyphForCodePoint(character.codePointAt(0))), [], `the shared ${face.weight} face covers the characters of every slide`);
+  }
+}
+
 // Size over a set of core example decks.
 let before = 0, after = 0, slides = 0;
 for (const { deck: example } of examples.filter((_, index) => index % 10 === 0)) {
