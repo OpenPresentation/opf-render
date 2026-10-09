@@ -256,6 +256,13 @@ container.innerHTML = renderSlideSvg(presentation, 0, { fonts });
 
 Each entry of `faces` contains `url` or `data: Uint8Array`, with optional `family`, `weight`, `italic` and `license`. The loader registers browser FontFaces using the same bytes used for measurement. It fetches only URLs supplied by the host, supports an AbortSignal and custom fetch, and awaits font loading. Use pinned static faces and retain their licenses. A standalone SVG embeds the faces of the handle's `embeddedFonts` that its text draws (the same `{ fonts }` option); embedding is unnecessary for each live draft after browser fonts are loaded.
 
+Subset embedded faces in the browser (RR-65): pass `subsetWasm` to `loadFonts` to cut each face a standalone SVG embeds to the glyphs its slide draws, as the Node handle always does. It is the `harfbuzz-subset.wasm` file of the `harfbuzzjs` dependency (`harfbuzzjs/dist/harfbuzz-subset.wasm`, MIT), served by the host like the font files: its URL, its bytes or a compiled `WebAssembly.Module`. The loader instantiates it asynchronously and fetches nothing else; without it a browser handle embeds whole faces. Live previews in a page that already holds the faces should use `embedFonts: false` instead, which embeds nothing.
+
+```js
+const fonts = await loadFonts({ faces: fontFileEntries, subsetWasm: '/vendor/harfbuzz-subset.wasm' });
+const standalone = renderSlideSvg(presentation, 0, { fonts }); // each @font-face is a glyph subset
+```
+
 ## Player and `<opf-deck>` (RR-28)
 
 A slideshow player and an embeddable web component, both built on `renderSlideSvg`: the slide a page shows is the slide the preview, the editor and the PDF show, with no second layout engine. They are plain ES modules, typed, framework-free and tree-shakeable, and importing them touches no DOM, so they are safe in Next.js and other server renderers.
