@@ -10,6 +10,7 @@ import path from 'node:path';
 import {chromium} from 'playwright';
 import {toSvg} from '../dist/index.js';
 import {loadFonts} from '../dist/fonts-node.js';
+import {FONT_POLICY, adjustedFontSize} from '../dist/fonts.js';
 import {loadCorpora} from '../scripts/script-corpora.mjs';
 
 const corpora = await loadCorpora();
@@ -18,6 +19,8 @@ const prepared = await loadFonts({pack: 'office', scripts: 'all'}), {registry} =
 const faces = registry.describeFaces(), files = prepared.fontFiles;
 // Loaded Node handles use HarfBuzz: no fallback-only width tolerance applies to these slides.
 const limits = new Map(); // Loaded HarfBuzz handles have no fontkit width exceptions.
+// Read every adjusted title size from the installed font policy.
+const titleSizes = ['54', ...FONT_POLICY.families.filter(row => typeof row.replacement?.sizeAdjust === 'number').map(row => String(adjustedFontSize(54, row.replacement.sizeAdjust)))];
 const cases = [];
 for (const group of corpora.groups) {
   for (const sample of group.samples) {
@@ -41,13 +44,13 @@ try {
     for (const [url, face] of list) document.fonts.add(await new FontFace(face.family, `url(${url})`, {weight: String(face.weight), style: face.italic ? 'italic' : 'normal'}).load());
     await document.fonts.ready;
   }, [...served].map(([url, face]) => [url, {family: face.family, weight: face.weight, italic: face.italic}]));
-  const observed = await page.evaluate(list => list.map(item => {
+  const observed = await page.evaluate(([list, titleSizes]) => list.map(item => {
     const host = document.querySelector('main');
     host.innerHTML = item.svg;
     const runs = [];
     for (const text of host.querySelectorAll('text')) {
-      // the title lines (RR-38: an Arabic Typesetting title is drawn at 0.64 of its 54 px composed size)
-      if (!['54', '34.5'].includes(text.getAttribute('font-size'))) continue;
+      // the title lines (RR-38, opf#361: a size-adjusted title is drawn at its adjusted size, titleSizes)
+      if (!titleSizes.includes(text.getAttribute('font-size'))) continue;
       const spans = [...text.querySelectorAll('tspan[textLength]')];
       const pinned = text.hasAttribute('textLength') ? [text] : spans;
       for (const element of pinned) {
@@ -61,14 +64,14 @@ try {
     // Painted order of each title line: the first letter against the last (the isolate marks of right-to-left lines are skipped).
     const orders = [];
     for (const text of host.querySelectorAll('text')) {
-      if (!['54', '34.5'].includes(text.getAttribute('font-size'))) continue;
+      if (!titleSizes.includes(text.getAttribute('font-size'))) continue;
       const content = text.textContent, letters = [...content].map((character, index) => [character, index]).filter(([character]) => !/[⁦-⁩s]/.test(character));
       if (letters.length < 2) continue;
       const first = letters[0][1], last = letters.at(-1)[1];
       orders.push({first: text.getStartPositionOfChar(first).x, last: text.getStartPositionOfChar(last).x});
     }
     return {id: item.id, runs, orders};
-  }), cases.map(({id, svg}) => ({id, svg})));
+  }), [cases.map(({id, svg}) => ({id, svg})), titleSizes]);
   let worst = 0, runCount = 0, limited = 0, rtlLines = 0, punctuationLinux = 0;
   const rows = [];
   for (const [index, value] of observed.entries()) {
