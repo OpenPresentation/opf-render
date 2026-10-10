@@ -123,7 +123,12 @@ const checkRing = (label, sys, style, {minimum = 2} = {}) => {
 
 // The focus ring as pixels: the ring colour fills at least half of the frame just outside the control while it has focus, and
 // none of it while it does not.
-const ringPixels = async (page, style, ringColor) => {
+// The ring colour is composited over Canvas first: Chromium on Linux draws a focus ring as the system colour at alpha 0.8
+// (computed `rgba(5, 0, 73, 0.8)`), Chromium on Windows at alpha 1.
+const blend = (color, canvas) => ({r: Math.round(color.a * color.r + (1 - color.a) * canvas.r), g: Math.round(color.a * color.g + (1 - color.a) * canvas.g), b: Math.round(color.a * color.b + (1 - color.a) * canvas.b)});
+const near = (a, b) => Math.abs(a.r - b.r) <= 2 && Math.abs(a.g - b.g) <= 2 && Math.abs(a.b - b.b) <= 2;
+const ringPixels = async (page, style, ringColor, canvas) => {
+  const drawnRing = blend(ringColor, canvas);
   const margin = 8;
   const clip = {x: Math.max(0, Math.floor(style.rect.x) - margin), y: Math.max(0, Math.floor(style.rect.y) - margin), width: Math.ceil(style.rect.width) + 2 * margin, height: Math.ceil(style.rect.height) + 2 * margin};
   const image = await pixels(page, clip);
@@ -133,13 +138,13 @@ const ringPixels = async (page, style, ringColor) => {
   for (let y = 0; y < image.height; y++) for (let x = 0; x < image.width; x++) {
     if (x >= left && x < right && y >= top && y < bottom) continue;
     outside++;
-    const id = key(pixelAt(image, x, y));
+    const pixel = pixelAt(image, x, y), id = key(pixel);
     seen.set(id, (seen.get(id) ?? 0) + 1);
-    if (id === key(ringColor)) ring++;
+    if (near(pixel, drawnRing)) ring++;
   }
   // On a failure the message names the colours that were drawn around the control, most frequent first.
   const drawn = [...seen].sort((a, b) => b[1] - a[1]).slice(0, 4).map(([id, count]) => `rgb(${id}) x${count}`).join(', ');
-  return {ring, outside, perimeter: 2 * (right - left + bottom - top), drawn};
+  return {ring, outside, perimeter: 2 * (right - left + bottom - top), drawn, drawnRing};
 };
 
 const tabTo = async (page, selectors) => {
@@ -225,7 +230,8 @@ const runCase = async ({route, scheme}) => {
     checkRing(`${label} ${name}`, sys, style, {minimum: name === 'thumb' ? 2 : 2});
     // For the thumbnail that is also the current one, the ring and the current marker are the same outline; the strip's arrow keys move the ring.
     const ring = parse(style.outlineColor);
-    const onPixels = await ringPixels(page, style, ring);
+    const onPixels = await ringPixels(page, style, ring, parse(sys.Canvas));
+    check(`${label} ${name} focus ring contrast`, contrast(onPixels.drawnRing, parse(sys.Canvas)) >= 3, `${contrast(onPixels.drawnRing, parse(sys.Canvas)).toFixed(2)}:1 against Canvas (ring drawn as ${key(onPixels.drawnRing)})`);
     const outlineBox = {...style, rect: style.rect};
     check(`${label} ${name} focus ring pixels`, onPixels.ring >= onPixels.perimeter * 0.5, `${onPixels.ring} pixels of ${style.outlineColor} around a ${Math.round(style.rect.width)}x${Math.round(style.rect.height)} control; drawn there: ${onPixels.drawn}`);
     entry.focus[name] = {outline: `${style.outlineStyle} ${style.outlineWidth}px ${nameOf(sys, style.outlineColor)}`, ringPixels: onPixels.ring};
@@ -259,7 +265,8 @@ const runCase = async ({route, scheme}) => {
     const focused = await page.evaluate(selector => document.querySelector('[data-opf-player]').shadowRoot.activeElement?.matches(selector), selector);
     check(`${label} player ${name} holds focus`, focused === true);
     checkRing(`${label} player ${name}`, sys, style);
-    const ring = await ringPixels(page, style, parse(style.outlineColor));
+    const ring = await ringPixels(page, style, parse(style.outlineColor), parse(sys.Canvas));
+    check(`${label} player ${name} focus ring contrast`, contrast(ring.drawnRing, parse(sys.Canvas)) >= 3, `${contrast(ring.drawnRing, parse(sys.Canvas)).toFixed(2)}:1 against Canvas`);
     check(`${label} player ${name} focus ring pixels`, ring.ring >= ring.perimeter * 0.5, `${ring.ring} pixels of ${style.outlineColor}; drawn there: ${ring.drawn}`);
     entry.player[name] = {border: `${style.borderStyle} ${style.borderWidth}px ${nameOf(sys, style.borderColor)}`, outline: `${style.outlineStyle} ${style.outlineWidth}px ${nameOf(sys, style.outlineColor)}`};
   }
@@ -297,7 +304,7 @@ const runCase = async ({route, scheme}) => {
   await popup.keyboard.press('Tab');
   const speakerNext = await view('footer button:nth-of-type(2)');
   checkRing(`${label} speaker view Next`, popupSys, speakerNext);
-  const speakerRing = await ringPixels(popup, speakerNext, parse(speakerNext.outlineColor));
+  const speakerRing = await ringPixels(popup, speakerNext, parse(speakerNext.outlineColor), parse(popupSys.Canvas));
   check(`${label} speaker view Next focus ring pixels`, speakerRing.ring >= speakerRing.perimeter * 0.5, `${speakerRing.ring} pixels of ${speakerNext.outlineColor}; drawn there: ${speakerRing.drawn}`);
   await popup.screenshot({path: path.join(outputDirectory, `${label.replace('/', '-')}-speaker-view.png`)});
   await popup.close();
