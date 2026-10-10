@@ -129,12 +129,17 @@ const ringPixels = async (page, style, ringColor) => {
   const image = await pixels(page, clip);
   const left = Math.floor(style.rect.x) - clip.x, top = Math.floor(style.rect.y) - clip.y, right = left + Math.ceil(style.rect.width), bottom = top + Math.ceil(style.rect.height);
   let outside = 0, ring = 0;
+  const seen = new Map();
   for (let y = 0; y < image.height; y++) for (let x = 0; x < image.width; x++) {
     if (x >= left && x < right && y >= top && y < bottom) continue;
     outside++;
-    if (key(pixelAt(image, x, y)) === key(ringColor)) ring++;
+    const id = key(pixelAt(image, x, y));
+    seen.set(id, (seen.get(id) ?? 0) + 1);
+    if (id === key(ringColor)) ring++;
   }
-  return {ring, outside, perimeter: 2 * (right - left + bottom - top)};
+  // On a failure the message names the colours that were drawn around the control, most frequent first.
+  const drawn = [...seen].sort((a, b) => b[1] - a[1]).slice(0, 4).map(([id, count]) => `rgb(${id}) x${count}`).join(', ');
+  return {ring, outside, perimeter: 2 * (right - left + bottom - top), drawn};
 };
 
 const tabTo = async (page, selectors) => {
@@ -222,7 +227,7 @@ const runCase = async ({route, scheme}) => {
     const ring = parse(style.outlineColor);
     const onPixels = await ringPixels(page, style, ring);
     const outlineBox = {...style, rect: style.rect};
-    check(`${label} ${name} focus ring pixels`, onPixels.ring >= onPixels.perimeter * 0.5, `${onPixels.ring} ring pixels around a ${Math.round(style.rect.width)}x${Math.round(style.rect.height)} control`);
+    check(`${label} ${name} focus ring pixels`, onPixels.ring >= onPixels.perimeter * 0.5, `${onPixels.ring} pixels of ${style.outlineColor} around a ${Math.round(style.rect.width)}x${Math.round(style.rect.height)} control; drawn there: ${onPixels.drawn}`);
     entry.focus[name] = {outline: `${style.outlineStyle} ${style.outlineWidth}px ${nameOf(sys, style.outlineColor)}`, ringPixels: onPixels.ring};
     await page.screenshot({path: path.join(outputDirectory, `${label.replace('/', '-')}-focus-${name}.png`), clip: {x: Math.max(0, style.rect.x - 12), y: Math.max(0, style.rect.y - 12), width: Math.min(880, style.rect.width + 24), height: Math.min(300, style.rect.height + 24)}});
     void outlineBox;
@@ -255,7 +260,7 @@ const runCase = async ({route, scheme}) => {
     check(`${label} player ${name} holds focus`, focused === true);
     checkRing(`${label} player ${name}`, sys, style);
     const ring = await ringPixels(page, style, parse(style.outlineColor));
-    check(`${label} player ${name} focus ring pixels`, ring.ring >= ring.perimeter * 0.5, `${ring.ring} ring pixels`);
+    check(`${label} player ${name} focus ring pixels`, ring.ring >= ring.perimeter * 0.5, `${ring.ring} pixels of ${style.outlineColor}; drawn there: ${ring.drawn}`);
     entry.player[name] = {border: `${style.borderStyle} ${style.borderWidth}px ${nameOf(sys, style.borderColor)}`, outline: `${style.outlineStyle} ${style.outlineWidth}px ${nameOf(sys, style.outlineColor)}`};
   }
   // The counter is text on the HUD strip: its colour has contrast against what is drawn behind it.
@@ -292,8 +297,8 @@ const runCase = async ({route, scheme}) => {
   await popup.keyboard.press('Tab');
   const speakerNext = await view('footer button:nth-of-type(2)');
   checkRing(`${label} speaker view Next`, popupSys, speakerNext);
-  const speakerNextRing = await (async () => { const margin = 8; const clip = {x: Math.max(0, Math.floor(speakerNext.rect.x) - margin), y: Math.max(0, Math.floor(speakerNext.rect.y) - margin), width: Math.ceil(speakerNext.rect.width) + 2 * margin, height: Math.ceil(speakerNext.rect.height) + 2 * margin}; const image = await pixels(popup, clip); const color = parse(speakerNext.outlineColor); let ring = 0; for (let y = 0; y < image.height; y++) for (let x = 0; x < image.width; x++) if (key(pixelAt(image, x, y)) === key(color)) ring++; return ring; })();
-  check(`${label} speaker view Next focus ring pixels`, speakerNextRing >= 100, `${speakerNextRing} ring pixels`);
+  const speakerRing = await ringPixels(popup, speakerNext, parse(speakerNext.outlineColor));
+  check(`${label} speaker view Next focus ring pixels`, speakerRing.ring >= speakerRing.perimeter * 0.5, `${speakerRing.ring} pixels of ${speakerNext.outlineColor}; drawn there: ${speakerRing.drawn}`);
   await popup.screenshot({path: path.join(outputDirectory, `${label.replace('/', '-')}-speaker-view.png`)});
   await popup.close();
   await page.bringToFront();
