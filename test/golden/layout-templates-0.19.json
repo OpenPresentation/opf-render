@@ -16,14 +16,14 @@
    "bytes": 19914
   },
   "cover 2 short": {
-   "svg": "ecd70c3e6c9e3d21cb47b6d13bed8c3c692539a8b2b2ccd0aedb899aea77158c",
-   "png": "bf5429b34d18e0ef51852c608b2e7ed21b27f06beb1341f89e186a31d1172209",
-   "bytes": 29443
+   "svg": "cc33c300054ce57e29437637577dee744e434ebf61f05b62284a0a24d3136691",
+   "png": "affafda0e8f4b5058f1ab8702e0033e72287094bc3d1d0a96e294f19bda9a0c5",
+   "bytes": 29225
   },
   "cover 3 short": {
-   "svg": "0e63b941373ee1e8d4794fd22f331394744db9b9c595021ae0edb9eaede843fa",
-   "png": "d818dcac7304fe32a34325a25fafd7f1e93a063edc1068aab98c8f6400625cb5",
-   "bytes": 37338
+   "svg": "37e518445811ea7d115ed8ac163413472b1ccd3998e84e368ddf38b49112c3f9",
+   "png": "43a300b529f79ca3d4c5f706f6bbaac5e760457b21a622bf8c7a5bc22b973bdd",
+   "bytes": 36963
   },
   "cover 4 short": {
    "svg": "d136a696c58e9b913627cde050f8608c83f153dfb989d28df34f5a911a6fc2fe",
@@ -31,14 +31,14 @@
    "bytes": 33821
   },
   "cover 5 short": {
-   "svg": "9c267c7364dc5a9c95998a675609e91e85c859565a6b45b954599b203bb09af1",
-   "png": "efec6c09060cac251f34c34abecb6e9283e9a46b32d12a589691290b74306289",
-   "bytes": 36860
+   "svg": "7c40eef0b908a391d2f42a80aca18a2b802f6688ee1b45c0b47ac73d9b88ba1d",
+   "png": "9ed59dc410088e0e1065af247c4cf8ca5485c00db6bca22a34b6a80c8afaab24",
+   "bytes": 36272
   },
   "cover 6 short": {
-   "svg": "3606b2f205d86cca705cb7dabb499631f8d3e433c91dc8f5612ba5b0ad7a4711",
-   "png": "f8fbeb15f74855b3abbf75ed44d3fd0741c257a2ee7624b0de0fc53c17a92f75",
-   "bytes": 33510
+   "svg": "6c99b84731c49ffc4a8a9925be9386152fd00bd0d83cdc621c36867cc380c0d8",
+   "png": "03b313100cbfa3443d70edf73540dc2ba5c881c07b6b7d7d9c6a4cf984a1c65e",
+   "bytes": 32929
   },
   "cover 1 long": {
    "svg": "bf625e08b5b0883b41026e55a18efcbb41a8078837349465931a8c0aa78252bb",
@@ -46,14 +46,14 @@
    "bytes": 23189
   },
   "cover 2 long": {
-   "svg": "38ef5e35b45580e643b04adfd4e46e2f1d4943f7eec8c0a4a51ed1f8154b27fc",
-   "png": "150f61244fab8b2b9cc88c27a00e666a7f65b624a634efe790bbac280a82a9c8",
-   "bytes": 32907
+   "svg": "e46df87a72ed952d3b1f0da1db9f25b77e79d8eee9540b47aa843a4530fc4b5a",
+   "png": "f836222f586cbf4f317089b1959edd11a5c8a837620c7e1a37e29d4257b4e707",
+   "bytes": 32707
   },
   "cover 3 long": {
-   "svg": "e7cf8894fb67d604541dc8929e25efd2697ed8f6a8b1830c10aaaa28630bc7af",
-   "png": "0aa2131618babde215775b4835d98f7e6fbac99d5042dbb16cfd080bda6f4506",
-   "bytes": 40816
+   "svg": "a56f44bd635b51b1e1a8c473cd2d8011b9f8c6093df6d83c2a53153b75efaa88",
+   "png": "3f8e5b31bc838f797b3352e1033aa0ffa1d29861dc57362c8f8df8d0e7bab2fb",
+   "bytes": 40470
   },
   "cover 4 long": {
    "svg": "85b603dba3ed92acc4d295321c90d527dacd58a9535ec0483595bf2014a76ab5",
@@ -61,14 +61,14 @@
    "bytes": 37248
   },
   "cover 5 long": {
-   "svg": "6b14177fac2560bc8a5e0e7181d3c744eb66c1d02cace04c8060b1070700af0a",
-   "png": "a721800c4e6bc0e276bc60509991566f87bdbc4c98797123d3ce006309b4b26f",
-   "bytes": 40392
+   "svg": "570d0b9a0527acb134790bfef21577e10b6f211f7950de010f9996b5f5da19ed",
+   "png": "d49505599bb6c1ac0ab5ed34e46b08ccd13acccd4ad2e2086e152d8bb02245bf",
+   "bytes": 39745
   },
   "cover 6 long": {
-   "svg": "55a0c06799e13dab96b8fc28f3e37f67600f4bc5fbf5ea4e12e63cab9e8fa510",
-   "png": "44731ae29c02dbc9966dcc829433129c47411b7c0d5bd7cf2eeec3ec69fe59df",
-   "bytes": 36928
+   "svg": "c490cbcd49577f8f5ad4cb499a997762390e8aa749d726604eaf8473cc17beec",
+   "png": "1c3198f470b7919c0a83ed6d7616e43bfd3527f0f0bf0b1925bfc166bb723927",
+   "bytes": 36377
   },
   "section 1 short": {
    "svg": "995d2418efea20c3ce0033db32fa796309e2ffd9ae787f64865657376be452d1",
@@ -111,24 +111,24 @@
    "bytes": 12526
   },
   "section 3 long": {
-   "svg": "73205c8ebffd5a1ac2979069e1da4e40829e918a20a05ffb918c90d837b083db",
-   "png": "39b5124f32c3b7c3ffd9a31435272f508966c657a472358a1b244bdbd07e41a6",
-   "bytes": 13375
+   "svg": "a6d69252a8419b528fd2cc6c3a7650c2912f0d08df85b7ddb1608ead04972f67",
+   "png": "56ab90de2e14ad903d75f660923561fa0ba9cb50f2fc8e92cb5f42c91a1f2afe",
+   "bytes": 15280
   },
   "section 4 long": {
-   "svg": "83c5348098befa21dff2cdc36f2b02e50b99d9c260fc8d48b5a0884c1eb2fe7f",
-   "png": "d5bc775bd182ade6bd795edb429b63a04f2c9e8b9c2043baa6589732858e0865",
-   "bytes": 15831
+   "svg": "672c8c2889fc9ccef97e376e737e58a0db8fc98e6f9c4274228a8dd7c79683d6",
+   "png": "e0f9f2361748de57c4a40458ad492f63e2c15d172106e2aef7a5c2e5f10d8129",
+   "bytes": 19676
   },
   "section 5 long": {
-   "svg": "60663204b8ac579a93cc6ac962ecb4fd4f88e436782c89a788c092fab459bc5f",
-   "png": "22ce5f25b5ebfaf756cfc473680379ae23e524526069aba1f01c4be5adebcdfd",
-   "bytes": 12638
+   "svg": "4c3fe49503829a62cba0b002b91b6da89c9235b0906084b332a11ab4c7f31859",
+   "png": "1b3a0b8619c07f6865aa51696e498fb2a7862111cada6562610017a0331d94c7",
+   "bytes": 17701
   },
   "section 6 long": {
-   "svg": "f4b68af00c1b432444db64fd835668670cb31bc2649684846df9080596d9a1bd",
-   "png": "d28af2fa55a5c079f8aa8a6d8a1fe4eeed6b26de1b74faef1e9b97868c8440cf",
-   "bytes": 15801
+   "svg": "938474eba2debf10e3f1d50558d331d259b0cc2ff6f6d1caec705467bcc83aeb",
+   "png": "37703f266c9c08648eb78375943e277ed1e50235de1bf5e6e1dbf748f5fcf732",
+   "bytes": 15277
   },
   "agenda 1 short": {
    "svg": "95a58ba9a8bdecf6cc5f147541e43252cbd60a3f66906bb5eef8659857baee5f",
@@ -146,19 +146,19 @@
    "bytes": 3486
   },
   "agenda 4 short": {
-   "svg": "f13a46966480f06ca2433910695b1029dcbc484317ee30110a2ed51861a1002d",
-   "png": "c30db3fac4d59d2dc4431b931ba532c3a1d1466226fd1116853a438ef36260e8",
-   "bytes": 4011
+   "svg": "05b15a80e6ec33ba2fdf6b67b6a050f2f7cfb2e59e2312aa3c4014415ef3b615",
+   "png": "400bbf0812f2110e3cedaa5eda2e8544d6c0b99c0cea6619dfa4239e8ef272a3",
+   "bytes": 4720
   },
   "agenda 5 short": {
-   "svg": "3b3ea5e525662ae4a5f861b774455257955db3036f71be29c0be9fad146c5aab",
-   "png": "1b24a46061e8e753cc680a6b9f62ede52e8fe6e2614b97a095f853da364a378c",
-   "bytes": 3449
+   "svg": "6cfec908848efacfcb10816e0a160d4a5bdb13a34fabde5231412513db8a2b2d",
+   "png": "c8b628bb83bc352e658964e5ddae07fe49170eda2fa4f5a46a8c4ba6abaeaa4e",
+   "bytes": 4301
   },
   "agenda 6 short": {
-   "svg": "a5f59c145b933d51fadc627afbf0c3fe2b344ae818fe534ed1012c5008ed1eeb",
-   "png": "abcf853b31181db0d39422cad65f0bda55b0b52496fc37da06a2e6c335dffcb2",
-   "bytes": 4419
+   "svg": "c80eba640eb47b0fc639e1bbf48f844397a71e4834518860397c065376c6aa64",
+   "png": "f785140cb4001790dac6c274946a7f837c4f830cdee4ae210b507d090297fd4c",
+   "bytes": 5870
   },
   "agenda 1 long": {
    "svg": "95987ceb537f84b2811865d8641e6975abc57bb94b8589f15a6e5f2a641ecc35",
@@ -166,29 +166,29 @@
    "bytes": 13890
   },
   "agenda 2 long": {
-   "svg": "9e10a17d1a03ef559cdc0f2547de7acaac36ef90f5945c72009fe3fe08d1df7e",
-   "png": "3778774150dcb1372357b30eb67e97eb280c1c20b55795c49e415120d14ac805",
-   "bytes": 15473
+   "svg": "fc8d6ed67478cc4ece1a0bef27b98d2630a3414e0d141edb7fdef2db4eba7912",
+   "png": "8487548cc02a512aa7db48a02d221a6dc70646e567ee51c82a2cdde53dc175b8",
+   "bytes": 14005
   },
   "agenda 3 long": {
-   "svg": "36e19292929f8dde9abba7933d861c997dc9dc5c05dfe4dbe97d1e27e3567580",
-   "png": "4b438e5e836d9810b896d9202bb13d8d9bcfa254fc260675bec0255a64800e85",
-   "bytes": 13167
+   "svg": "4e1b95a9c435c5b67453243f5ae24a5845f4560aeac56a64c2b2b9922e13c33f",
+   "png": "43a0e8add4d9273815e65adabc4fa6338e65f36c46db352fe149cb643217170e",
+   "bytes": 17219
   },
   "agenda 4 long": {
-   "svg": "c6d637b17cc92a51e94f7bff8ee88d1ef51d8b4b09cfff639f9881222c698561",
-   "png": "1602ac2478d64f593e5e03a7652b38578e276d05ea2d8609b6ded0b8c7efb610",
-   "bytes": 15052
+   "svg": "1b7cd23a36c918d055868cf42f544cd615087f2c194049d0ae9ac02daf1ee1ba",
+   "png": "e89ec1fca766f1dd15d0df2e12029ede732f3160db285b505212731e87e06462",
+   "bytes": 21664
   },
   "agenda 5 long": {
-   "svg": "5bb1faab569ae97e66386f2745b9ac648f4c0605cc199cb2986bf3856023a19f",
-   "png": "28b0b93a8afc42500abc8d84c02c68f8fb2641b192d25a4d78686c14b3a24050",
-   "bytes": 15710
+   "svg": "454d149472b53ff32325df10ebe0813726c4cee1776b2a7b7c16382b4db4904f",
+   "png": "4edfdbbf6ac25fc3a3dda3c3ab912c7de1b57105c947eef6406c0e73553cc393",
+   "bytes": 26040
   },
   "agenda 6 long": {
-   "svg": "e3a22dcf9a678c88c15813c93e952368febbe398f53c398f880e1f0847e83558",
-   "png": "aabea9b766774fb0893840096ee996135fd543766d9f9d77f28681eec5e3e642",
-   "bytes": 19093
+   "svg": "4c3cd393e064c754d039e9c4c2b5adfd51282c1efde4c718083a8e4da5831a75",
+   "png": "5b182e2fe87a624b034bb30b8f558695433bb947e14649c26840ca975644611f",
+   "bytes": 24206
   },
   "statement 1 short": {
    "svg": "e151a73aecd468b5db7f8537a4e9ab52747493ae64a8e951319e3f2756dd2af3",
@@ -236,19 +236,19 @@
    "bytes": 15356
   },
   "statement 4 long": {
-   "svg": "293b1e1226d0b05886712b4df95ded510ab2141f8fd75910fa8ad529ee413963",
-   "png": "00a114daefc0b32f8ec54c67f35ccb2118a67b8e6f64d1cbfa5d02a3c22a8070",
-   "bytes": 17039
+   "svg": "b05937bba6248f270fd991adc4394c0454f087b38cb3a4d36f5ec279d8f09032",
+   "png": "51543ee9d22ae4e2bdec623477c5d28ab597e437c77c8491e7eecfc69c11d5fc",
+   "bytes": 17235
   },
   "statement 5 long": {
-   "svg": "7e7b230c58c8f5a5e4f3e32ec66398764b6642522ec596b4a71c877dec0931b2",
-   "png": "f4ed01696a5e13dd2b7fa215c491e7336957a55daaa384362a95db171a03ca41",
-   "bytes": 18743
+   "svg": "024379d2984d72d26e5eeffdb18643a2c9f813e7882a464354088630a59b554c",
+   "png": "8317b4c382f2570ecc57cf5a127f16a95a3d24fc12c66af2618bf7c604776712",
+   "bytes": 21534
   },
   "statement 6 long": {
-   "svg": "dd4ea74d4971f7de584a751ae9e538f320db07d6c2ddf96e7d5fc9c9e2e0a473",
-   "png": "03a2030a43adcd520597634c4a25e6b2a434ac563e5f651a359237ded7fd47d8",
-   "bytes": 17923
+   "svg": "70342065438898b8c4dc4571c6d531d5e6e49ca1508360d611a0ad563433a3e9",
+   "png": "1461ed5b9c80da01c494944f9073714294a9109be441ea5537bb7c6d6098feae",
+   "bytes": 18114
   },
   "closing 1 short": {
    "svg": "96722bdf8a0f91da95ac7b8a16093d0b2dc42934cf3609c5c81e26a5108f86b1",
@@ -406,29 +406,29 @@
    "bytes": 13489
   },
   "list 2 long": {
-   "svg": "2481aecbc2039b980dedca710d7968a19a9fbb52077baf9929765928914a3af0",
-   "png": "615b62fc7e091e6536cebd8237713331d066a150151870e72603b7107081378a",
-   "bytes": 15071
+   "svg": "7d0d1533d81240781ccbea60d24ac8705982a6b2dd1532255b70001b4110d1b2",
+   "png": "ae88493df1057ff31288e808ad394154e0725e934f97eb3786f41f6c2abe5024",
+   "bytes": 13595
   },
   "list 3 long": {
-   "svg": "64793c243d4a82cd4e7d41ea60bb72f99ba7f84b5d556fb087cb64cfbac32b17",
-   "png": "54bef3077bc5029651eee9bf4e1749176f54a923844e96363f006714c7926b06",
-   "bytes": 12768
+   "svg": "50a48d3ccf8c418370a1cc2971277a250294b61d30d3e8af7e0a9e9dec676785",
+   "png": "6d677083fc805000972fe4d8e14f4743c4273c8cb99fa6c79cd06adee3ccaf39",
+   "bytes": 16800
   },
   "list 4 long": {
-   "svg": "281cc9bcac99751bf6f4505dbf0593ba5ecc40992aff038c16d567098fe54ced",
-   "png": "f3402d0cb3c96d243bd333cb3a458f0e96676085b2a5f899cbf6a4191a74eaf6",
-   "bytes": 14642
+   "svg": "1a7b45e4c9c881d65202c7f8471bf2041267bc1553e998894e945023d2533f3b",
+   "png": "46286385b0d84d9cc2fdb34967b5158edcde996bd737a0e05dca70f810dd7942",
+   "bytes": 21254
   },
   "list 5 long": {
-   "svg": "66188d4683f59fcb8391dc34a9c9c9ec73abee230397d72ba3baf27c6b1974f9",
-   "png": "aa626deba73c9cfd362318197cccca5a9f7a8f080599869debfbbc3503e3a918",
-   "bytes": 15307
+   "svg": "e98e7c7cf3a2a776c8bd75b8b1e4ba4d20c51d31ce1a94662b71ea1507f403d4",
+   "png": "cc7033573f69650035321f35e1f62e730f7984576a91b571d2525d537b2039b9",
+   "bytes": 25633
   },
   "list 6 long": {
-   "svg": "8432bfbb30ab90be49ad6291b6d7c52e1e02e365329d7f0e8ba3d3f270cf1553",
-   "png": "c5df2c1354421c8ce9f2ff7ff350148b2a98f9462f6b02b92bf1ec234b5ca93d",
-   "bytes": 18686
+   "svg": "75e37788056189b4bc8e63cffd8d6cf9294815f86e9ea1e109d2d7543a1e65bc",
+   "png": "23186b5313728a9ba4b9187911ed4dde6a3fd0fbaa500534ae9047f01459f8e4",
+   "bytes": 23790
   },
   "quote 1 short": {
    "svg": "111cbdc6ee2da44586ac35746dc57655b92c56c3e23c587f16b79fdce36d6933",
@@ -541,14 +541,14 @@
    "bytes": 20050
   },
   "two-column 5 long": {
-   "svg": "57ae47f74b81bfd5fc314a32136c0d708b54b6992785ed0d3cf76d56035927ee",
-   "png": "a13d72f055b81bfb69ffd7797ea3cbabde36724cfaa048e906ef3bd52f1190a4",
-   "bytes": 18466
+   "svg": "fb30756f69fa5a3c197eb34d8561d9eeda9afda1c5d95b8c2dcedc663ec5c151",
+   "png": "33564dd2aa22c252493ec6032d9ff0c5ab46f1409ee16ef9e973c7f9257e7599",
+   "bytes": 19423
   },
   "two-column 6 long": {
-   "svg": "96573fef3b0f6b3efd31563a95fb05518ed19c5387c32558a02348f3d7779c70",
-   "png": "231a2a066e58f303b159396a4a05dd4766b09fd21f7b3e418598f5873fd3171f",
-   "bytes": 20748
+   "svg": "8a19d80a453ddb77635bddf7f20fc812a9c8e9e9771a3de90de481bd10194834",
+   "png": "b683178bdecb61d5c03e6d83e092e497eebc62ef02ac39a425e975a0937e179f",
+   "bytes": 20902
   },
   "pillars 1 short": {
    "svg": "4941a425d9b2f1d3b2952a8d6f3d5982e5fe2f6009c89dfe69aff375f1d74991",
@@ -656,19 +656,19 @@
    "bytes": 16657
   },
   "comparison 4 long": {
-   "svg": "be356d62e26176d55e7cebd412b6bc46c1d19d4132f2f1fbdee0474da9e8e631",
-   "png": "fcb3b116d69f05947057b1c5bee8b71cce29f59e7222b9487d9ca4b4a4e52869",
-   "bytes": 18667
+   "svg": "8a9f942a9217c0056ee51e7cd43407592ec48383074a76d4e079bed51dde7b8d",
+   "png": "62e3b7194b6634a6e169811ced97d7648f28fdc8f1144c99ab11bebe101858de",
+   "bytes": 19275
   },
   "comparison 5 long": {
-   "svg": "dce08c8c477250a1006168f4fe7fe3425f4ec72d0cdabf1c67e486bd7a4d2d87",
-   "png": "b553454c047e2b3220db33ad8db3fa694bd596c8eb1ee2dc960307bcb4d3dcdd",
-   "bytes": 19981
+   "svg": "67c1d4bf090fa2503c7276a79c71dc982ec6ba50031abb7dd6d7642999340440",
+   "png": "bcbc2461c158183397f262170b97d7e86dbf40ac26efa430b8a778ecdc12942d",
+   "bytes": 20565
   },
   "comparison 6 long": {
-   "svg": "b4b92da28aaef2fa0cc62d204b84429cf09e4971024c844963ee74c1685b124a",
-   "png": "5496d9473434171d7a219a6181ae54f2e9c7ed477ff19ea38ebb4aee18335a66",
-   "bytes": 18355
+   "svg": "7e1fdd6a1933db9194c0a3d47dd0f063bf92338891d07e31b23faeecb2487f17",
+   "png": "45fafc3a8b7f94a87fc320bf3c5a536a8dd5799301579b4d635747bf0915ca1f",
+   "bytes": 20053
   },
   "process 1 short": {
    "svg": "7bc5645727ed2c6d6b9a0380f5b8d78316155b0d39b823ea272f2f9e16b72725",
@@ -771,24 +771,24 @@
    "bytes": 11804
   },
   "timeline 3 long": {
-   "svg": "b73d591a10f709a198f9a2565e9f105ce80d22697d6d93add2e6164dc34dad81",
-   "png": "06ec8839e1a02a8d85a437b137ccc75c226e25b1b21bf60dded1865f8625b88d",
-   "bytes": 13638
+   "svg": "120a37e24f609b7d0546692d62d480665270cb3bde02c15343388ac3f682d90c",
+   "png": "0cb7e81485bb356ca108285de8d0727e56c838bcffaf29e872119f6a78aa73d2",
+   "bytes": 12780
   },
   "timeline 4 long": {
-   "svg": "87bf49cec702d5d96c886f8f7008bfc53f12f816681cb4d6a8659c073c87619e",
-   "png": "dc661d5f41697a674eb6c5d25334129de3a9468ae88f8bf0dd26c4a1e97cb581",
-   "bytes": 16585
+   "svg": "9b4eeef5bb8b4a7b17d6b03f929e11d7ee56934063594c4ab00940ca9fab6963",
+   "png": "08072143f3fc575cb48d24c14e5aee66d71e9dbca141f12f55a03b15c708378f",
+   "bytes": 14194
   },
   "timeline 5 long": {
-   "svg": "c9e02416fe535aed7a47334cba6d9e156cebf4f47036d6c35c25bfa96d31eadd",
-   "png": "fad346fee7c049e53f724f1d746ee7d883e1302d5536c0d6393bfa32455c76d7",
-   "bytes": 19664
+   "svg": "2eede7a699abb81af7c40664b0caf2e908b76a15db4920b4ec1c0dcdcf1b29df",
+   "png": "1ab0486635117049ebe93c688be3815cfe561160bd50bda9a012ee6fe477377f",
+   "bytes": 17800
   },
   "timeline 6 long": {
-   "svg": "f0b7700bb3a07264abaf951b510c4db1c43246a5eae063d7448592ea30a18afe",
-   "png": "4ef4935929ca8fadae39729f4300122bb76bb33aa3943dfec86fc19f7e633719",
-   "bytes": 16496
+   "svg": "cc3c613222cb7354bcf0a1df3d853828c5a7db0b9339b414e5e6d568d5e4438c",
+   "png": "0668a7b8ff833345fd41e6bbb703eff7f0eeaf08bdd6ed47a712f1ababf3c8c0",
+   "bytes": 18061
   },
   "faq 1 short": {
    "svg": "e4abb8a4e3025d8920a9654c6acd14244ebe42e77a4cfbd78c68cd359f25bfd4",
@@ -806,19 +806,19 @@
    "bytes": 3770
   },
   "faq 4 short": {
-   "svg": "bc6afff9c4849b60c4fc4c806cbaeaf40d22cb0f78e904800dcf64ca894c96f5",
-   "png": "d984b30c29ad8dcff8adae4ae4c9aca58045de33ce55140a368961f00fe790bf",
-   "bytes": 3663
+   "svg": "041514271a2fa6194551f88625562204023421ecb9b707c372c3b7a01d4b9c4b",
+   "png": "c4630ba53703c12b0065f2223cbf3b87b8856295a7caaa32d040f05b003ff1c5",
+   "bytes": 4375
   },
   "faq 5 short": {
-   "svg": "d85edc7ce9049e2af9b0b4f0483a70b7aa769da05f8be7e16571b472b50dcec0",
-   "png": "1e5979738eacfc58dbddbb87ae0d489749e366f4672d8a2d386e3479358712a6",
-   "bytes": 3341
+   "svg": "68e9ad10a2f86387737098ac67c38f0023438e1f0d05a9fa564366d9811369ad",
+   "png": "1297867c6aed4113626d93567d344298f4a1194f50227ec695220c847934e3b8",
+   "bytes": 5003
   },
   "faq 6 short": {
-   "svg": "dac26d30c0f02fc7cf2f4ea8a9492b41e8477473f610f32cdbf55899bd79f817",
-   "png": "0fc698a97f2749acccbe524e6cdc7238114c3188f9615b1add023051555f0514",
-   "bytes": 4069
+   "svg": "ef4441a6f4bac85928a378c1bb28e6e3d960dfb68f4e8b7801989f93d7f0bf42",
+   "png": "cd18b62d5ac95e1acc0f0620a473db6b9534864fc5c36a2fbc8eb35edf7e5f61",
+   "bytes": 5540
   },
   "faq 1 long": {
    "svg": "e65ac98080cb0f021b7cd3190c901a18a17bfb9c5cf0bb3332f2a334a33a8949",
@@ -826,29 +826,29 @@
    "bytes": 13805
   },
   "faq 2 long": {
-   "svg": "68f78d407fc7ab759eacc160886652d857ebd107be75ad7940ed7172c040bd6d",
-   "png": "57d5602e41de53bb3f934dd5c85c5d5d0aeda396baaa7012f6369c6e8d5301dd",
-   "bytes": 15126
+   "svg": "52e29af7517f9ec39df6e94f6aa5993d1b1776ef0bcf3b184b7f3c7c083de142",
+   "png": "a0ca906a6969c1254adc86bddd82eb83ba648eaaa8aaf6839342e996ff529570",
+   "bytes": 13650
   },
   "faq 3 long": {
-   "svg": "e1ef1de078f7da336f14109c7f3d9b91e9491fd2ebd43ca8f559f0952413e9af",
-   "png": "446e32b271d58bead1706af90419710ff9f035f6ca7d313eb305b53d1af4f80c",
-   "bytes": 12941
+   "svg": "cef08489ca5851a5a2ad2665013ba49e04bcd86599902e58a43f7af8403e51cd",
+   "png": "b3b1a693fe23dc1766a8154fb402fa638632f8fe5c3f69287f5f8aceb6eb1c56",
+   "bytes": 17903
   },
   "faq 4 long": {
-   "svg": "e8f56ee58e1e1d4bacf05b32411603264020d84ab480e1e2c1b947b49da9d00d",
-   "png": "76372968b2912599f599121099f12f5f5ec09533361b78a296c5281dd9ca5d8a",
-   "bytes": 14701
+   "svg": "e982da09e12c9c10b4975324a997a7b77cf0afac88ef203e4123c95d203edb0b",
+   "png": "028aa45c4c8ae826e2e58d76c43319c5bcae4a0d19b82835c2879e473aa4fbcd",
+   "bytes": 21313
   },
   "faq 5 long": {
-   "svg": "556c28eb114ebd6ed2f867d7ce9a394e29c0651f754cb06daffb6f481fd7d64b",
-   "png": "a0bf557a0b2fdfb1672c2fa91d46ca7cb6d465d3616b00003a640fc46990e47f",
-   "bytes": 17921
+   "svg": "afa6aa01eea66546cbee4e092848e99d7ea6f96ffeb5cf3030312f064a894301",
+   "png": "9be2648e268454d65ada5a0caeeab86658fca17a7f18fea0c5dd9f83d0d01caa",
+   "bytes": 24371
   },
   "faq 6 long": {
-   "svg": "7cfd6201293b8b30e34753ab0420584a464b9670212b6db2c4f3a5c1b5897de2",
-   "png": "63225c7cca0886833036d7276b6c491983d5d29336179256b5c8215a40a4ba2d",
-   "bytes": 18742
+   "svg": "cf6dc50ef4de460c3e5bd083750ccfeefa41bf2243aaeed0b72ca7d0bd1c90a4",
+   "png": "bf4353cb82985d6a478f05ddb221fefb21a7b28361cd464c7a3e91ba4a5408b9",
+   "bytes": 23852
   },
   "metrics 1 short": {
    "svg": "bffbc42e86908957d1aa6acda41fd3391d73c2703fdba231eea2e5e867f77285",
@@ -976,14 +976,14 @@
    "bytes": 27824
   },
   "image 2 short": {
-   "svg": "aa75a995dcc59ce9d41aa2af4004a5c523ef00966857876a4c2faaa359708e4c",
-   "png": "ee41183269044b40358012c0ad038a61775618b75174d19e1be5a3086ce43729",
-   "bytes": 25759
+   "svg": "a018477f877b4da4320fae9446d6f6b85f621286bdca8ceb4ce46bb221879db3",
+   "png": "8c2041dcbe29a1c2ef74747167d54976caea1482f01cbed9572d28e3c6ceccee",
+   "bytes": 25476
   },
   "image 3 short": {
-   "svg": "00a5501cb7877305beb18b7a319c025e6c81beac0be580d2bd3f283363d0e2f2",
-   "png": "b564aa2ebc1c279aa9e5a3d27db050ef9ccd756d3862f4bf7f30e0e5628d781b",
-   "bytes": 33800
+   "svg": "9f21c97d7dea002442925a344490e76335b8f63b7fda0ba6c6d45ab01b8c31b2",
+   "png": "6c84300cc4d5b9bd02bbc2b91ed4dd80779e80a6a39ee3b08b10ddf172a6f254",
+   "bytes": 33038
   },
   "image 4 short": {
    "svg": "988a2b039fcbe83d87564813c086b9ffcb6309c9d2e774cdaf2295ed78d3440a",
@@ -991,14 +991,14 @@
    "bytes": 32181
   },
   "image 5 short": {
-   "svg": "08723d796805525159a08aa64cef62bd35a1c0e20deaeccfcf471e08f1a6be99",
-   "png": "d14d02ff20c0147274c247e5282e4bb7c58b15c2d36f59bbb4c2eaf85fa48f56",
-   "bytes": 33441
+   "svg": "7d5de5a756f620ba6c068442ff70c1e41de8ab2f1c41a7cdb13088a3202a63d6",
+   "png": "a1ed49d5995791fe6148d8745f4256833c552f02be9da84d001b87b580693fec",
+   "bytes": 31469
   },
   "image 6 short": {
-   "svg": "5b46c15f300063408b06bbe2ca3461ea08db174e5bac2b6280d49a5108efcc64",
-   "png": "4e025db168e65d55bc2c05e033417a6362ff1d2e897238ccc6fa61eb938e4f09",
-   "bytes": 29953
+   "svg": "1dbffee55d645199bf6ba08a55587c477b995e80186527fd1c77fbf694f4aa71",
+   "png": "28798bc1e4eb067eb6f8a53262f85ca4178e48a1a87adfe375d1e361b63546db",
+   "bytes": 28182
   },
   "image 1 long": {
    "svg": "52b0c3c51928998b776b3e47b01794f4f794ee6f32b2f99761f4d1fd12b7eba8",
@@ -1006,29 +1006,29 @@
    "bytes": 28671
   },
   "image 2 long": {
-   "svg": "c39ea684c08d9e97fb3fd5a85769f43a800868a3cd4ddb015cc1e3d8a43784d5",
-   "png": "b48d85bc0f8c6fb9a26ca8b9cbad9ab155d29bdffb2a63b1b4ac87ab30bcd3a2",
-   "bytes": 26293
+   "svg": "55795f8664f734f40a52a157b3da2c503ce90b88e4970bbb2d117ce2b0fff427",
+   "png": "e4f6f5f2274b08027d85a95d5a779f652effe87b4a0a53ff4377ec7d2b6d5858",
+   "bytes": 25938
   },
   "image 3 long": {
-   "svg": "b1234d9f38c2ac0b3a86e9b00e76dc19ffc36608a04f6d7bc318922ec1205806",
-   "png": "8519937def4b9fb3ce47a89d0a6ce1ed5b3f1e766000ba348ab377aa40a1618f",
-   "bytes": 34232
+   "svg": "b4618ce126b8f71f1dc7004ac490b82e22acf2d6c8b7402e2175b849cd17ebd8",
+   "png": "73ae5ff1d2f87c7600fd10f30ff1e144657fa1beed5753aebb3b3ea8d1116100",
+   "bytes": 33024
   },
   "image 4 long": {
-   "svg": "500a81452402007bbb442cf2d6e71e3070068fae35421363b7a82c4bea15d1e0",
-   "png": "486536448a2823588b5e7ee1843f99d7af5fe88a5e9d7716db3d4a6f8c4bf162",
-   "bytes": 32499
+   "svg": "cd7f6671ba08380e462b61346f44028381289dd227e5dfec131a9f8695e73f53",
+   "png": "f3eb248303e38e67fdf0f9b8fcb8d782f17292058bb2237d94131ba50d340aa8",
+   "bytes": 32280
   },
   "image 5 long": {
-   "svg": "49913856073478f4c54d56de78dba9cffad05b7566d590c6ceed45255c4678c7",
-   "png": "f666ce3d152bff07d9f90891c86e2079c065b630a08909286f1fb4d3088f6c3c",
-   "bytes": 33846
+   "svg": "80a9f799a48f83d50f133ce94149fd27724ab4400afffe0b9c162c36e31613be",
+   "png": "0265e7e939cfcb3918c5080ad40af459678b6ea242a5194f3d4f814cee7392b4",
+   "bytes": 31129
   },
   "image 6 long": {
-   "svg": "5427f62c85969fdb9a0734362235ca509b4136fbbc08e8fdd93feec8314992b1",
-   "png": "1abeff4111b1cd844363e74a513e4d406dd64efde527ab0d2fb817cd8b41e9e6",
-   "bytes": 30263
+   "svg": "ae7e5030d3673f85f2f0993242a1edcfc2ff61d2ed111fc069e2165ef9803187",
+   "png": "d8e03226eb6c4d1b5820cb8365c199e2a1cf9bc17bc675d166a9abb8d0520493",
+   "bytes": 27748
   },
   "image-beside 1 short": {
    "svg": "549b73bd8488b617e57c1350fd385667d1f03b62849d7435ec9106e1645e5430",
@@ -1371,24 +1371,24 @@
    "bytes": 13385
   },
   "table-beside 3 long": {
-   "svg": "28948df14c80e4e13a386134b8bf2ce0cdd105b640f3dfad325ba24dff210815",
-   "png": "af777f30e58436983d57cf7bf11cf09308dd44b40aef5876afb5aa68fb4be2da",
-   "bytes": 13032
+   "svg": "f1f86ab685c35ea46fd8c33bd50c28079429e046557cb8f7db9df5a781c70d25",
+   "png": "17f0004663f4528cdb89e47d7dc9fcd70c7cab38e3f377bcb7944748923ccc91",
+   "bytes": 15555
   },
   "table-beside 4 long": {
-   "svg": "f55fe67f52dda0690a8eeaf117814dc043e1af632c935ac22edd22d12572cb57",
-   "png": "282a94cde42f267f6e1ffe824b89dacd6e977da2135cdc5265122ca55ff4e102",
-   "bytes": 13817
+   "svg": "66aaaf29e7888d3e2b9604cef27e865246a575f453895a2579248a1e76604bce",
+   "png": "932c9b760ac25bf48447d7e75c2b3b495e73d46b4702074d7ea6ca61c9d2f3c2",
+   "bytes": 15345
   },
   "table-beside 5 long": {
-   "svg": "024259db085bac37bff8efc5b705628875106a3ddae7fb2082ae613d56b9192d",
-   "png": "9131f5043c7526bb4be458bdeb21f3688a98892dc8f7e8af1d04bdcbeaf07295",
-   "bytes": 14597
+   "svg": "6ccff8ac129cd04b6a0352bafc3e2aa627c9821f5afd2d9e283f60433a859eeb",
+   "png": "962a5da5f576c94d18adbc33cc7c0df432f070d98870f74ace1ad8eae6952bcf",
+   "bytes": 15810
   },
   "table-beside 6 long": {
-   "svg": "50df8a967058cb1692659d6fa10c825330a1f265f5d2862adceb78af91806991",
-   "png": "336b272c1fd4dba772fdd1e954b0f0ab06628f45bed3ccca6fadcfd1c7772bbb",
-   "bytes": 15250
+   "svg": "81bc11db0733515db308e1edba5d586fe4e630052771091438f27e24ea6bdfb8",
+   "png": "5fb21b4b1a4d29e2c744686139b0e138f60ccfd2e8c07bea1722448d9a16b900",
+   "bytes": 17338
   },
   "code 1 short": {
    "svg": "0d31fca17d0c241d0374c745a671be2ac24813e38f926bc5dd437815ab58b358",
@@ -1471,14 +1471,14 @@
    "bytes": 15901
   },
   "hero 5 short": {
-   "svg": "4ec92671948a6b5c8f7de6dc71395c94484ee7971838ce38c6f823fe735a11b2",
-   "png": "d3bd2935540be8d489c71c25ccee3fb0d4c7e937e51100cc8eade6ef5edcde78",
-   "bytes": 23965
+   "svg": "e972e631a5a54006bb9c29e91f936ca2d5fa973c4fb0030e9cf9b42cf7325b91",
+   "png": "7f0e767a7ec11c060c20652e55de431f2ae0502755dd519876394e531c8559ba",
+   "bytes": 22187
   },
   "hero 6 short": {
-   "svg": "19e84e43defc63d01e610975a154b6247bcca45f24322dc18209ead4519884aa",
-   "png": "2d636be766705ed2348bcf1a834bf23664e76817332a14478e8f62b0b844e747",
-   "bytes": 22969
+   "svg": "bb5974dd73a9ca6fe2771ebd43368046f48aa7ded33a887c1b3f2e08e270c605",
+   "png": "5a77082906d250685a5fcf12bf1927d36ef3c5b2c2e71c39ce30fa4dbbfefc98",
+   "bytes": 21286
   },
   "hero 1 long": {
    "svg": "3e90e279b65188f46ae010c9bae40426ee245d6eb9bad18e03360bd776afca77",
@@ -1501,14 +1501,14 @@
    "bytes": 26491
   },
   "hero 5 long": {
-   "svg": "b8b1fefba75729dc0ade3a81578bb618ca75ec52f19ee30cc0190483ce40629c",
-   "png": "409108be61dcc269382bb0d45100ee17563aec38ed600cff32267399ccb7afbb",
-   "bytes": 30347
+   "svg": "2f97d689328f2ef340dcdbf40aff4f210a68e7819f57bfeb3da0e8dc032090d2",
+   "png": "a0bb0fd31a32c50e2e8c2e4896f7f09deb0d787d5ea15712d7911f4d76c88efa",
+   "bytes": 28851
   },
   "hero 6 long": {
-   "svg": "9c76d451f72a4042b527f6604f96c8050b9361414374e233aee76d1d7ec25a90",
-   "png": "ee1830851cceccc5350476f4d2a823185a1134d7de081a339b3c63f028082590",
-   "bytes": 28544
+   "svg": "5b76546ad3fb7af3c766f336c9499a8d2329045ef2870990fd061624fe176648",
+   "png": "88c66b85518821a2f1e93d6a517286fa2beea4195486e4b2a7ec5a2c81db3997",
+   "bytes": 28568
   },
   "dashboard 1 short": {
    "svg": "30b0c5593128db7ef525780cae37ff8755750120bad42e9a4913a4a272ddf60d",
@@ -1691,7 +1691,7 @@
    "bytes": 37699
   },
   "feature agenda numbered-16": {
-   "svg": "2389e096a153719306d0d7d39f811207e6bb39b6faf3b70e9006c37ba9b0cf7d",
+   "svg": "4ec314cdfddc629dbba0e4cb8ba0190c0b7c0c21d0fdc9cde969324a36e49f5f",
    "png": "0433a187a85d01b13ba57819ce26cbf610fd8f017022f43c843a5a263d863cb6",
    "bytes": 11401
   },
@@ -1701,7 +1701,7 @@
    "bytes": 12052
   },
   "feature list carded-roman-18": {
-   "svg": "503cb4f78484d0246ba071913a00887044c86bc471e5a51aa38c569040f7f6e5",
+   "svg": "cee150bf82984c33bdabc919f45d2c9851d934eda18504e0bb29e5d747ee3b08",
    "png": "a89e4fa6e70c9ff4a877badac499e5d3c4412e83bf0202bd4f722f1357160859",
    "bytes": 12916
   },
@@ -1711,7 +1711,7 @@
    "bytes": 12848
   },
   "feature text fixed-columns-3": {
-   "svg": "2820c144859feff6579d843bb30f0c5746f7f26e49a29e8f047398d70ea71c57",
+   "svg": "9f258e6767c8ee4573d3f6e4a452aa6c7152c6ea98e1d1c4d3d1ac8fb63d9f9f",
    "png": "10c49c7d24da81bbe6574c9060760712d11abeee38945f012e018d678b0c361b",
    "bytes": 6253
   },

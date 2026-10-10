@@ -21,6 +21,13 @@ for (const { keys, deck } of decks) {
     assert.ok(Array.isArray(geometry.regions), `${key}: core composed the template's regions`);
     const tags = openTags(svg);
     const regionOf = new Map(geometry.regions.map((region) => [region.name, region]));
+    // Every traced content path (headings and blocks) resolves against the source deck, so an editor can edit through it.
+    for (const tag of tags) {
+      const path = attr(tag.attrs, 'data-opf-path');
+      if (!path || !/^slides\.\d+\.(blocks|title|subtitle|tag)\b/.test(path)) continue;
+      const value = path.split('.').reduce((node, part) => (node === undefined || node === null ? undefined : node[part]), deck);
+      assert.notEqual(value, undefined, `${key}: traced path ${path} resolves against the source`);
+    }
     for (const item of geometry.items) {
       const own = tags.filter((tag) => attr(tag.attrs, 'data-opf-path') === item.path);
       if (item.region === undefined) {
@@ -84,11 +91,8 @@ for (const { keys, deck } of decks) {
           assert.ok(entry.index >= entry.column.start && entry.index < entry.column.end, `${key}: item ${entry.index} in its column`);
           const texts = tags.filter((tag) => tag.name === 'g' && attr(tag.attrs, 'data-opf-path') === entry.textPath);
           assert.equal(texts.length, 1, `${key}: ${entry.textPath} drawn once`);
-          // Known core gap (opf#577, RR-79): in a numbered list, the first item of a later column that is a plain string
-          // becomes { text, start } in core's sliceNumberedItems to carry its number, so core traces it as <item>.text, a path
-          // the source does not have. Accept exactly that case until core keeps the source path.
-          const own = `${item.path}.${entry.index}`, carried = item.payload.numbering !== undefined && entry.index === entry.column.start && entry.index > 0;
-          if (typeof item.value[entry.index] === 'string') assert.ok(entry.textPath === own || (carried && entry.textPath === `${own}.text`), `${key}: ${entry.textPath} is the source path ${own}`);
+          // Every traced path resolves against the source: a plain-string item is traced at its own index.
+          if (typeof item.value[entry.index] === 'string') assert.equal(entry.textPath, `${item.path}.${entry.index}`, `${key}: ${entry.textPath} is a source path`);
         }
         if (item.payload.numbering === 'arabic') {
           const markers = [...svg.matchAll(/<text\b[^>]*aria-hidden="true"[^>]*>(\d+)\.<\/text>/g)].map((match) => Number(match[1]));
