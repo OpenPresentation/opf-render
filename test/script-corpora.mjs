@@ -18,7 +18,7 @@ import assert from 'node:assert/strict';
 import {mkdir, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {LANGUAGES} from '@openpresentation/opf/composition';
-import {defaultCatalog} from '@openpresentation/opf/catalog';
+import {gallery} from '@openpresentation/gallery';
 import {toPng, toSvg} from '../dist/index.js';
 import {loadFonts} from '../dist/fonts-node.js';
 import {SCRIPT_FONT_FAMILIES, SCRIPT_FONT_REPLACEMENTS, itemizeScripts} from '../dist/script-fonts.js';
@@ -96,7 +96,7 @@ for (const character of common) assert.ok(faces.some(face => face.font.hasGlyphF
 
 // The gallery catalog's own font-scheme samples (what the gallery shows for each script scheme) are covered by the script faces.
 let schemeSamples = 0;
-for (const [id, scheme] of Object.entries(defaultCatalog.fontSchemes)) {
+for (const [id, scheme] of Object.entries(gallery.fontSchemes)) {
   if (!scheme?.textSample || scheme.languageFamily === 'latin') continue;
   schemeSamples++;
   for (const run of itemizeScripts(scheme.textSample, {})) {

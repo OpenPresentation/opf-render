@@ -22,7 +22,7 @@ import path from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {toPng} from '../dist/index.js';
 // The roboto deck names a gallery font scheme: render with the host catalog registered (the harness default).
-import {defaultCatalog, toSvg} from './catalog-harness.mjs';
+import {gallery, toSvg} from './catalog-harness.mjs';
 import {BUNDLED_FONT_MANIFEST, loadFonts} from '../dist/fonts-node.js';
 import {fontPolicyFor} from '../dist/fonts.js';
 import {isUnmodifiedUpstreamUrl} from '../scripts/font-license.mjs';
@@ -102,7 +102,7 @@ for (const [name, family, repository] of [['raleway', 'Raleway', 'googlefonts/Ra
 // registry.
 const strict = (await loadFonts({pack: 'office'})).registry;
 const selected = new Set(SCHEME_FAMILIES);
-for (const record of Object.values(defaultCatalog.fontSchemes)) for (const family of [record.major, record.minor]) if (fontPolicyFor(family)?.licenseClass === 'open' && !/^Noto /.test(family)) selected.add(family);
+for (const record of Object.values(gallery.fontSchemes)) for (const family of [record.major, record.minor]) if (fontPolicyFor(family)?.licenseClass === 'open' && !/^Noto /.test(family)) selected.add(family);
 for (const family of SCHEME_FAMILIES) assert.ok(selected.has(family) || family === 'Source Sans Pro', `${family} is selected by a font scheme`);
 const NEW_FAMILIES = ['Barlow', 'Anton', 'Figtree', 'Work Sans', 'EB Garamond', 'Archivo Narrow', 'Libre Caslon Text', 'Bitter', 'Raleway', 'Playfair Display'];
 assert.deepEqual(byName('@expo-google-fonts/bitter').reservedFontNames, ['Bitter Pro']);

@@ -3,9 +3,9 @@
 // theme and `cool-horizon` colour scheme, so the host catalog is registered (./catalog-harness.mjs).
 import assert from 'node:assert/strict';
 import { resolveColorRoles } from '@openpresentation/opf/composition';
-import { defaultCatalog, toSvg } from './catalog-harness.mjs';
+import { gallery, toSvg } from './catalog-harness.mjs';
 
-const cool = defaultCatalog.colorSchemes['cool-horizon'];
+const cool = gallery.colorSchemes['cool-horizon'];
 assert.ok(cool, 'the gallery cool-horizon colour scheme');
 const fillOf = (svg, label) => {
   const found = new RegExp(`<(?:tspan|text)[^>]*? fill="(#[0-9A-Fa-f]{6})"[^>]*>${label}</(?:tspan|text)>`).exec(svg);

@@ -111,7 +111,7 @@ export interface ToSvgOptions {
    * Catalogs the host registered (core `Catalog[]`), passed unchanged to core resolution: a reference the document does not
    * embed resolves against the catalog whose `source` its group names, and the first entry is the default catalog for bare ids
    * when the document omits `catalogs.default`. The renderer bundles and fetches no catalog; register the gallery snapshot with
-   * `import { defaultCatalog } from "@openpresentation/opf/catalog"` and `catalogs: [defaultCatalog]`. Omitted: only embedded
+   * `import { gallery } from "@openpresentation/gallery"` and `catalogs: [gallery]`. Omitted: only embedded
    * records resolve, and anything else draws with core's engine defaults (reported as `unresolved-reference`).
    * A malformed value throws core's `OPFCatalogsOptionError` (`code: "invalid-catalogs"`); a reference with an undeclared prefix
    * (`foo:id` without `catalogs.foo`) fails the boundary check (`invalid-opf`, finding `opf/undeclared-catalog`).

@@ -13,7 +13,7 @@ import {toHtml} from '../dist/element.js';
 import {toSvg} from '../dist/svg.js';
 import {copyPreviewFonts} from '../dist/preview-fonts-node.js';
 import {embed} from '@openpresentation/opf';
-import {defaultCatalog} from '@openpresentation/opf/catalog';
+import {gallery} from '@openpresentation/gallery';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 // A module specifier in generated code: forward slashes and a quoted literal, so a Windows path is not read as escapes.
@@ -26,7 +26,7 @@ const deck = embed({name: 'Measured delivery', design: {fontScheme: 'roboto'}, s
   {title: 'First slide', text: 'Exact measured text'},
   {title: 'Second slide', text: 'Exact measured text'},
   {title: 'Third slide', text: 'Exact measured text'},
-]}, {catalogs: [defaultCatalog]}).document;
+]}, {catalogs: [gallery]}).document;
 const fonts = await loadFonts({pack: 'office'});
 const payloads = {};
 for (const pack of ['base', 'office']) {

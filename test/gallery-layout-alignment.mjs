@@ -10,7 +10,7 @@
 // registered as the host catalog, as the gallery does.
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {defaultCatalog, resolvePresentation, toSvg} from './catalog-harness.mjs';
+import {gallery, resolvePresentation, toSvg} from './catalog-harness.mjs';
 
 const fixture = JSON.parse(readFileSync(new URL('./fixtures/gallery-alignment-layouts.json', import.meta.url), 'utf8'));
 assert.equal(fixture.layouts.length, 57, 'the 50 partial and 7 gallery-only layouts audit A flagged');
@@ -19,7 +19,7 @@ assert.equal(fixture.layouts.length, 57, 'the 50 partial and 7 gallery-only layo
 // so their boxes move by design and they are no longer alignment-only layouts; test/placeholder-groups.mjs covers nested
 // records. Any other fixture layout whose host record gains groups must be reviewed the same way.
 const NESTED_RECORDS = ['chart-2x', 'chart-3x'];
-const nested = ({id, document}) => !document.catalogs?.default?.layouts?.[id] && (defaultCatalog.layouts[id]?.placeholders ?? []).some(entry => entry?.type === 'group');
+const nested = ({id, document}) => !document.catalogs?.default?.layouts?.[id] && (gallery.layouts[id]?.placeholders ?? []).some(entry => entry?.type === 'group');
 assert.deepEqual(fixture.layouts.filter(nested).map(layout => layout.id), NESTED_RECORDS);
 
 const anchors = {left: 'start', center: 'middle', right: 'end'};
@@ -51,7 +51,7 @@ for (const {id, document} of fixture.layouts) {
   const base = withoutLayout(document, bound.layout?.composition?.mode);
   const baseBound = resolvePresentation(base).slides[0];
   // Records carry no id in 0.15: the composed layout is the record the document embeds for this id, else the host's.
-  assert.deepEqual(bound.layout, document.catalogs?.default?.layouts?.[id] ?? defaultCatalog.layouts[id], `${id}: the preview resolves the layout`);
+  assert.deepEqual(bound.layout, document.catalogs?.default?.layouts?.[id] ?? gallery.layouts[id], `${id}: the preview resolves the layout`);
   assert.equal(bound.geometry.items.length, baseBound.geometry.items.length, `${id}: the layout adds or drops no composed item`);
 
   // 1. Core resolves one alignment per item from the gallery design; the
