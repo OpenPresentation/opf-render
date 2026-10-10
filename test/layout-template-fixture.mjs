@@ -6,6 +6,8 @@
 // kinds taken from the template's regions, so the renderer goldens draw the slides core's goldens compose.
 import { readFileSync } from 'node:fs';
 import { layoutTemplate } from '@openpresentation/opf/composition';
+import { paginate } from '@openpresentation/opf/pagination';
+import { resolvePresentation } from '../dist/index.js';
 
 export const fixture = JSON.parse(readFileSync(new URL('./fixtures/layout-templates-0.19.json', import.meta.url), 'utf8'));
 export const { layouts } = fixture;
@@ -97,4 +99,24 @@ export function featureDecks() {
       deck: { design, catalogs: { custom: { layouts: Object.fromEntries(used.map((id) => [id, layouts[id]])) } }, slides: cases.map(([, slide]) => slide) },
     };
   });
+}
+
+/**
+ * The template slides above that overflow (core reports `text-overflow`: the content does not fit at `minFontSize`, even in
+ * list columns) put through core's `paginate`, one deck per source slide. Unpaginated, such a slide draws its overflow past
+ * its cell, as OPF does everywhere; these pages are the proof that pagination resolves it on the same layout. Keyed
+ * `paginated <id> <count> <size> page <n>`; `source` is the key of the slide that was paginated.
+ */
+export function paginatedDecks() {
+  const decks = [];
+  for (const id of Object.keys(layouts)) {
+    const { keys, deck } = templateDeck(id);
+    const resolved = resolvePresentation(deck);
+    for (const [index, key] of keys.entries()) {
+      if (!resolved.slides[index].geometry.diagnostics.some((entry) => entry.code === 'text-overflow')) continue;
+      const { presentation } = paginate({ ...deck, slides: [deck.slides[index]] });
+      decks.push({ source: key, keys: presentation.slides.map((_, page) => `paginated ${key} page ${page + 1}`), deck: presentation });
+    }
+  }
+  return decks;
 }
