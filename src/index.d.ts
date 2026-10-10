@@ -106,6 +106,11 @@ export interface ToSvgOptions {
    * never reads a clock; without it a current date is reported as unresolved content.
    */
   date?: string;
+  /**
+   * Stamp drawn elements with their OPF path (`data-opf-path`) and the other `data-opf-*` trace attributes. On a slide with an
+   * OPF 0.19 layout template, everything an item of a region draws is grouped in `<g data-opf-region="<name>">`, and each
+   * column of a list laid out in columns is a group with `data-opf-list-column`, `data-opf-list-start` and `data-opf-list-end`.
+   */
   trace?: boolean;
   /**
    * Catalogs the host registered (core `Catalog[]`), passed unchanged to core resolution: a reference the document does not
