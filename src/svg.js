@@ -9,7 +9,7 @@ import {
   ENGINE_DEFAULT_THEME, ENGINE_DEFAULT_COLOR_SCHEME, ENGINE_DEFAULT_FONT_SCHEME, ENGINE_DEFAULT_CHART_TYPES
 } from "@openpresentation/opf/composition";
 // The renderer is a library: it never imports a catalog. Hosts register theirs (`options.catalogs`, core `Catalog[]`, for
-// example `defaultCatalog` from `@openpresentation/opf/catalog`) and core resolves every reference against them.
+// example `gallery` from `@openpresentation/gallery`) and core resolves every reference against them.
 import {
   hasContentVariables,
   isTemplate,

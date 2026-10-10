@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { examples } from '@openpresentation/opf/examples';
 // FA-23: the renderer registers no catalog. The examples embed the records they use; the harness registers the gallery
 // snapshot as a host does, which changes nothing for a self-contained deck.
-import { defaultCatalog } from '@openpresentation/opf/catalog';
+import { gallery } from '@openpresentation/gallery';
 import {toPng, toSvg} from '../dist/index.js';
 import { diffManifests, readBaseline } from './golden-store.mjs';
 
@@ -39,7 +39,7 @@ const artifactMode = process.env.OPF_GOLDEN_ARTIFACTS;
 const reference = artifactMode === 'changed' ? readBaseline(baselinePath) : undefined;
 const slides = [];
 for (const { file, deck } of corpus) {
-  const svgs = toSvg(deck, { trace: true, catalogs: [defaultCatalog] });
+  const svgs = toSvg(deck, { trace: true, catalogs: [gallery] });
   assert.equal(svgs.length, deck.slides.length, `${file}: slide count`);
   for (const [index, svg] of svgs.entries()) {
     const png = await toPng(svg, { scale });

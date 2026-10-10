@@ -4,11 +4,11 @@ import {loadFonts} from '../dist/fonts-node.js';
 import {toSvg} from '../dist/svg.js';
 import {toHtml} from '../dist/element.js';
 import {embed} from '@openpresentation/opf';
-import {defaultCatalog} from '@openpresentation/opf/catalog';
+import {gallery} from '@openpresentation/gallery';
 
 // OPF 0.15: the renderer registers no catalog, so each deck embeds the font scheme it names (core embed), as a saved
 // document does; every delivery mode then resolves the same records with no host catalog.
-const saved = document => embed(document, {catalogs: [defaultCatalog]}).document;
+const saved = document => embed(document, {catalogs: [gallery]}).document;
 const deck = saved({name: 'Delivery', design: {fontScheme: 'roboto'}, slides: [
   {title: 'One', text: 'Measured body'}, {title: 'Two', text: 'Measured body'}, {title: 'Three', text: 'Measured body'},
 ]});

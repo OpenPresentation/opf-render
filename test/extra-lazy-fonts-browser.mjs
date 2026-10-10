@@ -17,7 +17,7 @@ import {build} from 'esbuild';
 import {chromium} from 'playwright';
 import {loadFonts} from '../dist/fonts-node.js';
 import {splitStartupFaces} from '../dist/fonts-browser.js';
-import {defaultCatalog} from '@openpresentation/opf/catalog';
+import {gallery} from '@openpresentation/gallery';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const outputDirectory = path.resolve(root, process.argv[2] ?? 'artifacts/extra-lazy-fonts');
@@ -41,7 +41,7 @@ const decks = {
   mixed: {name: 'Aptos with code', design: {fontScheme: 'aptos'}, slides: [{id: 'a', title: 'Code review', code: 'const total = 12 + 34;'}]},
 };
 // FA-23: the decks name gallery font schemes; the page registers them, the way a host does (only the records the decks use).
-const catalog = {source: defaultCatalog.source, fontSchemes: {roboto: defaultCatalog.fontSchemes.roboto, aptos: defaultCatalog.fontSchemes.aptos}};
+const catalog = {source: gallery.source, fontSchemes: {roboto: gallery.fontSchemes.roboto, aptos: gallery.fontSchemes.aptos}};
 
 const browser = await chromium.launch({channel: process.platform === 'win32' && !process.env.CI ? 'msedge' : undefined});
 const errors = [];

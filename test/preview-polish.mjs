@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 // The decks name gallery records (the roboto font scheme, every gallery colour scheme), so the host catalog is registered.
-import {defaultCatalog, toSvg} from './catalog-harness.mjs';
+import {gallery, toSvg} from './catalog-harness.mjs';
 import {PATTERN_PRESETS, patternBitmap, patternRuns, colorContrast, metricTrendColor, resolveCodeLanguage} from '@openpresentation/opf/composition';
 
 // RR-07: the preview draws code.language syntax colours, metric.trend arrows and every DrawingML preset pattern.
@@ -46,7 +46,7 @@ for (const language of ['klingon', 'plaintext', undefined]) {
 assert.equal(resolveCodeLanguage('klingon'), undefined);
 
 // Every gallery colour scheme (and a degenerate one) keeps every token colour at >= 4.5:1 on the code panel.
-const colorSchemeIds = Object.keys(defaultCatalog.colorSchemes);
+const colorSchemeIds = Object.keys(gallery.colorSchemes);
 assert.ok(colorSchemeIds.length > 0, 'the gallery has colour schemes');
 for (const scheme of [...colorSchemeIds, {light1: '#000000', dark1: '#000000', accent1: '#000000', accent2: '#000000', accent3: '#000000'}, {light1: '#FFFFFF', dark1: '#FFFFFF', accent1: '#FFFFFF', accent2: '#FFFFFF', accent3: '#FFFFFF'}]) {
   const svg = toSvg(codeDeck({source: SOURCE + '\nclass Box(Base): pass\n@dec\nTrue', language: 'python'}, {colorScheme: scheme}), 1);

@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import { resolveSlideContext } from '@openpresentation/opf';
 import { ENGINE_DEFAULT_FONT_SCHEME } from '@openpresentation/opf/composition';
 import * as bare from '../dist/index.js';
-import { catalogs, defaultCatalog, toSvg, resolvePresentation } from './catalog-harness.mjs';
+import { catalogs, gallery, toSvg, resolvePresentation } from './catalog-harness.mjs';
 
 // A measurement that records the family of every style it is asked about.
 const recorder = () => {
@@ -22,7 +22,7 @@ const recorder = () => {
 const slide = { title: 'Quarterly operating review', text: 'Revenue grew in every region.' };
 const deck = (design, extra = {}) => ({ name: 'Context', ...(design ? { design } : {}), ...extra, slides: [slide, { ...slide, id: 'second' }] });
 const diagnosticsOf = (render) => { const list = []; render((item) => list.push(item)); return list; };
-const GALLERY = defaultCatalog.source;
+const GALLERY = gallery.source;
 
 // A deck font scheme wins over the engine default; the measurement is asked about Roboto and never about Aptos.
 {
@@ -57,7 +57,7 @@ for (const render of [toSvg, bare.toSvg]) {
   assert.equal(bound.design.fonts.body, context.options.fontFamilies.body);
   assert.deepEqual({ width: bound.design.dimensions.width, height: bound.design.dimensions.height }, { width: context.options.width, height: context.options.height });
   assert.deepEqual(bound.design.fontScheme, context.resolved.fontScheme);
-  assert.deepEqual(bound.design.fontScheme, defaultCatalog.fontSchemes.roboto, 'the gallery roboto record');
+  assert.deepEqual(bound.design.fontScheme, gallery.fontSchemes.roboto, 'the gallery roboto record');
   assert.deepEqual(context.diagnostics, []);
 }
 
@@ -71,19 +71,19 @@ for (const render of [toSvg, bare.toSvg]) {
   assert.ok(asDefault.families.has('Tinos'), `a host default font scheme is measured: ${[...asDefault.families]}`);
   const named = { ...deck({ fontScheme: 'acme:host-serif' }), catalogs: { acme: { source } } };
   const sourced = recorder();
-  const sourcedDiagnostics = diagnosticsOf((onDiagnostic) => toSvg(named, { fonts: sourced.fonts, catalogs: [defaultCatalog, hostCatalog], onDiagnostic }));
+  const sourcedDiagnostics = diagnosticsOf((onDiagnostic) => toSvg(named, { fonts: sourced.fonts, catalogs: [gallery, hostCatalog], onDiagnostic }));
   assert.ok(sourced.families.has('Tinos'), `a named group's font scheme is measured: ${[...sourced.families]}`);
   assert.deepEqual(sourcedDiagnostics.filter((item) => item.code === 'unresolved-reference'), []);
   // A bare id never reaches a catalog that is registered but not the host default.
   const second = recorder();
-  const secondDiagnostics = diagnosticsOf((onDiagnostic) => toSvg(deck({ fontScheme: 'host-serif' }), 1, { fonts: second.fonts, catalogs: [defaultCatalog, hostCatalog], onDiagnostic }));
+  const secondDiagnostics = diagnosticsOf((onDiagnostic) => toSvg(deck({ fontScheme: 'host-serif' }), 1, { fonts: second.fonts, catalogs: [gallery, hostCatalog], onDiagnostic }));
   assert.ok(!second.families.has('Tinos'), `a bare id resolves in the host default only: ${[...second.families]}`);
   assert.deepEqual(secondDiagnostics.map((item) => [item.code, item.kind, item.reference, item.group, item.source]), [['unresolved-reference', 'fontSchemes', 'host-serif', 'default', GALLERY]]);
   // The named group resolves only from the catalog registered for its own source: not when that catalog is missing, and not
   // when the group names another source, even though a registered catalog holds a record with the same id.
   for (const [name, presentation, registered, groupSource] of [
-    ['catalog not registered', named, [defaultCatalog], source],
-    ['another source', { ...named, catalogs: { acme: { source: 'https://other.example/font-schemes' } } }, [defaultCatalog, hostCatalog], 'https://other.example/font-schemes'],
+    ['catalog not registered', named, [gallery], source],
+    ['another source', { ...named, catalogs: { acme: { source: 'https://other.example/font-schemes' } } }, [gallery, hostCatalog], 'https://other.example/font-schemes'],
   ]) {
     const { families, fonts } = recorder();
     const diagnostics = diagnosticsOf((onDiagnostic) => toSvg(presentation, 1, { fonts, catalogs: registered, onDiagnostic }));

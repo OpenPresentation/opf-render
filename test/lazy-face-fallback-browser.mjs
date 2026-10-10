@@ -17,7 +17,7 @@ import {fileURLToPath} from 'node:url';
 import {build} from 'esbuild';
 import {chromium} from 'playwright';
 import {loadFonts} from '../dist/fonts-node.js';
-import {defaultCatalog} from '@openpresentation/opf/catalog';
+import {gallery} from '@openpresentation/gallery';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const outputDirectory = path.resolve(root, process.argv[2] ?? 'artifacts/lazy-face-fallback');
@@ -46,7 +46,7 @@ const cases = [
 ];
 
 // FA-23: two decks name gallery font schemes; the page registers them, the way a host does (only the records the decks use).
-const catalog = {source: defaultCatalog.source, fontSchemes: {'open-sans': defaultCatalog.fontSchemes['open-sans'], 'yu-gothic': defaultCatalog.fontSchemes['yu-gothic']}};
+const catalog = {source: gallery.source, fontSchemes: {'open-sans': gallery.fontSchemes['open-sans'], 'yu-gothic': gallery.fontSchemes['yu-gothic']}};
 
 const browser = await chromium.launch({channel: process.platform === 'win32' && !process.env.CI ? 'msedge' : undefined});
 const errors = [];

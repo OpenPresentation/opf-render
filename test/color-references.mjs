@@ -3,15 +3,15 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 // FA-23: the documents name gallery records, so they render with the gallery snapshot registered, as a host does. Core's
 // packed-ecosystem checks copy this file and rewrite its relative imports, so it registers the catalog itself.
-import {defaultCatalog} from '@openpresentation/opf/catalog';
+import {gallery} from '@openpresentation/gallery';
 import {toSvg as toSvgUnregistered} from '../dist/index.js';
-const catalogs = [defaultCatalog];
+const catalogs = [gallery];
 const toSvg = (deck, index, options = {}) => toSvgUnregistered(deck, index, {catalogs, ...options});
 
 const fixture = JSON.parse(
   readFileSync(new URL('fixtures/color-references.opf.json', import.meta.url), 'utf8'),
 );
-const forest = defaultCatalog.colorSchemes['forest-green'];
+const forest = gallery.colorSchemes['forest-green'];
 assert.ok(forest, 'forest-green color scheme');
 
 const svgDeck = fixture.slides.slice(0, 3).map((_, index) =>

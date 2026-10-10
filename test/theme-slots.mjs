@@ -10,9 +10,9 @@
 // replacement after it; the PPTX keeps the selected name. Offline and deterministic; no fonts are loaded.
 import assert from 'node:assert/strict';
 import {LANGUAGES, resolveScriptFonts, scriptFontRole} from '@openpresentation/opf/composition';
-import {catalogs, defaultCatalog, resolvePresentation, toSvg} from './catalog-harness.mjs';
+import {catalogs, gallery, resolvePresentation, toSvg} from './catalog-harness.mjs';
 
-const fontSchemes = defaultCatalog.fontSchemes;
+const fontSchemes = gallery.fontSchemes;
 const scheme = id => fontSchemes[id];
 const vocabulary = tag => LANGUAGES.find(entry => entry.tag === tag);
 const profileOf = presentation => resolvePresentation(structuredClone(presentation)).slides[0].scriptFonts.profile;

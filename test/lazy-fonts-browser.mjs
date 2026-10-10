@@ -14,7 +14,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {build} from 'esbuild';
 import {chromium} from 'playwright';
-import {defaultCatalog} from '@openpresentation/opf/catalog';
+import {gallery} from '@openpresentation/gallery';
 import {BUNDLED_FONT_MANIFEST, loadFonts} from '../dist/fonts-node.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -57,7 +57,7 @@ const decks = {
 };
 
 // FA-23: the host registers one catalog (core Catalog), the default for bare ids: a layout only it has, and the font scheme the Roboto deck names.
-const hostCatalogs = [{source: 'https://host.test/opf', layouts: {'host-bullets': {...defaultCatalog.layouts['list-1x'], name: 'Host bullets'}}, fontSchemes: {roboto: defaultCatalog.fontSchemes.roboto}}];
+const hostCatalogs = [{source: 'https://host.test/opf', layouts: {'host-bullets': {...gallery.layouts['list-1x'], name: 'Host bullets'}}, fontSchemes: {roboto: gallery.fontSchemes.roboto}}];
 const browser = await chromium.launch({channel: process.platform === 'win32' && !process.env.CI ? 'msedge' : undefined});
 const errors = [], unexpected = [];
 try {
