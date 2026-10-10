@@ -1,0 +1,4 @@
+---
+type: changed
+---
+opf#361 (no renderer source change; output changes with core's policy): the renderer applies `font-policy.json`'s `sizeAdjust` and `lineAscent` rows wherever they are, so with core's opf#361 rows the previews of Angsana New (0.75, line ascent 0.83 / 0.86), DilleniaUPC (0.68, 0.82 / 0.85), Sakkal Majalla (0.89, 0.76 / 0.81), Malgun Gothic (1.07) and Nirmala UI (1.07, 0.97 / 0.94) are drawn and measured at the size PowerPoint draws them, and Arabic Typesetting lines move down 0.04 em (0.02 em on a line with a Latin run) for its corrected line ascent 0.74 / 0.80. `test/arabic-size-adjust.mjs` now reads the expected values from the installed core's policy and checks the five new rows exactly when they are present. No golden moves: the example corpus draws no text in these families on the golden path (checked by rendering all 807 example slides with and without the rows: identical SVG).
