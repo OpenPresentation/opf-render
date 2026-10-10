@@ -990,9 +990,10 @@ function renderTextPayload(item, box, bound, options) {
 }
 
 function renderList(item, box, bound, options) {
-  // OPF 0.19 (RR-81): a list core laid out in columns (item.listColumns) draws every column's own fit in its own box. Core
-  // renumbers each column's entries (indexes, paths and markers), so numbering continues across columns; item.text is only
-  // the first column. With trace, each column is a group carrying its index, its box and the half-open item range it holds.
+  // OPF 0.19 (RR-81): a list core laid out in columns (item.listColumns) draws every column's own fit in its own box, and
+  // only those: item.text is then the whole list's fit and is never drawn, or the list would draw twice. Core renumbers each
+  // column's entries (indexes, paths and markers), so numbering continues across columns. With trace, each column is a
+  // group carrying its index, its box and the half-open item range it holds.
   if (Array.isArray(item.listColumns) && item.listColumns.length > 1) {
     const columns=item.listColumns.map((column,index)=>{
       const entries=listEntriesSvg(item,column.text,bound,options).join('\n');
