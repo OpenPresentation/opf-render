@@ -8,7 +8,7 @@ import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 // Font schemes are gallery records: the decks resolve with the gallery catalog registered, as a host renders them.
-import {catalogs, defaultCatalog} from './catalog-harness.mjs';
+import {catalogs, gallery} from './catalog-harness.mjs';
 import {BUNDLED_FONT_MANIFEST, loadFonts} from '../dist/fonts-node.js';
 import {createFontRegistry} from '../dist/font-registry.js';
 import {loadFonts as loadBrowserFonts, lazyFontEntries, lazyFontList, lazyFontsFor, presentationFamilies} from '../dist/fonts-browser.js';
@@ -79,7 +79,7 @@ assert.deepEqual(forPolicy('none', ['Source Sans Pro']), [], 'without the alias 
 // Loading exactly what a document needs resolves like Node with every vendored face loaded.
 const lc = value => value.toLowerCase();
 let compared = 0;
-for (const id of Object.keys(defaultCatalog.fontSchemes)) {
+for (const id of Object.keys(gallery.fontSchemes)) {
   const deck = deckWith(id), partial = eagerOnly();
   const need = needFor(partial, deck);
   if (need.length) partial.addFaces(await Promise.all(need.map(async face => ({family: face.family, weight: face.weight, italic: face.italic, embed: 'used', data: new Uint8Array(await readFile(path.join(root, face.file)))}))));

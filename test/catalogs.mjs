@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { defaultCatalog } from '@openpresentation/opf/catalog';
+import { gallery } from '@openpresentation/gallery';
 import { toSvg, resolvePresentation, engineDefaults, OPFRenderError } from '../dist/index.js';
 import { presentationFamilies } from '../dist/fonts-browser.js';
 import { ENGINE_DEFAULT_COLOR_SCHEME, ENGINE_DEFAULT_FONT_SCHEME, ENGINE_DEFAULT_THEME } from '@openpresentation/opf/composition';
@@ -28,7 +28,7 @@ assert.equal(engineDefaults.fontScheme, ENGINE_DEFAULT_FONT_SCHEME);
 checked++;
 
 const slide = { title: 'Quarterly operating review', text: 'Revenue grew in every region.' };
-const layoutId = Object.keys(defaultCatalog.layouts).find(id => id === 'two-column') ?? Object.keys(defaultCatalog.layouts)[0];
+const layoutId = Object.keys(gallery.layouts).find(id => id === 'two-column') ?? Object.keys(gallery.layouts)[0];
 const deck = { name: 'Catalogs', design: { theme: 'classic' }, slides: [{ ...slide, layout: layoutId }] };
 
 // Without catalogs the references resolve nowhere: one unresolved-reference each, engine defaults, automatic composition.
@@ -45,15 +45,15 @@ const deck = { name: 'Catalogs', design: { theme: 'classic' }, slides: [{ ...sli
 // With the gallery snapshot registered the same document resolves, in every entry point.
 {
   const diagnostics = [];
-  const options = { catalogs: [defaultCatalog], onDiagnostic: entry => diagnostics.push(entry) };
+  const options = { catalogs: [gallery], onDiagnostic: entry => diagnostics.push(entry) };
   const one = toSvg(deck, 1, options), all = toSvg(deck, options);
   assert.equal(all[0], one);
   assert.deepEqual(diagnostics.filter(entry => entry.code === 'unresolved-reference'), []);
-  const bound = resolvePresentation(deck, { catalogs: [defaultCatalog] }).slides[0];
+  const bound = resolvePresentation(deck, { catalogs: [gallery] }).slides[0];
   assert.ok(bound.layout, 'the layout resolves from the registered catalog');
   assert.notEqual(one, toSvg(deck, 1), 'the registered catalog changes what is drawn');
   // The font loaders resolve with the same options.
-  assert.ok(presentationFamilies({ ...deck, design: { fontScheme: 'roboto' } }, { catalogs: [defaultCatalog] }).has('Roboto'));
+  assert.ok(presentationFamilies({ ...deck, design: { fontScheme: 'roboto' } }, { catalogs: [gallery] }).has('Roboto'));
   assert.ok(!presentationFamilies({ ...deck, design: { fontScheme: 'roboto' } }).has('Roboto'));
   checked += 3;
 }
@@ -77,12 +77,12 @@ const deck = { name: 'Catalogs', design: { theme: 'classic' }, slides: [{ ...sli
 {
   assert.throws(() => toSvg(deck, 1, { strictReferences: true }), error => error instanceof OPFRenderError && error.code === 'unresolved-reference'
     && error.details.diagnostics.some(entry => entry.reference === 'classic'));
-  assert.ok(toSvg(deck, 1, { strictReferences: true, catalogs: [defaultCatalog] }).startsWith('<svg'));
+  assert.ok(toSvg(deck, 1, { strictReferences: true, catalogs: [gallery] }).startsWith('<svg'));
   checked++;
 }
 // An undeclared prefix (no catalogs.foo) is a format error: the boundary check rejects the document.
 {
-  assert.throws(() => toSvg({ design: { fontScheme: 'foo:serif' }, slides: [slide] }, 1, { catalogs: [defaultCatalog] }),
+  assert.throws(() => toSvg({ design: { fontScheme: 'foo:serif' }, slides: [slide] }, 1, { catalogs: [gallery] }),
     error => error instanceof OPFRenderError && error.code === 'invalid-opf' && error.findings.some(finding => finding.ruleId === 'opf/undeclared-catalog' && finding.path === '/design/fontScheme'));
   checked++;
 }
@@ -100,7 +100,7 @@ for (const bad of [{}, [{ layouts: {} }], 'https://www.pptx.gallery']) {
   const { build } = await import('esbuild');
   const result = await build({ stdin: { contents: "export { toSvg } from './dist/svg.js';", resolveDir: fileURLToPath(new URL('../', import.meta.url)), loader: 'js' }, bundle: true, platform: 'browser', format: 'esm', write: false, logLevel: 'error' });
   const code = result.outputFiles[0].text;
-  const samples = [...Object.values(defaultCatalog.layouts), ...Object.values(defaultCatalog.narratives ?? {})].map(record => record.description).filter(text => typeof text === 'string' && text.length > 40).slice(0, 40);
+  const samples = [...Object.values(gallery.layouts), ...Object.values(gallery.narratives ?? {})].map(record => record.description).filter(text => typeof text === 'string' && text.length > 40).slice(0, 40);
   assert.ok(samples.length >= 10, 'enough catalog descriptions to probe');
   for (const text of samples) assert.ok(!code.includes(JSON.stringify(text).slice(1, -1)), `the renderer bundle contains catalog data (core's main entry must import none, FA-21): ${text.slice(0, 60)}`);
   checked++;

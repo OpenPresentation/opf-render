@@ -10,14 +10,14 @@
 //     presentationFaces, pendingLazyFonts, ensureLazyFonts, pendingScripts and ensureScripts, and a document that does not
 //     resolve throws what toSvg throws (it is not reported as needing nothing).
 // OPF 0.15: the renderer registers no catalog. Decks that name gallery records (font schemes such as roboto, the example decks'
-// themes and layouts) resolve with the gallery catalog the host registers (`catalogs: [defaultCatalog]`), and a host catalog
+// themes and layouts) resolve with the gallery catalog the host registers (`catalogs: [gallery]`), and a host catalog
 // is a registered `{source, layouts: {id: record}, ...}` keyed by id.
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {examples} from '@openpresentation/opf/examples';
-import {catalogs, defaultCatalog, toSvg} from './catalog-harness.mjs';
+import {catalogs, gallery, toSvg} from './catalog-harness.mjs';
 import {createFontRegistry} from '../dist/font-registry.js';
 import {loadFonts, autoScriptSelection, detectPresentationScripts} from '../dist/fonts-node.js';
 import {loadFonts as loadBrowserFonts, lazyFacesNeeded, lazyFontsFor, presentationFaces, presentationFamilies} from '../dist/fonts-browser.js';
@@ -188,7 +188,7 @@ registry.dispose();
 
 // ---- host catalogs (FF-41 issue 2) ----
 // The host registers its own catalog: the gallery records plus a `bullets` layout (the gallery's list-1x under another id).
-const bullets = [{...defaultCatalog, source: 'https://catalog.example/host', layouts: {...defaultCatalog.layouts, bullets: {...defaultCatalog.layouts['list-1x'], name: 'Bullets'}}}];
+const bullets = [{...gallery, source: 'https://catalog.example/host', layouts: {...gallery.layouts, bullets: {...gallery.layouts['list-1x'], name: 'Bullets'}}}];
 const catalogDeck = {name: 'x', design: {fontScheme: 'aptos'}, slides: [{layout: 'bullets', title: 'A', items: ['b']}]};
 // A layout id no registered catalog has never throws: the slide composes with no layout and the render reports one
 // `unresolved-reference` for the layout.

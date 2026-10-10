@@ -6,13 +6,13 @@
 import assert from 'node:assert/strict';
 import {ENGINE_DEFAULT_FONT_SCHEME, resolveFontFamilies} from '@openpresentation/opf/composition';
 import {paginate} from '@openpresentation/opf/pagination';
-import {catalogs, defaultCatalog, engineDefaults, toPng, toSvg} from './catalog-harness.mjs';
+import {catalogs, gallery, engineDefaults, toPng, toSvg} from './catalog-harness.mjs';
 import { loadFonts } from '../dist/fonts-node.js';
 
 // Parity with core's exported engine default: the renderer re-exports it, and it draws as the gallery's aptos scheme.
 assert.deepEqual(engineDefaults.fontScheme, ENGINE_DEFAULT_FONT_SCHEME);
 assert.deepEqual(resolveFontFamilies(ENGINE_DEFAULT_FONT_SCHEME), {heading: 'Aptos Display', body: 'Aptos', code: 'Roboto Mono'});
-assert.deepEqual(resolveFontFamilies(ENGINE_DEFAULT_FONT_SCHEME), resolveFontFamilies(defaultCatalog.fontSchemes.aptos));
+assert.deepEqual(resolveFontFamilies(ENGINE_DEFAULT_FONT_SCHEME), resolveFontFamilies(gallery.fontSchemes.aptos));
 
 const slide = { id: 't', title: 'Quarterly operating review', text: 'Revenue grew in every region.' };
 const custom = { name: 'Theme without font scheme', design: { theme: 'bare' }, catalogs: { custom: { themes: { bare: { name: 'Bare' } } } }, slides: [slide] };
