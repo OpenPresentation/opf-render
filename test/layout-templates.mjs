@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { resolvePresentation, toSvg } from '../dist/index.js';
 import * as harness from './catalog-harness.mjs';
-import { featureDecks, layouts, templateDeck } from './layout-template-fixture.mjs';
+import { featureDecks, layouts, paginatedDecks, templateDeck } from './layout-template-fixture.mjs';
 
 // OPF 0.19 (RR-81): the renderer draws layout-template slides from core's geometry (SlideComposition.regions and the
 // items core places in them) and adds nothing of its own: cards are core's frameBox, a bled region reaches the slide edge
@@ -112,6 +112,89 @@ assert.ok(cards > 0 && cards < regionItems, `cards checked: ${cards}`);
 assert.ok(bled >= 25, `bled pictures checked: ${bled}`);
 assert.ok(columnLists >= 5, `lists in columns checked: ${columnLists}`);
 
+// Overflow and pagination. A sample slide whose content does not fit at minFontSize (even in list columns) carries core's
+// text-overflow and draws its overflow past its cell, as OPF does everywhere; core's paginate resolves it on the same layout.
+// Every page paginate makes draws with no text-overflow (from core or from the renderer) and with every element of a region
+// inside that region's box (trace attributes; the box already includes bleed, the tolerance covers strokes and rounding).
+const TOLERANCE = 1.5;
+// Each region group of a traced SVG with the open tags it contains, skipping what a clip or transform positions.
+const regionGroups = (svg) => {
+  const groups = [], stack = [];
+  for (const match of svg.matchAll(/<(\/?)([a-zA-Z]+)\b([^>]*?)(\/?)>/g)) {
+    const [, closing, name, attrs, selfClosing] = match;
+    if (closing) { if (name === 'g' || name === 'defs' || name === 'clipPath') stack.pop(); continue; }
+    const region = attr(attrs, 'data-opf-region');
+    const hidden = name === 'defs' || name === 'clipPath' || attr(attrs, 'transform') !== undefined || attr(attrs, 'clip-path') !== undefined;
+    const parent = stack.at(-1);
+    const frame = { group: region !== undefined ? { region, tags: [] } : parent?.group, hidden: hidden || parent?.hidden };
+    if (region !== undefined) groups.push(frame.group);
+    else if (frame.group && !frame.hidden) frame.group.tags.push({ name, attrs });
+    if (!selfClosing && (name === 'g' || name === 'defs' || name === 'clipPath')) stack.push(frame);
+  }
+  return groups;
+};
+const outside = (tag, box) => {
+  const n = (name) => Number(attr(tag.attrs, name));
+  const right = box.x + box.width + TOLERANCE, bottom = box.y + box.height + TOLERANCE, left = box.x - TOLERANCE, top = box.y - TOLERANCE;
+  const rect = (x, y, w, h) => x < left || y < top || x + w > right || y + h > bottom;
+  if ((tag.name === 'rect' || tag.name === 'image') && attr(tag.attrs, 'width') !== undefined) return rect(n('x') || 0, n('y') || 0, n('width'), n('height'));
+  if (attr(tag.attrs, 'data-opf-box-width') !== undefined) {
+    if (rect(n('data-opf-box-x'), n('data-opf-box-y'), n('data-opf-box-width'), n('data-opf-box-height'))) return true;
+  }
+  const lines = attr(tag.attrs, 'data-opf-rich-lines');
+  if (lines) return JSON.parse(lines.replaceAll('&quot;', '"')).some((line) => line.y < top || line.y + line.height > bottom);
+  if (tag.name === 'text' && attr(tag.attrs, 'y') !== undefined) return n('x') < left || n('x') > right || n('y') < top || n('y') > bottom;
+  if (tag.name === 'circle') return n('cx') - n('r') < left || n('cx') + n('r') > right || n('cy') - n('r') < top || n('cy') + n('r') > bottom;
+  if (tag.name === 'line') return [n('x1'), n('x2')].some((x) => x < left || x > right) || [n('y1'), n('y2')].some((y) => y < top || y > bottom);
+  return false;
+};
+let paginatedPages = 0, checkedElements = 0;
+const overflowing = new Map(decks.flatMap(({ keys, deck }) => resolvePresentation(deck).slides.map((bound) => [keys[bound.index], bound.geometry.diagnostics.filter((entry) => entry.code === 'text-overflow').length])));
+const paginated = paginatedDecks();
+assert.ok(paginated.length >= 10, `overflowing sample slides paginated: ${paginated.length}`);
+// The check bites: unpaginated, these slides draw region elements outside their region box.
+for (const { keys, deck } of [templateDeck('agenda'), templateDeck('table-beside')]) {
+  const svgs = toSvg(deck, { trace: true });
+  for (const bound of resolvePresentation(deck).slides) {
+    if (!['agenda 5 long', 'agenda 6 long', 'table-beside 5 long', 'table-beside 6 long'].includes(keys[bound.index])) continue;
+    const boxes = new Map(bound.geometry.regions.map((region) => [region.name, region.box]));
+    assert.ok(regionGroups(svgs[bound.index]).some((group) => group.tags.some((tag) => outside(tag, boxes.get(group.region)))), `${keys[bound.index]}: overflow is drawn outside its region before pagination`);
+  }
+}
+for (const name of ['agenda 5 long', 'agenda 6 long', 'list 5 long', 'list 6 long', 'faq 5 long', 'faq 6 long', 'table-beside 5 long', 'table-beside 6 long', 'timeline 5 long', 'timeline 6 long']) {
+  assert.ok(overflowing.get(name) > 0, `${name} carries text-overflow before pagination`);
+  assert.ok(paginated.some(({ source }) => source === name), `${name} is paginated`);
+}
+for (const { source, keys, deck } of paginated) {
+  assert.ok(overflowing.get(source) > 0, `${source} carries text-overflow before pagination`);
+  assert.ok(keys.length > 1, `${source} continues on more than one page`);
+  const drawn = [];
+  const svgs = toSvg(deck, { trace: true, onDiagnostic: (entry) => drawn.push(entry) });
+  assert.deepEqual(drawn.filter((entry) => entry.code === 'text-overflow'), [], `${source}: the renderer reports no text-overflow on its pages`);
+  for (const bound of resolvePresentation(deck).slides) {
+    const key = keys[bound.index], geometry = bound.geometry;
+    paginatedPages++;
+    assert.equal(deck.slides[bound.index].layout, source.split(' ')[0], `${key}: continues on the same layout`);
+    assert.deepEqual(geometry.diagnostics.filter((entry) => entry.code === 'text-overflow'), [], `${key}: no text-overflow`);
+    const boxes = new Map(geometry.regions.map((region) => [region.name, region.box]));
+    for (const group of regionGroups(svgs[bound.index])) {
+      const box = boxes.get(group.region);
+      assert.ok(box, `${key}: ${group.region} is a region of the page`);
+      for (const tag of group.tags) {
+        checkedElements++;
+        assert.ok(!outside(tag, box), `${key}: <${tag.name}> of ${group.region} lies outside its region box ${JSON.stringify(box)}: ${tag.attrs.slice(0, 200)}`);
+      }
+    }
+    // Blocks no region accepts (a layout with no overflow region) are drawn below the grid, untagged: inside the slide.
+    for (const item of geometry.items) {
+      if (item.region !== undefined || ['tag', 'title', 'subtitle'].includes(item.field)) continue;
+      const box = item.frameBox ?? item.box;
+      assert.ok(box.x >= -TOLERANCE && box.y >= -TOLERANCE && box.x + box.width <= geometry.width + TOLERANCE && box.y + box.height <= geometry.height + TOLERANCE, `${key}: ${item.path} below the grid lies inside the slide`);
+    }
+  }
+}
+assert.ok(checkedElements > 1000, `paginated elements checked: ${checkedElements}`);
+
 // 0.18 slides (opf-layout/v1 records from the gallery snapshot) carry no template metadata and draw as before.
 const v1 = { design: { contentBox: true }, slides: [
   { layout: 'list-2x', title: 'Two lists', blocks: [{ items: ['One', 'Two', 'Three'] }, { items: ['Four', 'Five'] }] },
@@ -126,4 +209,4 @@ for (const bound of v1Resolved.slides) {
 for (const svg of harness.toSvg(v1, { trace: true })) {
   assert.ok(!svg.includes('data-opf-region') && !svg.includes('data-opf-list-column'), 'v1 slides carry no template trace');
 }
-console.log(`Layout templates: ${regionItems} region items, ${cards} cards, ${bled} bled pictures and ${columnLists} lists in columns drawn from core's geometry.`);
+console.log(`Layout templates: ${regionItems} region items, ${cards} cards, ${bled} bled pictures and ${columnLists} lists in columns drawn from core's geometry; ${paginated.length} overflowing slides paginate into ${paginatedPages} pages with no text-overflow and ${checkedElements} region elements inside their region boxes.`);

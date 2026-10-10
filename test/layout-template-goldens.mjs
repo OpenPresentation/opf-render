@@ -4,11 +4,12 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { toPng, toSvg } from '../dist/index.js';
-import { featureDecks, fixture, layouts, templateDeck } from './layout-template-fixture.mjs';
+import { featureDecks, fixture, layouts, paginatedDecks, templateDeck } from './layout-template-fixture.mjs';
 
 // OPF 0.19 (RR-81): SVG and PNG goldens of the 28 built-in layout templates, each with 1 to 6 blocks of short and of long
 // content (test/layout-template-fixture.mjs, the slides core's composition goldens compose) and the feature slides (lists
-// in columns, bled regions beside cards, mirrored templates), at 1280 x 720 with bundled
+// in columns, bled regions beside cards, mirrored templates) and the pages core's paginate makes of every sample slide
+// that overflows (the paginated group), at 1280 x 720 with bundled
 // fonts and core's estimated measurement. The SVG hash is of the traced SVG (trace: true), so it also pins the region
 // tags and list-column groups; the PNG hash is resvg's raster at the golden scale. Exact hashes, no tolerance.
 //
@@ -35,8 +36,8 @@ const next = {
 };
 const previous = (() => { try { return JSON.parse(readFileSync(baselinePath, 'utf8')); } catch { return undefined; } })();
 const changed = [];
-const features = featureDecks();
-for (const { keys, deck } of [...ids.map(templateDeck), ...features]) {
+const features = featureDecks(), paginated = paginatedDecks();
+for (const { keys, deck } of [...ids.map(templateDeck), ...features, ...paginated]) {
   const svgs = toSvg(deck, { trace: true });
   assert.equal(svgs.length, keys.length, `${keys[0]}: slide count`);
   for (const [index, svg] of svgs.entries()) {
@@ -46,7 +47,7 @@ for (const { keys, deck } of [...ids.map(templateDeck), ...features]) {
     if (JSON.stringify(previous?.entries?.[keys[index]]) !== JSON.stringify(entry)) changed.push({ key: keys[index], png });
   }
 }
-assert.equal(Object.keys(next.entries).length, 28 * 6 * 2 + features.reduce((sum, { keys }) => sum + keys.length, 0));
+assert.equal(Object.keys(next.entries).length, 28 * 6 * 2 + [...features, ...paginated].reduce((sum, { keys }) => sum + keys.length, 0));
 
 if (update || promote) {
   mkdirSync(output, { recursive: true });
