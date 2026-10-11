@@ -1,6 +1,6 @@
 {
   "name": "@openpresentation/opf-render",
-  "version": "0.18.1",
+  "version": "0.18.2",
   "opf": {
     "requiresUnreleasedCore": "0.19.0"
   },
@@ -145,7 +145,7 @@
     "test:forced-colors-browser": "node test/forced-colors-browser.mjs artifacts/forced-colors"
   },
   "dependencies": {
-    "@openpresentation/opf": "^0.18.3",
+    "@openpresentation/opf": "^0.18.4",
     "bidi-js": "1.1.0",
     "fontkit": "^2.0.4",
     "harfbuzzjs": "1.6.3",
