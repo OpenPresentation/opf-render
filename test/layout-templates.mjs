@@ -6,7 +6,7 @@ import { featureDecks, layouts, paginatedDecks, templateDeck } from './layout-te
 // OPF 0.19 (RR-81): the renderer draws layout-template slides from core's geometry (SlideComposition.regions and the
 // items core places in them) and adds nothing of its own: cards are core's frameBox, a bled region reaches the slide edge
 // with no card, a list in columns draws every column core broke it into, and with trace every item of a region is grouped
-// under data-opf-region. 0.18 (opf-layout/v1) slides draw exactly as before (test/golden.mjs keeps their hashes).
+// under data-opf-region. Golden changes are reviewed separately without promoting baselines here.
 const attr = (attrs, name) => new RegExp(`(?:^|\\s)${name}="([^"]*)"`).exec(attrs)?.[1];
 const near = (a, b, message) => assert.ok(Math.abs(Number(a) - b) <= 0.006, `${message}: ${a} vs ${b}`);
 const openTags = (svg) => [...svg.matchAll(/<([a-z]+)\b([^>]*?)\/?>/g)].map((match) => ({ name: match[1], attrs: match[2], index: match.index }));
@@ -210,3 +210,27 @@ for (const svg of harness.toSvg(v1, { trace: true })) {
   assert.ok(!svg.includes('data-opf-region') && !svg.includes('data-opf-list-column'), 'v1 slides carry no template trace');
 }
 console.log(`Layout templates: ${regionItems} region items, ${cards} cards, ${bled} bled pictures and ${columnLists} lists in columns drawn from core's geometry; ${paginated.length} overflowing slides paginate into ${paginatedPages} pages with no text-overflow and ${checkedElements} region elements inside their region boxes.`);
+
+// Host-registered gallery2 layouts preserve all three alignment choices in traced text.
+const anchors = {left: 'start', center: 'middle', right: 'end'};
+let aligned = 0;
+for (const id of Object.keys(layouts)) for (const alignment of Object.keys(anchors)) {
+  const deck = {slides: [{layout: id, title: 'Alignment probe', blocks: [{text: 'Region alignment probe'}],
+    design: {titleAlignment: alignment, contentAlignment: alignment}}]};
+  const bound = harness.resolvePresentation(deck).slides[0];
+  assert.deepEqual(bound.layout, layouts[id], `${id}: the host resolves the actual gallery2 record`);
+  const svg = harness.toSvg(deck, 1, {trace: true});
+  const tags = openTags(svg);
+  let drawn = 0;
+  for (const item of bound.geometry.items.filter(item => item.type === 'text' && typeof item.value === 'string')) {
+    assert.equal(item.alignment, alignment, `${id}/${alignment}: ${item.path} composed alignment`);
+    const texts = tags.filter(tag => tag.name === 'text' && attr(tag.attrs, 'data-opf-path') === item.path);
+    assert.ok(texts.length, `${id}/${alignment}: ${item.path} traced text`);
+    for (const text of texts) assert.equal(attr(text.attrs, 'text-anchor') ?? 'start', anchors[alignment], `${id}/${alignment}: ${item.path} SVG anchor`);
+    drawn += texts.length;
+  }
+  assert.ok(drawn, `${id}/${alignment}: actual aligned text was checked`);
+  aligned++;
+}
+assert.equal(aligned, 84);
+console.log(`Gallery2 alignment: ${aligned} registered layout/alignment cases preserve traced anchors.`);
