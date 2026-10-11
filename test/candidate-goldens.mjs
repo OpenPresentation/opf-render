@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import {readFileSync,mkdtempSync,mkdirSync,symlinkSync} from 'node:fs';
+import {readFileSync,mkdtempSync,mkdirSync,symlinkSync,writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
-import {candidatePlan,verifyManifest,verifyHead,allowedPaths,safeTarget,verifyGraph,verifyGuard,regularTree,readArtifact} from '../scripts/candidate-goldens.mjs';
+import {candidatePlan,verifyManifest,verifyHead,allowedPaths,safeTarget,verifyGraph,verifyGuard,regularTree,readArtifact,requireNewBaseline,trustedTemplate} from '../scripts/candidate-goldens.mjs';
 const plan=candidatePlan({core:'a'.repeat(40),gallery:'b'.repeat(40),name:'rr-83-v2',selection:'both'});
 for(const core of ['main','a'.repeat(39),'A'.repeat(40),'$(id)'])assert.throws(()=>candidatePlan({...plan,core,name:'x'}));
 for(const name of ['../x','x/y','cover-centering',''])assert.throws(()=>candidatePlan({...plan,name}));
@@ -35,3 +35,9 @@ assert.throws(()=>readArtifact(path.join(nested,'gallery/escape')),/regular|alia
 
 assert.match(push,/path: tools/);assert.match(push,/tools\/scripts\/candidate-goldens.mjs/);assert.doesNotMatch(push,/node scripts\/candidate-goldens/);
 assert.ok(text.indexOf('Reproduce unchanged main')<text.indexOf('Generate fixed 807'));
+
+assert.throws(()=>verifyManifest({...previous,source:{...previous.source,sha256:'b'.repeat(64)}},previous,1,false,previous.source),/selected source/);
+const dangling=path.join(nested,'dangling.json');symlinkSync(path.join(outside,'missing.json'),dangling);assert.throws(()=>regularTree(dangling),/symlink/);assert.throws(()=>safeTarget(nested,'dangling.json'),/symlink/);
+const danglingNested=path.join(nested,'gallery/dangling.json');symlinkSync(path.join(outside,'missing-again.json'),danglingNested);assert.throws(()=>regularTree(path.join(nested,'gallery')),/symlink/);
+const newRoot=mkdtempSync(path.join(tmpdir(),'candidate-new-'));mkdirSync(path.join(newRoot,'historical'));assert.throws(()=>requireNewBaseline(newRoot,'historical'),/already exists/);
+const wrongTemplate=path.join(newRoot,'template.json');writeFileSync(wrongTemplate,JSON.stringify(previous));assert.throws(()=>trustedTemplate(wrongTemplate),/reviewed PR215/);

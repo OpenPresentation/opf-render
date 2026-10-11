@@ -127,7 +127,7 @@ jobs:
         run: |
           if [ "$SELECTION" != templates ]; then OPF_GOLDEN_ARTIFACTS=changed node test/golden.mjs --update; fi
           if [ "$SELECTION" != examples ]; then node test/layout-template-goldens.mjs --update; fi
-          node "$GITHUB_WORKSPACE/tools/scripts/candidate-goldens.mjs" verify --root "$PWD" --core "$CORE" --gallery "$GALLERY" --name "$NAME" --selection "$SELECTION"
+          node "$GITHUB_WORKSPACE/tools/scripts/candidate-goldens.mjs" verify --workspace "$GITHUB_WORKSPACE" --root "$PWD" --core "$CORE" --gallery "$GALLERY" --name "$NAME" --selection "$SELECTION"
           cp "$GITHUB_WORKSPACE/guard/core-sha.txt" artifacts/guard-core-sha.txt
           cp "$GITHUB_WORKSPACE/guard/renderer-sha.txt" artifacts/guard-renderer-sha.txt
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -160,6 +160,19 @@ jobs:
           ref: ${{ inputs.renderer-ref }}
           path: opf-render
           persist-credentials: false
+      # Source data only: the trusted tools helper recomputes digests without running candidate code.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: OpenPresentation/opf
+          ref: ${{ inputs.core-ref }}
+          path: opf
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: OpenPresentation/gallery
+          ref: ${{ inputs.gallery-ref }}
+          path: gallery-candidate
+          persist-credentials: false
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: candidate-goldens
@@ -172,7 +185,7 @@ jobs:
         run: |
           tip="$(git ls-remote "https://x-access-token:$TOKEN@github.com/$GITHUB_REPOSITORY.git" "refs/heads/$BRANCH" | cut -f1)"
           test "$tip" = "$HEAD"
-          node "$GITHUB_WORKSPACE/tools/scripts/candidate-goldens.mjs" apply --root "$PWD" --head "$HEAD" --artifact "$ARTIFACT" --core "$CORE" --gallery "$GALLERY" --name "$NAME" --selection "$SELECTION"
+          node "$GITHUB_WORKSPACE/tools/scripts/candidate-goldens.mjs" apply --workspace "$GITHUB_WORKSPACE" --root "$PWD" --head "$HEAD" --artifact "$ARTIFACT" --core "$CORE" --gallery "$GALLERY" --name "$NAME" --selection "$SELECTION"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- test/golden
