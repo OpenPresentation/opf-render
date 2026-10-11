@@ -41,7 +41,7 @@ if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.ur
  else if(command==='link')linkSources(get('workspace'),plan);
  else if(command==='guard')verifyGuard(readArtifact(get('candidate')),readBaseline(get('baseline')));
  else if(command==='verify'){
-  if(plan.examples)verifyManifest(JSON.parse(readFileSync(path.join(root,'artifacts/golden/candidate.json'))),readBaseline(path.join(root,'test/golden/opf-examples-png.cover-centering')),807);
+  if(plan.examples)verifyManifest(JSON.parse(readFileSync(path.join(root,'artifacts/golden/candidate.json'))),readBaseline(path.join(toolsRoot,'test/golden/opf-examples-png.cover-centering')),807);
   if(plan.templates)verifyManifest(JSON.parse(readFileSync(path.join(root,'artifacts/template-goldens/candidate.json'))),JSON.parse(readFileSync(path.join(root,plan.template))),498,true);
   const candidates={};if(plan.examples)candidates.examples=readArtifact(path.join(root,'artifacts/golden/candidate.json'));if(plan.templates)candidates.templates=readArtifact(path.join(root,'artifacts/template-goldens/candidate.json'));
   const graph={renderer:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),core:plan.core,gallery:plan.gallery,selection:get('selection'),sources:Object.fromEntries(Object.entries(candidates).map(([key,value])=>[key,value.source.sha256]))};
@@ -51,9 +51,9 @@ if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.ur
   assert.equal(execFileSync('git',['status','--porcelain','--untracked-files=all'],{cwd:root,encoding:'utf8'}),'','promotion checkout must be clean');
   const artifact=get('artifact'),candidates={};if(plan.examples)candidates.examples=readArtifact(path.join(artifact,'golden/candidate.json'));if(plan.templates)candidates.templates=readArtifact(path.join(artifact,'template-goldens/candidate.json'));
   verifyGraph(readArtifact(path.join(artifact,'candidate-graph.json')),plan,get('head'),candidates);
-  if(plan.examples){verifyManifest(candidates.examples,readBaseline(path.join(root,'test/golden/opf-examples-png.cover-centering')),807);safeTarget(root,plan.baseline);}
+  if(plan.examples){verifyManifest(candidates.examples,readBaseline(path.join(toolsRoot,'test/golden/opf-examples-png.cover-centering')),807);safeTarget(root,plan.baseline);}
   if(plan.templates){verifyManifest(candidates.templates,readArtifact(path.join(root,plan.template)),498,true);safeTarget(root,plan.template);}
-  if(plan.examples){const next=candidates.examples,previous=readBaseline(path.join(root,'test/golden/opf-examples-png.cover-centering'));verifyManifest(next,previous,807);writeBaseline(safeTarget(root,plan.baseline),next);}
+  if(plan.examples){const next=candidates.examples,previous=readBaseline(path.join(toolsRoot,'test/golden/opf-examples-png.cover-centering'));verifyManifest(next,previous,807);writeBaseline(safeTarget(root,plan.baseline),next);}
   if(plan.templates){const next=candidates.templates;verifyManifest(next,JSON.parse(readFileSync(path.join(root,plan.template))),498,true);writeFileSync(safeTarget(root,plan.template),JSON.stringify(next,null,1)+'\n');}
   const files=execFileSync('git',['status','--porcelain','--untracked-files=all'],{cwd:root,encoding:'utf8'}).split('\n').filter(Boolean).map(line=>line.slice(3));allowedPaths(plan,files);
  }else throw Error('unknown command');
