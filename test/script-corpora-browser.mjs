@@ -46,9 +46,14 @@ try {
   });
   await page.setContent('<main></main>');
   await page.evaluate(async list => {
-    for (const [url, face] of list) document.fonts.add(await new FontFace(`QF${face.index}`, `url(${url})`, {weight: String(face.weight), style: face.italic ? 'italic' : 'normal'}).load());
+    for (const [url, face] of list) {
+      const descriptors = {weight: String(face.weight), style: face.italic ? 'italic' : 'normal'};
+      document.fonts.add(await new FontFace(`QF${face.index}`, `url(${url})`, descriptors).load());
+      // Real renderer SVG names the family, whereas the isolated span cases use QF aliases.
+      document.fonts.add(await new FontFace(face.family, `url(${url})`, descriptors).load());
+    }
     await document.fonts.ready;
-  }, [...served].map(([url, face]) => [url, {index: face.index, weight: faces[face.index].weight, italic: faces[face.index].italic}]));
+  }, [...served].map(([url, face]) => [url, {index: face.index, family: faces[face.index].family, weight: faces[face.index].weight, italic: faces[face.index].italic}]));
   const observed = await page.evaluate(list => {
     const host = document.querySelector('main');
     return list.map(item => {
