@@ -1,13 +1,3 @@
-// FF-51: the gallery layouts that audit A flagged "export shape placement
-// ignores layout that changes preview" differ from the no-layout default only
-// in text alignment (the gallery derives design.titleAlignment and
-// design.contentAlignment from the layout record). The preview must anchor
-// every text to core's per-item alignment inside the same box the default
-// uses, so the PPTX export, which writes the same alignment inside the same
-// box, places every shape exactly as the preview does. OPF 0.15: most fixture
-// documents embed their layout record under `catalogs.default` (the gallery
-// source), the rest name it only; every document renders with the gallery
-// registered as the host catalog, as the gallery does.
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {resolvePresentation, toSvg} from './catalog-harness.mjs';
@@ -22,7 +12,6 @@ for (const {document} of fixture.layouts) {
   delete document.catalogs;
   delete document.slides[0].layout;
 }
-const NESTED_RECORDS = [];
 
 const anchors = {left: 'start', center: 'middle', right: 'end'};
 const attribute = (attrs, name) => new RegExp(`(?:^|\\s)${name}="([^"]*)"`).exec(attrs)?.[1];
@@ -46,21 +35,19 @@ const boxes = svg => [...svg.matchAll(/<(rect|image|circle|path|line)\b[^>]*>/g)
 
 let traced = 0, layoutEffects = 0;
 for (const {id, document} of fixture.layouts) {
-  if (NESTED_RECORDS.includes(id)) continue;
   const slide = document.slides[0];
   assert.equal(slide.layout, undefined);
   const bound = resolvePresentation(document).slides[0];
   const base = withoutLayout(document, bound.layout?.composition?.mode);
   const baseBound = resolvePresentation(base).slides[0];
-  // Records carry no id in 0.15: the composed layout is the record the document embeds for this id, else the host's.
   assert.equal(bound.layout, undefined, `${id}: automatic composition has no obsolete layout record`);
-  assert.equal(bound.geometry.items.length, baseBound.geometry.items.length, `${id}: the layout adds or drops no composed item`);
+  assert.equal(bound.geometry.items.length, baseBound.geometry.items.length, `${id}: alignment adds or drops no composed item`);
 
   // 1. Core resolves one alignment per item from the gallery design; the
   //    layout leaves every composed box where the default puts it.
   for (const [index, item] of bound.geometry.items.entries()) {
     assert.equal(item.alignment, expectedAlignment(slide, item.field), `${id}: ${item.path} item.alignment`);
-    assert.deepEqual(item.box, baseBound.geometry.items[index].box, `${id}: ${item.path} box with and without the layout`);
+    assert.deepEqual(item.box, baseBound.geometry.items[index].box, `${id}: ${item.path} box with and without alignment`);
   }
 
   // 2. Every traced text anchors at its item's alignment.
@@ -76,7 +63,7 @@ for (const {id, document} of fixture.layouts) {
   //    text anchor and its x origin: no box, image, marker or path moves.
   const [a, b] = [tokens(toSvg(document, 1)), tokens(toSvg(base, 1))];
   assert.equal(a.length, b.length, `${id}: preview token count`);
-  assert.deepEqual(boxes(a.join('')), boxes(b.join('')), `${id}: non-text elements with and without the layout`);
+  assert.deepEqual(boxes(a.join('')), boxes(b.join('')), `${id}: non-text elements with and without alignment`);
   let changes = 0;
   for (let index = 0; index < a.length; index++) if (a[index] !== b[index]) {
     assert.match(a[index], /^<(text|tspan)\b/, `${id}: preview difference outside text: ${a[index].slice(0, 120)}`);
@@ -84,7 +71,7 @@ for (const {id, document} of fixture.layouts) {
     assert.equal(strip(a[index]), strip(b[index]), `${id}: preview difference beyond the text anchor: ${a[index].slice(0, 120)}`);
     changes++;
   }
-  assert.ok(changes > 0, `${id}: the layout changes text alignment in the preview`);
+  assert.ok(changes > 0, `${id}: the design changes text alignment in the preview`);
   layoutEffects++;
 }
-console.log(`Gallery layout alignment passed: ${fixture.layouts.length - NESTED_RECORDS.length} flagged layouts (${NESTED_RECORDS.length} now nested) (pptx-gallery ${fixture.gallery.slice(0, 7)}), ${traced} traced texts at core's item alignment, ${layoutEffects} layouts changing only the text anchor with every composed box unchanged.`);
+console.log(`Historical content/design alignment passed: ${fixture.layouts.length} samples (source gallery ${fixture.gallery.slice(0, 7)}), ${traced} traced texts at core's item alignment, ${layoutEffects} designs changing only text anchors with every composed box unchanged.`);
