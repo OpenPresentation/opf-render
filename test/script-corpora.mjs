@@ -18,7 +18,7 @@ import assert from 'node:assert/strict';
 import {mkdir, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {LANGUAGES} from '@openpresentation/opf/composition';
-import {defaultCatalog} from '@openpresentation/opf/catalog';
+import {gallery as defaultCatalog} from '@openpresentation/gallery';
 import {toPng, toSvg} from '../dist/index.js';
 import {loadFonts} from '../dist/fonts-node.js';
 import {SCRIPT_FONT_FAMILIES, SCRIPT_FONT_REPLACEMENTS, itemizeScripts} from '../dist/script-fonts.js';

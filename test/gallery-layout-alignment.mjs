@@ -10,17 +10,19 @@
 // registered as the host catalog, as the gallery does.
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {defaultCatalog, resolvePresentation, toSvg} from './catalog-harness.mjs';
+import {resolvePresentation, toSvg} from './catalog-harness.mjs';
 
 const fixture = JSON.parse(readFileSync(new URL('./fixtures/gallery-alignment-layouts.json', import.meta.url), 'utf8'));
 assert.equal(fixture.layouts.length, 57, 'the 50 partial and 7 gallery-only layouts audit A flagged');
 
-// FA-26: chart-2x and chart-3x (named here, not embedded) now pair each chart with its note in a column placeholder group,
-// so their boxes move by design and they are no longer alignment-only layouts; test/placeholder-groups.mjs covers nested
-// records. Any other fixture layout whose host record gains groups must be reviewed the same way.
-const NESTED_RECORDS = ['chart-2x', 'chart-3x'];
-const nested = ({id, document}) => !document.catalogs?.default?.layouts?.[id] && (defaultCatalog.layouts[id]?.placeholders ?? []).some(entry => entry?.type === 'group');
-assert.deepEqual(fixture.layouts.filter(nested).map(layout => layout.id), NESTED_RECORDS);
+// The 0.19 gallery uses region templates rather than these historical alignment-only IDs.
+// Keep the original 57 content/design samples as alignment regressions, dropping their
+// obsolete catalog records; actual gallery2 region templates have their own suite.
+for (const {document} of fixture.layouts) {
+  delete document.catalogs;
+  delete document.slides[0].layout;
+}
+const NESTED_RECORDS = [];
 
 const anchors = {left: 'start', center: 'middle', right: 'end'};
 const attribute = (attrs, name) => new RegExp(`(?:^|\\s)${name}="([^"]*)"`).exec(attrs)?.[1];
@@ -46,12 +48,12 @@ let traced = 0, layoutEffects = 0;
 for (const {id, document} of fixture.layouts) {
   if (NESTED_RECORDS.includes(id)) continue;
   const slide = document.slides[0];
-  assert.equal(slide.layout, id);
+  assert.equal(slide.layout, undefined);
   const bound = resolvePresentation(document).slides[0];
   const base = withoutLayout(document, bound.layout?.composition?.mode);
   const baseBound = resolvePresentation(base).slides[0];
   // Records carry no id in 0.15: the composed layout is the record the document embeds for this id, else the host's.
-  assert.deepEqual(bound.layout, document.catalogs?.default?.layouts?.[id] ?? defaultCatalog.layouts[id], `${id}: the preview resolves the layout`);
+  assert.equal(bound.layout, undefined, `${id}: automatic composition has no obsolete layout record`);
   assert.equal(bound.geometry.items.length, baseBound.geometry.items.length, `${id}: the layout adds or drops no composed item`);
 
   // 1. Core resolves one alignment per item from the gallery design; the

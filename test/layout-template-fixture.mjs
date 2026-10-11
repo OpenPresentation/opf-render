@@ -1,15 +1,15 @@
 // OPF 0.19 (RR-81): sample decks for the 28 built-in layout templates, shared by test/layout-templates.mjs and
-// test/layout-template-goldens.mjs. The templates are core's design-doc fixture (test/fixtures/layout-templates-0.19.json,
-// copied from core packages/javascript/test/fixtures at opf#577) until @openpresentation/gallery 2.0.0 (RR-80) ships them;
-// replace the fixture with the package then. The sample content mirrors core's composition goldens
-// (packages/javascript/test/template-goldens.test.mjs): each template with 1 to 6 blocks of short and of long content, the
+// test/layout-template-goldens.mjs. These use the final gallery2 candidate's actual records;
+// the original core design-doc fixture remains available for baseline attribution. The sample content
+// mirrors core's composition goldens (packages/javascript/test/template-goldens.test.mjs): each template
+// with 1 to 6 blocks of short and long content, the
 // kinds taken from the template's regions, so the renderer goldens draw the slides core's goldens compose.
-import { readFileSync } from 'node:fs';
+import { gallery } from '@openpresentation/gallery';
 import { layoutTemplate } from '@openpresentation/opf/composition';
 import { paginate } from '@openpresentation/opf/pagination';
 import { resolvePresentation } from '../dist/index.js';
 
-export const fixture = JSON.parse(readFileSync(new URL('./fixtures/layout-templates-0.19.json', import.meta.url), 'utf8'));
+export const fixture = { source: 'gallery2 e0a7eee2dfe996e680b34a907cabfe41905e6d99', layouts: gallery.layouts };
 export const { layouts } = fixture;
 
 // A picture that shows its crop: a diagonal gradient, a ring and a frame, drawn by the renderer as an embedded SVG image

@@ -31,7 +31,7 @@ const ids = Object.keys(layouts);
 assert.equal(ids.length, 28, 'the 0.19 built-in set has 28 layouts');
 const next = {
   version: 1,
-  source: { fixture: 'test/fixtures/layout-templates-0.19.json', sha256: sha256(JSON.stringify(fixture)), templates: ids.length },
+  source: { fixture: '@openpresentation/gallery layouts (see layout-template-fixture.mjs)', sha256: sha256(JSON.stringify(fixture)), templates: ids.length },
   format: 'svg-png-sha256', scale, systemFonts: false, trace: true, entries: {},
 };
 const previous = (() => { try { return JSON.parse(readFileSync(baselinePath, 'utf8')); } catch { return undefined; } })();
