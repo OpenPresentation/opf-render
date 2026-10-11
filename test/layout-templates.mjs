@@ -219,6 +219,9 @@ for (const id of Object.keys(layouts)) for (const alignment of Object.keys(ancho
     design: {titleAlignment: alignment, contentAlignment: alignment}}]};
   const bound = harness.resolvePresentation(deck).slides[0];
   assert.deepEqual(bound.layout, layouts[id], `${id}: the host resolves the actual gallery2 record`);
+  for (const [path, value] of [['slides.0.title', 'Alignment probe'], ['slides.0.blocks.0.text', 'Region alignment probe']]) {
+    assert.ok(bound.geometry.items.some(item => item.path === path && item.value === value), `${id}/${alignment}: authored ${path} is composed`);
+  }
   const svg = harness.toSvg(deck, 1, {trace: true});
   const tags = openTags(svg);
   let drawn = 0;
