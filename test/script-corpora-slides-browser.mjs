@@ -16,8 +16,8 @@ const corpora = await loadCorpora();
 // The pinned faces are served to the page by route below, so the SVGs carry no embedded font data (embeddedFonts: []).
 const prepared = await loadFonts({pack: 'office', scripts: 'all'}), {registry} = prepared;
 const faces = registry.describeFaces(), files = prepared.fontFiles;
-// fontkit limits recorded in the fixture (Myanmar, one Syriac word, Nastaliq): the deviation they bound at 100 px scales with the font size.
-const limits = new Map(corpora.knownShapingLimits.flatMap(limit => Object.entries(limit.samples).map(([id, bound]) => [`${limit.family}|${id}`, bound])));
+// Loaded Node handles use HarfBuzz: no fallback-only width tolerance applies to these slides.
+const limits = new Map(); // Loaded HarfBuzz handles have no fontkit width exceptions.
 const cases = [];
 for (const group of corpora.groups) {
   for (const sample of group.samples) {
