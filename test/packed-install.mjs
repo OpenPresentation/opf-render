@@ -95,7 +95,6 @@ console.log('Vendored fonts load from the installed package.');
   await writeFile(path.join(consumer,'player-entries.mjs'),`import assert from 'node:assert/strict';
 import {mkdtemp,rm,readFile} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
-import {createRequire} from 'node:module';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
