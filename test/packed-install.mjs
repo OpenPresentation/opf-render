@@ -40,10 +40,14 @@ console.log('Lean install: SVG works; PNG, raster PDF and font packs name what t
   // to the tarball and asks npm for a version it does not have yet (ETARGET); the override resolves the edge to the tarball too.
   // Core is a direct dependency at this package's range, so npm keeps the one core at the top level next to it.
   const tarball=`file:${path.join(temporary,packed.filename)}`,coreName='@openpresentation/opf';
-  await writeFile(path.join(consumer,'package.json'),JSON.stringify({private:true,type:'module',dependencies:{[rootManifest.name]:tarball,[coreName]:rootManifest.dependencies[coreName]},overrides:{[rootManifest.name]:`$${rootManifest.name}`}}));
+  await writeFile(path.join(consumer,'package.json'),JSON.stringify({private:true,type:'module',dependencies:{[rootManifest.name]:tarball,[coreName]:rootManifest.dependencies[coreName],'@openpresentation/gallery':rootManifest.devDependencies['@openpresentation/gallery']},overrides:{[rootManifest.name]:`$${rootManifest.name}`}}));
   const peers=[...Object.keys(rootManifest.peerDependencies)].filter(name=>/^@expo-google-fonts\/(roboto|roboto-mono|arimo|caladea|cousine|gelasio|tinos|noto-sans)$/.test(name)||['sharp','@resvg/resvg-js','pdf-lib'].includes(name)).map(name=>`${name}@${rootManifest.devDependencies[name]}`);
   assert.equal(peers.length,11);
   npm(['install','--ignore-scripts','--no-fund','--no-audit',...peers],consumer);
+  const galleryRoot=path.join(consumer,'node_modules/@openpresentation/gallery');
+  assert.ok((await realpath(galleryRoot)).startsWith((await realpath(path.join(consumer,'node_modules')))+path.sep),'Packed test gallery must be installed inside its consumer');
+  assert.equal(JSON.parse(await readFile(path.join(galleryRoot,'package.json'),'utf8')).version,'2.0.0','Packed fixture tests use the published gallery2 contract');
+  console.log('Packed fixture gallery2 is installed inside the consumer; renderer runtime dependencies remain unchanged.');
   const installed=path.join(consumer,'node_modules/@openpresentation/opf-render');
   const manifest=JSON.parse(await readFile(path.join(installed,'package.json'),'utf8'));
   assert.equal(manifest.version,JSON.parse(await readFile(path.join(root,'package.json'),'utf8')).version);
