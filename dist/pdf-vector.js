@@ -748,7 +748,7 @@ class Converter {
         if (own[attribute] === undefined) continue;
         const value = String(own[attribute]).trim();
         const values = value.split(/\s*,\s*|\s+/);
-        if (values.length && values.every(item => parseLength(item) === 0)) continue;
+        if (values.length && values.every(item => parseLength(item, { reference: 1 }) === 0)) continue;
         const mark = `${attribute}=${value}`;
         if (ctx.page.reportedAttributes.has(mark)) continue;
         ctx.page.reportedAttributes.add(mark);

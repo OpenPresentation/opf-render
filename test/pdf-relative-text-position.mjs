@@ -8,6 +8,8 @@ assert.equal(createHash('sha256').update(ordinary).digest('hex'),'1444c8fe65d4e4
 for(const attrs of [' dx="0" dy="0"',' dx="0 0px -0.0" dy="0%,+0e3"'])assert.deepEqual(await toPdf(svg(text(attrs)),{compress:false,strict:true}),ordinary,'valid zero positioning lists are no-ops');
 for(const body of [
  text(' dx="80" dy="30"'),
+ text(' dx="50%"'),
+ text('', '<tspan><tspan dy="-25%">Offset</tspan></tspan>'),
  text('', '<tspan dx="80" dy="30">Offset</tspan>'),
  text('', '<tspan><tspan dx="1 2 3">Offset</tspan></tspan>'),
  text(' text-anchor="middle" textLength="100" lengthAdjust="spacingAndGlyphs"', '<tspan dy="12">Offset</tspan>'),
