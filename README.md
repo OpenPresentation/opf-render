@@ -1,6 +1,6 @@
 # OPF Render
 
-**OPF 0.18 (RR-73, RR-74, unreleased; requires core 0.18).** One shape for every engine: `toX(deck, slides?, options?)`. The second argument is a slide number (one result), a selection (`"1-3"`, `"1,3-5"`, `"2-"`, `[1, 3]`; a list of results) or the options, told apart by type, and slides count from 1. Renamed and removed outright (no aliases); an old option fails with `invalid-render-options` or `invalid-conversion-option` and names its replacement:
+**OPF 0.18 (RR-73, RR-74; requires core 0.18).** One shape for every engine: `toX(deck, slides?, options?)`. The second argument is a slide number (one result), a selection (`"1-3"`, `"1,3-5"`, `"2-"`, `[1, 3]`; a list of results) or the options, told apart by type, and slides count from 1. Renamed and removed outright (no aliases); an old option fails with `invalid-render-options` or `invalid-conversion-option` and names its replacement:
 
 | 0.17 | 0.18 |
 | --- | --- |
@@ -12,14 +12,14 @@
 | `mode: "raster"` | `raster: true` (vector is the default) |
 | `fontDirs` | `fonts`: the handle, or font folders (a path or a list) for SVG input |
 
-**OPF 0.15 (FA-23, unreleased; requires core 0.15).** Catalogs are registered by the host, and every picture is an image background or an image block. The breaking changes are listed in `changes/fa-23-opf-0-15.md` (the next CHANGELOG section); the [0.15 design](https://github.com/OpenPresentation/opf/blob/main/docs/programs/format-audit/0.15-design.md) explains them.
+**OPF 0.15 (FA-23; requires core 0.15).** Catalogs are registered by the host, and every picture is an image background or an image block. The breaking changes are recorded in [CHANGELOG.md](CHANGELOG.md); the [0.15 design](https://github.com/OpenPresentation/opf/blob/main/docs/programs/format-audit/0.15-design.md) explains them.
 
 - The renderer bundles, looks up and fetches no catalog. Every entry point (`toSvg`, `resolvePresentation`, the font loaders' `renderOptions`, `/player`, `<opf-deck>`) takes core's `catalogs: Catalog[]` and passes it unchanged to core resolution. Register the gallery snapshot yourself: `import { gallery } from '@openpresentation/gallery'` and `toSvg(deck, { catalogs: [gallery] })`. `strictReferences: true` fails with `unresolved-reference` instead of falling back.
 - What resolves nowhere draws with core's engine defaults (`engineDefaults` is `{ theme, colorScheme, fontScheme, chartType }`: core's `ENGINE_DEFAULT_THEME`, `ENGINE_DEFAULT_COLOR_SCHEME`, `ENGINE_DEFAULT_FONT_SCHEME`) and is reported once per reference as `unresolved-reference`.
 - An image background (`design.background: { type: "image", src, alt, fit, focus, opacity, recolor, overlay }`, or an image source string) draws from core's `geometry.backgroundImage`: the canvas colour, the picture (cover, contain, stretch or tile; recolor and opacity on the pixels only), then the overlay (the whole slide or an edge band). `alt` is the picture's accessible name; without it the picture is decorative.
 - Every content picture is an image block drawn from `item.image`: frame, fit (`cover`, `contain`, `stretch`; default `design.imageFit`, else `cover`), focus, shape mask, border, opacity, recolor and overlay, and a placed block (`placement`) at its edge band.
 
-**Lighter install (RR-63, unreleased, 0.16.0).** `pdf-lib`, `@resvg/resvg-js`, `sharp` and every `@expo-google-fonts/*` font package are optional peer dependencies, loaded on first use: an SVG-only install holds none of them. Add what you export (see [Install](#install-what-to-add-for-what-rr-63)); a missing converter rejects with `converter-missing`. New `/png` and `/pdf` entries beside `/svg`. Rendered output is unchanged.
+**Lighter install (RR-63, 0.16.0).** `pdf-lib`, `@resvg/resvg-js`, `sharp` and every `@expo-google-fonts/*` font package are optional peer dependencies, loaded on first use: an SVG-only install holds none of them. Add what you export (see [Install](#install-what-to-add-for-what-rr-63)); a missing converter rejects with `converter-missing`. New `/png` and `/pdf` entries beside `/svg`. Rendered output is unchanged.
 
 **0.14.0 (RR-55, with core 0.14.0, opf-pptx 0.14.0 and opf-editor 0.14.0).** One fonts handle, whole-deck and one-slide render functions, and core's slide context. This release renames and deletes outright (no aliases; the CHANGELOG has the old-to-new table):
 
