@@ -858,7 +858,7 @@ function drawLines(c, spec, series, stacks, { plot, band, at, categorySlot = (i)
   }
   // RR-35: data labels sit beside each point, over every line.
   if (c.dataLabels) series.forEach((s, j) => stacks[j].forEach((point, i) => {
-    if (point) drawPointLabel(c, labelString(c, { category: c.rows[i][0] === null || c.rows[i][0] === undefined ? "" : String(c.rows[i][0]), value: s.values[i], format: s.format }), [plot.x + (i + 0.5) * band, at(point.to)], `${c.path}.data.rows.${i}.${s.column}`);
+    if (point) drawPointLabel(c, labelString(c, { category: c.rows[i][0] === null || c.rows[i][0] === undefined ? "" : String(c.rows[i][0]), value: s.values[i], format: s.format }), [plot.x + (categorySlot(i) + 0.5) * band, at(point.to)], `${c.path}.data.rows.${i}.${s.column}`);
   }));
 }
 
@@ -874,7 +874,7 @@ function drawAreas(c, series, stacks, { plot, band, at, crossing, categorySlot =
   if (c.dataLabels) series.forEach((s, j) => stacks[j].forEach((point, i) => {
     if (!point) return;
     const lowerEdge = point.from === 0 ? crossing : at(point.from);
-    drawCenteredLabel(c, labelString(c, { category: c.rows[i][0] === null || c.rows[i][0] === undefined ? "" : String(c.rows[i][0]), value: s.values[i], format: s.format }), plot.x + (i + 0.5) * band, (lowerEdge + at(point.to)) / 2, `${c.path}.data.rows.${i}.${s.column}`, seriesColor(c, j));
+    drawCenteredLabel(c, labelString(c, { category: c.rows[i][0] === null || c.rows[i][0] === undefined ? "" : String(c.rows[i][0]), value: s.values[i], format: s.format }), plot.x + (categorySlot(i) + 0.5) * band, (lowerEdge + at(point.to)) / 2, `${c.path}.data.rows.${i}.${s.column}`, seriesColor(c, j));
   }));
 }
 
