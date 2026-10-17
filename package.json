@@ -142,7 +142,7 @@
     "test:forced-colors-browser": "node test/forced-colors-browser.mjs artifacts/forced-colors"
   },
   "dependencies": {
-    "@openpresentation/opf": "^0.20.4",
+    "@openpresentation/opf": "^0.20.5",
     "bidi-js": "1.1.0",
     "fontkit": "^2.0.4",
     "harfbuzzjs": "1.6.3",
