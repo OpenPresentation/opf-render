@@ -1,0 +1,5 @@
+# RR-90 example baseline for core 0.22 (core opf#717)
+
+Core opf#717 (0.22.0: header and footer zones on the content inset, table text at the body size, the tag following `titleAlignment`, rich numeric cells) moved the ordinary example rasters, but the renderer's own ordinary baseline (`opf-examples-png.rr85-metric-centering/`, selected while core's metric default is centered) was not refreshed with the adoption PR (#257 noted "after the roll, open the usual renderer baseline PR"). Renderer main therefore no longer reproduced its own baseline against core main: `test/golden.mjs` reported 662 changed rasters, which also made the guard of the `regenerate-candidate-goldens` workflow ("Reproduce unchanged main") fail for every candidate.
+
+This change is the usual baseline refresh: fixtures only, written by the `regenerate-goldens` workflow in the pinned image against core main (`Depends-On: OpenPresentation/opf#717`), no renderer code. The changed slides are the ones with header or footer furniture and tables, as the core change predicts; see the PR description for the review.
