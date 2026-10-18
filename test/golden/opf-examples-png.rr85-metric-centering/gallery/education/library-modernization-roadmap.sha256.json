@@ -2,44 +2,44 @@
   "deck": "gallery/education/library-modernization-roadmap.opf.json",
   "entries": {
     "gallery/education/library-modernization-roadmap.opf.json#0": {
-      "sha256": "2d33269f49f27404f12decf95ed7ed67fdea7a85b60a0e984461eb3a6b0c2fc9",
-      "bytes": 5011
+      "sha256": "c1507fcf1a147d33565ab55a30e953ee2349aa603c5d439663827b2be670bc9d",
+      "bytes": 4985
     },
     "gallery/education/library-modernization-roadmap.opf.json#1": {
-      "sha256": "08251b692af37404952cb48b72ae159abc4c2409c6e76813696d9868734937b7",
-      "bytes": 5735
+      "sha256": "cc9d2613ce25da1e87eff0d7fc3b52fa7e640a39b4e79980904e7bea218e199d",
+      "bytes": 5719
     },
     "gallery/education/library-modernization-roadmap.opf.json#2": {
-      "sha256": "bd042e77a4c019adb7c45b4e05d6c78f5e71be08261867abedabd1aa15d61e81",
-      "bytes": 4327
+      "sha256": "e8fe864c772cc82ef08cd98e42ebdeb4f71fba29c0c7c2cbe7c0c6e94da25015",
+      "bytes": 4318
     },
     "gallery/education/library-modernization-roadmap.opf.json#3": {
-      "sha256": "5437554201118f49fa80c28a19e0feda8b676cd852e845044e45ccbac12a19fc",
-      "bytes": 5157
+      "sha256": "94d5eb8b7df15625f21185e3aebd0b8a3970391d4a0b591f43b9279f285f4864",
+      "bytes": 6802
     },
     "gallery/education/library-modernization-roadmap.opf.json#4": {
-      "sha256": "326e609e7a30b035b9b4112900f6c471932cf80a0bf4c007ff5434bde2e7cf83",
-      "bytes": 6134
+      "sha256": "0e65873f85007fef6ce7feed8d39ad31622c7c1017a0120391fef084263f385a",
+      "bytes": 6107
     },
     "gallery/education/library-modernization-roadmap.opf.json#5": {
-      "sha256": "7e8360702256a59ea371a0ca608e9fa7b97f7523e7f648fe4881141c335fe95b",
-      "bytes": 11600
+      "sha256": "543a46afb700415e40bcdf7427e398081c0d62675c7cae65eeb0d1ffdcef9f5b",
+      "bytes": 13064
     },
     "gallery/education/library-modernization-roadmap.opf.json#6": {
-      "sha256": "51ee4c98a0cb7d8239fd6b57a711be089f7142578928c1110afb7b1cba409fe0",
-      "bytes": 8353
+      "sha256": "9cd70e183679af85865b08d1c76b9c6b56db26434589b8a775db8160eee51a02",
+      "bytes": 8362
     },
     "gallery/education/library-modernization-roadmap.opf.json#7": {
-      "sha256": "e52063fc0ff0d27e2ed804808e2df8e3c2e257146ae5fdcca41323b3758afaf2",
-      "bytes": 3287
+      "sha256": "ac3ae90c87eec625fc938727d27b8b30a83687636624c29fedee29a281fca1ee",
+      "bytes": 3252
     },
     "gallery/education/library-modernization-roadmap.opf.json#8": {
-      "sha256": "3df333d941376f9d5e623680bef6e9eda65f29b16cbb38d1392ba081fdeadc54",
-      "bytes": 4169
+      "sha256": "dbf345a63bdd34eb903921820e54be09615fea2a4d9ea8d0a92ec584872dd00d",
+      "bytes": 4147
     },
     "gallery/education/library-modernization-roadmap.opf.json#9": {
-      "sha256": "95b57958ac15ac3476595149c91de2747b681e0f04a8eb6f0bfd1799cd5311c0",
-      "bytes": 9130
+      "sha256": "728e50974dd1ac7f27e806fea13d1ec1b3fcecbcfe9621c4674c15c5a5364c68",
+      "bytes": 9110
     }
   }
 }

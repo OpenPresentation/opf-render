@@ -2,28 +2,28 @@
   "deck": "gallery/education/campus-energy-action-brief.opf.json",
   "entries": {
     "gallery/education/campus-energy-action-brief.opf.json#0": {
-      "sha256": "50f5017b5ee41d4d2876b313298764c15040b91200887728d4a8e57798d90690",
-      "bytes": 7080
+      "sha256": "7c7f0a20659701aef26f5307c60f8343b8209a1fe34682e751ac4d95ac9dc6d3",
+      "bytes": 7068
     },
     "gallery/education/campus-energy-action-brief.opf.json#1": {
-      "sha256": "aa186043c764e38469311ae61b711739cb1f3422b8e39f86ed65781a8899ba02",
-      "bytes": 8713
+      "sha256": "896ba033a7c1e1274e52f01beb1a62a6c57190cdd055711cfcebfcabba14aaa5",
+      "bytes": 8685
     },
     "gallery/education/campus-energy-action-brief.opf.json#2": {
-      "sha256": "cbdec6e48ebee5862268b83e788f10351ffaf97eeeb61763f2ac6a66923d82d6",
-      "bytes": 5104
+      "sha256": "1e3a9db3d0d0710262b2dcabbfaa0f3b76c2568f66ff34f431b5017114f18d56",
+      "bytes": 5095
     },
     "gallery/education/campus-energy-action-brief.opf.json#3": {
-      "sha256": "074a5e02ee1d5e2855d2e8b319a0f7c9ac1153de4ead703be6b733d3ab12c640",
-      "bytes": 7650
+      "sha256": "fda212242bf91ef89cd4b4c1d21f562b9902ad9c1f32b032d69ce9bce867a702",
+      "bytes": 10298
     },
     "gallery/education/campus-energy-action-brief.opf.json#4": {
-      "sha256": "91f6a86034073c23a82dcb9fd56812c3d70c1e21bf93398ae1f9d58b180d7b64",
-      "bytes": 9696
+      "sha256": "caeb6fe05eafc1b588abd4d6a3a34351afd254ecef43a1a2f43ee1863ddd6b15",
+      "bytes": 9700
     },
     "gallery/education/campus-energy-action-brief.opf.json#5": {
-      "sha256": "324d7f6e3a11cddbc5b453f4d75b7ca79fbbedf49935a148df458c0b9f9ea666",
-      "bytes": 10173
+      "sha256": "d05ee8f0b1599295d2caf98e33b714224cbbe15dacba0228eeada6ede96a8972",
+      "bytes": 10172
     }
   }
 }

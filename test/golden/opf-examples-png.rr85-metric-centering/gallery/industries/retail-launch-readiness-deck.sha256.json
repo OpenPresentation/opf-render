@@ -2,28 +2,28 @@
   "deck": "gallery/industries/retail-launch-readiness-deck.opf.json",
   "entries": {
     "gallery/industries/retail-launch-readiness-deck.opf.json#0": {
-      "sha256": "d4afacaccfecacebfae33b5f535683c6f8f4c66bd426a18ff404b6c5a8d18a32",
-      "bytes": 5029
+      "sha256": "596e1603583d328b7a1189cb7c9c9bac1669f8ac234992e07a0af69809457d9f",
+      "bytes": 5033
     },
     "gallery/industries/retail-launch-readiness-deck.opf.json#1": {
-      "sha256": "5ed8226ea56b80489ab19a50231f793b01cb39355c948d5b3c2d84b01442a4ca",
-      "bytes": 7192
+      "sha256": "445d418b41af8a702a8aa8033b542b9553d8b0c109b6567560934a681132d587",
+      "bytes": 7194
     },
     "gallery/industries/retail-launch-readiness-deck.opf.json#2": {
-      "sha256": "22abac3512e6bc8f0ba4f123e16cfc65cc42717d967f6a4972242b5c71106c02",
-      "bytes": 4351
+      "sha256": "b835aa99141bce95c418afaced8fdd7fbec82aca3c350aa12b37049bc4f373b9",
+      "bytes": 4353
     },
     "gallery/industries/retail-launch-readiness-deck.opf.json#3": {
-      "sha256": "e8bdd87244236f8759773ce8607fb7e60da45ead0c982c79467a9445ece1c338",
-      "bytes": 6502
+      "sha256": "3e258f83223833e58503e3e9620a949b0169f9225be6dc58e409320c07ad6ef1",
+      "bytes": 8991
     },
     "gallery/industries/retail-launch-readiness-deck.opf.json#4": {
-      "sha256": "90d630c9b24113041e9ade87f22797dfcfe390251ced0f2a07f8866337d7071c",
+      "sha256": "fc165f3a3b88b5c0b208616c1cc7bafe8c1e839b67f85bec10b73b105b06872d",
       "bytes": 7913
     },
     "gallery/industries/retail-launch-readiness-deck.opf.json#5": {
-      "sha256": "0e69b783425572fd89118841b67b5251413372d456db880fe5236f19eb25ab6c",
-      "bytes": 7759
+      "sha256": "52b7473ad5bea58689b58946ca280958f35a760ce4f0ee13600f95184576a317",
+      "bytes": 7760
     }
   }
 }

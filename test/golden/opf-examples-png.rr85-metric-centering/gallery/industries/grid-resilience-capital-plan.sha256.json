@@ -2,28 +2,28 @@
   "deck": "gallery/industries/grid-resilience-capital-plan.opf.json",
   "entries": {
     "gallery/industries/grid-resilience-capital-plan.opf.json#0": {
-      "sha256": "ec2c6aa23562c2507cb208c15b399b57362ca5608c6930f4e0c7ecb81a0d932f",
-      "bytes": 6566
+      "sha256": "46984b23d4bc384a5f38bc622fdc734cb991ffbcf22c5042efb476fbe806c2dc",
+      "bytes": 6581
     },
     "gallery/industries/grid-resilience-capital-plan.opf.json#1": {
-      "sha256": "593db3c3bbcf78c4dee86ca551079ec4aa0c5669adb0fccbbd94bc93302c5be4",
-      "bytes": 8891
+      "sha256": "bd2f48f7439d8030afdb72fd932d99175fbda6c4c406b928ed4a73956e08008a",
+      "bytes": 8868
     },
     "gallery/industries/grid-resilience-capital-plan.opf.json#2": {
-      "sha256": "2c5ee77b48a9b30f77db843773507326947415cf7b8468fed363e026e6c6d410",
-      "bytes": 6007
+      "sha256": "187836bce26da145746da0bb20242d9f46ed06fcfe39657905b3c0bcbb63d0cf",
+      "bytes": 6001
     },
     "gallery/industries/grid-resilience-capital-plan.opf.json#3": {
-      "sha256": "809da03e71a26a4b9ff881483c87255cffac4d9b34c7d147eaf7c276d468079f",
-      "bytes": 7536
+      "sha256": "08c82be82a613cbd909b72ae6b3f0d22cf71af8e2c3cf7e072fdd757ffd49315",
+      "bytes": 10195
     },
     "gallery/industries/grid-resilience-capital-plan.opf.json#4": {
-      "sha256": "6c22e0038ebacb2677b1afe0250aa6e61f392d559fb992b0e2fa714b333a0da8",
-      "bytes": 9485
+      "sha256": "2fd21d413251bd2601469293eadef096e88f5cf661e79e2c038b0bff5c67952e",
+      "bytes": 9506
     },
     "gallery/industries/grid-resilience-capital-plan.opf.json#5": {
-      "sha256": "22e2e4c367ea8137d238c2b1ed8ebf5684bd796ad411a2f2e53edf35c73f74fd",
-      "bytes": 10782
+      "sha256": "317b2a8a2d854785f59a2e817c5007fe88a8825ac0f70544c7e934d3d8ba62ed",
+      "bytes": 10810
     }
   }
 }

@@ -2,28 +2,28 @@
   "deck": "gallery/industries/fan-experience-operations-brief.opf.json",
   "entries": {
     "gallery/industries/fan-experience-operations-brief.opf.json#0": {
-      "sha256": "4eb39eaac31b3030ac2e96274595a1724eae6315bc7a029692b5281f5a1e46cb",
-      "bytes": 8745
+      "sha256": "f1064992345d67fad3da3c3bfb05f58ed1113f41957a128275a2bade67066f25",
+      "bytes": 8822
     },
     "gallery/industries/fan-experience-operations-brief.opf.json#1": {
-      "sha256": "86584759c5a7c66274732bf73b807383c7979c006810c37b3f1e4ee538bbde0c",
-      "bytes": 10610
+      "sha256": "1d65f840b4b9967437388a4aa23aea14c0ea9e5b11ed4af65caa7b99dcab847e",
+      "bytes": 10675
     },
     "gallery/industries/fan-experience-operations-brief.opf.json#2": {
-      "sha256": "53270a6ad4f293d3791a89e87dfd8b9982160222de29e4b2f2f5ba5b392e2035",
-      "bytes": 7924
+      "sha256": "04a7e9d997e468bd2c9b5f4ec934aa6f83d895b82c7732a1de85407fa4d86f49",
+      "bytes": 8002
     },
     "gallery/industries/fan-experience-operations-brief.opf.json#3": {
-      "sha256": "50e68a7f33689851956eecc5f5d0557cc376e7448b810cc7a66af07d7c258ec5",
-      "bytes": 8894
+      "sha256": "e9619a0f89494d6d8b8b5373099ec7485ebb28c1660aa4d3ce0f0fd5c6056534",
+      "bytes": 11293
     },
     "gallery/industries/fan-experience-operations-brief.opf.json#4": {
-      "sha256": "f8fc5fcb298a9c0a2cbde3daa2525ba92394482b72120836c31d29e3ad00f381",
-      "bytes": 12325
+      "sha256": "d2a6ca1b28fe4f82326ab01cf032fc773852550e683ccad7a10505c3e4090f3f",
+      "bytes": 12396
     },
     "gallery/industries/fan-experience-operations-brief.opf.json#5": {
-      "sha256": "40c3fdea2051341cdc1beb6fdb725b825915918801baa65a311fdca7f8fb558a",
-      "bytes": 12648
+      "sha256": "36d20a99251ff972c1431e2fed53fae26957edce6dcb6774a0304d95203a0cbb",
+      "bytes": 12716
     }
   }
 }

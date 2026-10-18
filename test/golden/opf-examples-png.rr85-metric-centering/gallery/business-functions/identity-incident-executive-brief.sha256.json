@@ -2,28 +2,28 @@
   "deck": "gallery/business-functions/identity-incident-executive-brief.opf.json",
   "entries": {
     "gallery/business-functions/identity-incident-executive-brief.opf.json#0": {
-      "sha256": "4997c2d09e76a059c0656876ede8f5d8205f60807dac6a36b6366b0fd3010d71",
-      "bytes": 4420
+      "sha256": "62e3e894a254fbfae831b5450aa9c6cad9cf14494896c3eb3101cce4254c10f5",
+      "bytes": 4368
     },
     "gallery/business-functions/identity-incident-executive-brief.opf.json#1": {
-      "sha256": "18a1ab6faef383065df7c0e8789c7a3d4576bbe7d27395b5fc7405e0ee1422c4",
-      "bytes": 5593
+      "sha256": "a559193fd463e5554da46a506eeb9ef1a67c82767e8cb1e5c73c1a57774e81e9",
+      "bytes": 5555
     },
     "gallery/business-functions/identity-incident-executive-brief.opf.json#2": {
-      "sha256": "86479b8fce17c9311b2f0ced766325b7fa04dfdc232f34e087e07dda859763fa",
-      "bytes": 4969
+      "sha256": "05635e873decbbce2e8f7ba854c528d30cea553d40c8df271cd0ac95479304da",
+      "bytes": 4939
     },
     "gallery/business-functions/identity-incident-executive-brief.opf.json#3": {
-      "sha256": "db096346bdc8f7fa4c1a6dbd6713e68e6fff897ba4494bcea0e42f36f6eb4d0d",
-      "bytes": 5098
+      "sha256": "580dc3526ae3d39a98fe094800341e46917a520a76e38626089bade29f6e6e8c",
+      "bytes": 6666
     },
     "gallery/business-functions/identity-incident-executive-brief.opf.json#4": {
-      "sha256": "18ef015e1295e2b64f7808e7890f905b9eafebe6e7434e62ad1430076e69356f",
-      "bytes": 6010
+      "sha256": "d3ce04860146aebd6a4a9e2bf2febb89ca1bf433e048deb631ef9b596f8005e2",
+      "bytes": 5951
     },
     "gallery/business-functions/identity-incident-executive-brief.opf.json#5": {
-      "sha256": "b02771f0d7d8126e27e7828f6284282ff078d00971768793e31a9e403bd200a6",
-      "bytes": 5860
+      "sha256": "c3ec6ecbc62bcb42a8a5fb0c7eeb7865b12f0e4fd76d96f7bba048f2f522eaed",
+      "bytes": 5824
     }
   }
 }

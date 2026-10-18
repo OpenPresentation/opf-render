@@ -2,28 +2,28 @@
   "deck": "gallery/presentation-types/data-incident-postmortem.opf.json",
   "entries": {
     "gallery/presentation-types/data-incident-postmortem.opf.json#0": {
-      "sha256": "8de2c0761438d23f77a85ae82e2db372e53d8d843255cf580498ef3ead41f35a",
-      "bytes": 14948
+      "sha256": "ded1ce6e5f4fe28f77b0ccf24646cd077d33cd492e023f6717a14acc34d790fc",
+      "bytes": 14959
     },
     "gallery/presentation-types/data-incident-postmortem.opf.json#1": {
-      "sha256": "9df885c1dc5f3dca6f56fb503bb9528b1755786d4d78a6febd61da6782cd8493",
-      "bytes": 17530
+      "sha256": "6b66754236feed61b28355f1b93b4492a11f6759ed0ab1711569606f94e2442f",
+      "bytes": 17538
     },
     "gallery/presentation-types/data-incident-postmortem.opf.json#2": {
-      "sha256": "6ff09b56904558a32d10c0ae51036b1e044b88eec59980713311079cc2d8f648",
-      "bytes": 8601
+      "sha256": "741f27ac08420986b72ef9452916d99b781a1d89e04f15d870aabd9aea43a9b8",
+      "bytes": 8610
     },
     "gallery/presentation-types/data-incident-postmortem.opf.json#3": {
-      "sha256": "4fe35fe0efd8e92aff3b59ec51fe4f1896bb5b1d879a383de33e5575fd50e87f",
-      "bytes": 13681
+      "sha256": "b38e0c9bfb5f73fd4a275179be8b128733ce96c199ad38318cffc531326d7471",
+      "bytes": 15622
     },
     "gallery/presentation-types/data-incident-postmortem.opf.json#4": {
-      "sha256": "6e1427cc8706513a0561cbbd3d27564662301b0c889093b23ffc1e60f3fe0591",
-      "bytes": 18026
+      "sha256": "f375e4500741464580d9b96150ffe9e64f363f0af7adba55e653c3c84b6bc24e",
+      "bytes": 18033
     },
     "gallery/presentation-types/data-incident-postmortem.opf.json#5": {
-      "sha256": "bb844535be0e6d013884b68f7124a7a39ac369164b402a9ed5ea3720c1086d4b",
-      "bytes": 19453
+      "sha256": "ea8e56376d845e62ed999e63f8199ad9a4544a18b634d487f1e66faecdf3c805",
+      "bytes": 19460
     }
   }
 }
