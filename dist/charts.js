@@ -7,10 +7,11 @@
 import { chartHighlightColors, chartHighlightMarks, chartNumber, chartPaletteForFill, chartSeriesPalette as coreChartSeriesPalette, chartTextSize, formatDataNumber, maxIntervalsFor, niceScale, stackCategoryValues, numberFormatError, resolveChartData, resolveTextStyle, textColorForFill, textWidthMeasurer } from "@openpresentation/opf/composition";
 import { drawAxisTitles, drawBarLabel, drawCenteredLabel, drawPointLabel, drawSliceLabel, labelString, outsideLabelReserve, reportOptionDiagnostics, reserveAxisTitles, resolveOptions } from "./chart-options.js";
 
-// The series colours for a chart panel: core's `chartSeriesPalette` (the deck colour scheme's accents, RR-89, the same list the PPTX
-// export and the validator use) adjusted by core's `chartPaletteForFill` (contrast against the panel without letting two series merge).
-export function chartSeriesPalette(surface, colorScheme) {
-  return chartPaletteForFill(surface, coreChartSeriesPalette(colorScheme));
+// The series colours for a chart panel: core's `chartSeriesPalette` (the deck colour scheme's accents, RR-89, with the chart's own
+// `colors` entries replacing their positions) adjusted by core's `chartPaletteForFill` (contrast against the panel without letting
+// two series merge). The PPTX export and the validator use the same pair, so the preview draws the colours they write.
+export function chartSeriesPalette(surface, colorScheme, colors, context) {
+  return chartPaletteForFill(surface, coreChartSeriesPalette(colorScheme, colors, context));
 }
 
 // FA-14: chart.highlight. Core resolves which series and categories are named (chartHighlightMarks) and the two colours
@@ -210,7 +211,7 @@ function chartContext(item, box, bound, options, svg, { rows, columns, formats, 
     // clear space kept between neighbouring category labels.
     textHeight: fontPx * 1.22,
     labelGap: fontPx * 0.1,
-    colors: chartSeriesPalette(surface, bound.design.colorScheme),
+    colors: chartSeriesPalette(surface, bound.design.colorScheme, item.value?.colors, { roles: bound.design.colors, variables: bound.design.variables }),
     // RR-92: the value axis core composed for a column, bar, line or area chart ({ min, max, majorUnit }); absent for the other types.
     valueAxis: item.chart?.valueAxis,
     gridColor: bound.design.colors.border,

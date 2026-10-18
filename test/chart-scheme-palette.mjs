@@ -32,6 +32,32 @@ for (const type of ['column', 'bar', 'line', 'area']) {
   assert.equal(fills.get(3), '#0F766E', 'series 3 is accent3');
 }
 
+// chart.colors (core RR-89 follow-up): entry i replaces palette colour i before the contrast adjustment; a scheme slot follows the
+// deck's colour scheme; highlight wins; a chart without colors draws the same bytes as before.
+{
+  const light = {...scheme, dark1: '#0F172A', light1: '#0F172A', dark2: '#F8FAFC', light2: '#F8FAFC'};
+  const render = (chart, colorScheme = light) => toSvg({design: {background: '#FFFFFF', colorScheme}, slides: [{title: 'Chart', chart}]}, 1, {trace: true});
+  const fillsOf = (svg) => {
+    const byColumn = new Map(attrs(svg, 'rect', /\.chart\.data\.rows\.\d+\.(\d)$/).map((a) => [Number(a['data-opf-path'].split('.').at(-1)), a.fill.toUpperCase()]));
+    return [...byColumn.entries()].sort((x, y) => x[0] - y[0]).map(([, fill]) => fill);
+  };
+  const expected = (colors, colorScheme = light) => chartPaletteForFill('#F8FAFC', chartSeriesPalette(colorScheme, colors, {})).slice(0, 3).map((color) => color.toUpperCase());
+  const colors = ['accent3', '#7B241C'];
+  const fills = fillsOf(render({type: 'column', data, colors}));
+  assert.deepEqual(fills, expected(colors), 'colors replace series 1 and 2, series 3 keeps the scheme colour');
+  assert.equal(fills[0], '#0F766E', 'accent3 of the scheme');
+  assert.equal(fills[1], '#7B241C');
+  assert.equal(fills[2], expected(undefined)[2]);
+  const recolored = {...light, accent3: '#1D4ED8'};
+  assert.equal(fillsOf(render({type: 'column', data, colors}, recolored))[0], '#1D4ED8', 'a scheme slot follows a changed colour scheme');
+  const highlighted = fillsOf(render({type: 'column', data, colors, highlight: {series: ['North']}}));
+  assert.deepEqual(highlighted, fillsOf(render({type: 'column', data, highlight: {series: ['North']}})), 'highlight overrides colors');
+  assert.equal(render({type: 'column', data}), render({type: 'column', data, colors: undefined}), 'no colors draws the same bytes');
+  assert.deepEqual(fillsOf(render({type: 'column', data, colors: ['var:unknown-color']})), expected(undefined), 'an entry that does not resolve keeps the scheme colour of its position');
+  const pie = render({type: 'pie', data: {columns: ['Region', 'Share'], rows: [['North', 45], ['South', 30], ['West', 25]]}, colors: ['#7B241C']});
+  assert.ok(attrs(pie, 'path', /\.chart\.data\.rows\.0\./).concat(attrs(pie, 'path', /\.chart\.data/)).some((a) => (a.fill ?? '').toUpperCase() === expected(['#7B241C'])[0]), 'a pie slice takes its entry');
+}
+
 // A deck without a colour scheme of its own keeps the engine default's accents, so existing decks draw the colours they always did.
 {
   const bound = resolvePresentation(deck({type: 'column', data})).slides[0];
