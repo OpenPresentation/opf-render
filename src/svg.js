@@ -1293,7 +1293,8 @@ function renderMedia(item, box, bound, options) {
     tag("path", {
       ...HIDDEN,
       d: trianglePath(iconBox.x + 28, iconBox.y + 22, 28, 28),
-      fill: bound.design.roles.neutrals.outline.hex,
+      // The play triangle sits on the primary circle: bg1 or tx1, whichever reads better on it (core readableSchemeColor).
+      fill: readableSchemeColor(bound.design.colors.primary, bound.design.roles).hex,
       ...traceAttrs(options, item.path)
     }),
     renderTextBox(asset.title || asset.src || "Media", { ...box, y: iconBox.y + iconBox.height + 20, height: 50 }, bound, {
