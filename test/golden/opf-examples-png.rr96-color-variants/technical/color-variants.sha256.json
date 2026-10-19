@@ -2,32 +2,32 @@
   "deck": "technical/color-variants.opf.json",
   "entries": {
     "technical/color-variants.opf.json#0": {
-      "sha256": "1add2c26c88a04dd9d6cda1cbb7f8ca374d85d917c22e093c60356e6f7ee6eb8",
-      "bytes": 8019
+      "sha256": "2a22f67639377225663ccd2da00fae81ec8219f57141212c90ee0b9cb05e96ac",
+      "bytes": 8645
     },
     "technical/color-variants.opf.json#1": {
-      "sha256": "f25c5b383fa9fbb18bbd2e3f80d94437f6dcf30b573c324e4329720e63b43e4a",
-      "bytes": 5891
+      "sha256": "9e27db82ec1cb2a0db3b6c2c8b58d9cc66e34342a3a9458ffd9ab6cca597b27a",
+      "bytes": 5650
     },
     "technical/color-variants.opf.json#2": {
-      "sha256": "eab193d4102e40515c739df7b3438e723c88ed16feb888652b95014d618f9347",
-      "bytes": 5853
+      "sha256": "381f1232a5647c87e3a264f137a2c80ea131d76f57b419d184f626eb904ad46d",
+      "bytes": 5522
     },
     "technical/color-variants.opf.json#3": {
-      "sha256": "9c7e5236ffa0df9412ee1539aafa570bb68555684fac0375f09b8bbd5ffdb649",
-      "bytes": 5933
+      "sha256": "ff40c77d4a7b129c972b8a9138f5661a1250098f4634a0241f8f6ab46187206a",
+      "bytes": 6006
     },
     "technical/color-variants.opf.json#4": {
-      "sha256": "ec97bb1c6d8acb45df62b2b4ff5faa8749c98504c54ca9834de73a4200e0a832",
-      "bytes": 5834
+      "sha256": "fc8f8a7a77dc3da6f34fe68997f8848e8129b3347c6246880ebcac24a5a772cb",
+      "bytes": 6104
     },
     "technical/color-variants.opf.json#5": {
-      "sha256": "388101c8ceaa49dd50c78efad680585729328627e163855d5037b6eed6ad4e97",
-      "bytes": 5202
+      "sha256": "d2c755d9f43d6a0e4e3f0094234c8433ba030ab5bcf72747eae82866944a5e06",
+      "bytes": 4339
     },
     "technical/color-variants.opf.json#6": {
-      "sha256": "d78fbd55b1aa8412e72a20492783b4242bf073a3144b3ee9396eb64a8bbb2631",
-      "bytes": 4359
+      "sha256": "5943fc1b2af9353420a10be492a74cb3e6c84d90346c3c0df354159039c54458",
+      "bytes": 4310
     }
   }
 }

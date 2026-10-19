@@ -2,16 +2,16 @@
   "deck": "technical/chart-colors.opf.json",
   "entries": {
     "technical/chart-colors.opf.json#0": {
-      "sha256": "3c707de0f819a86200cd91f7b789dbcde368552fd54dc21920177c55c71be121",
-      "bytes": 8621
+      "sha256": "b28ec62fec96060218da8e96b30dd6f48cdfedf6055b6db1bf9b6e279592cbdc",
+      "bytes": 8606
     },
     "technical/chart-colors.opf.json#1": {
-      "sha256": "9a6351716e5cc5ed5499562c4df9f312a32e954f284fcaee482516254b2761e2",
-      "bytes": 9569
+      "sha256": "266977656042c09a98441f20e5aa22a36d583f627f8f921d3bd903c154a26495",
+      "bytes": 9191
     },
     "technical/chart-colors.opf.json#2": {
-      "sha256": "ad601d7472d1980bc9382c9355bb6a15629037c9730be9bfa02b140a7802d8dc",
-      "bytes": 5202
+      "sha256": "983c5b1350eed0c6fd0700d939939cd479b0e3f3c890ce04b12f0f352bd98c19",
+      "bytes": 5156
     }
   }
 }
