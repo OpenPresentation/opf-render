@@ -11,4 +11,4 @@ The directory started as a copy of the core 0.24.0 baseline. The `regenerate-gol
 
 ## Review
 
-(Filled in after the workflow's commit lands.)
+The `regenerate-goldens` run [39381139660](https://github.com/OpenPresentation/opf-render/actions/runs/39381139660) (pinned image `mcr.microsoft.com/playwright:v1.64.0-noble`) rewrote 20 gallery decks and `_baseline.json`. Every changed deck places the embedded supporting photo: slides that drew the unavailable-image placeholder now draw the artwork. No other deck moved. The temporary `ci.yml` override is restored to the core fixture in the same pull request.
