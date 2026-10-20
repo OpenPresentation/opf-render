@@ -11,4 +11,4 @@ The ordinary selection (`exampleBaseline(...)` in `scripts/example-baseline.mjs`
 
 ## Review
 
-(Filled in after the workflow's commit lands.)
+The `regenerate-goldens` run [39345605849](https://github.com/OpenPresentation/opf-render/actions/runs/39345605849) (pinned image `mcr.microsoft.com/playwright:v1.64.0-noble`) rewrote only `_baseline.json`: 0 slides in 0 decks changed. The 25 decks that moved from `dark` to `classic` set their own light, picture or pattern background (one sets `dark1` and gains `variant: "dark1"`), so they draw the same; what moved is the corpus digest, from the embedded theme records gaining `variants`. The temporary `ci.yml` override that selected this directory for the run is restored to the core fixture in the same pull request.
